@@ -124,12 +124,33 @@ export default function OrderRead({ match }) {
                       </td>
                       <td>{product.pivot.quantity} UN</td>
                       <td>
-                        {(
-                          product.pivot.quantity * product.group_price
-                        ).toLocaleString('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        })}
+                      {(() => {
+                          if (order_data.type === 'Curso') {
+                            return (
+                              product.pivot.quantity * product.group_price
+                            ).toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            });
+                          } else if (order_data.type === 'Seminário') {
+                            return (
+                              product.pivot.quantity * product.seminary_price
+                            ).toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            });
+                          } else if (
+                            order_data.type === 'Treinamento de treinadores' ||
+                            order_data.type === 'Capacitação de líderes'
+                          ) {
+                            return (
+                              product.pivot.quantity * product.training_price
+                            ).toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            });
+                          } else return '';
+                        })()}
                       </td>
                     </tr>
                   ))}
