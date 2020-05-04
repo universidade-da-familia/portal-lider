@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img alt="Portal do Lider" title="Portal do Lider" src=".github/udf.png" width="200px" />
+  <img alt="Portal do Lider" title="Portal do Lider" src=".github/logo.png" width="200px" />
 </h1>
 
 <h3 align="center">
