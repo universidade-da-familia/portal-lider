@@ -74,7 +74,7 @@ $> yarn start
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/universidade-da-familia/portal-lider/blob/master/LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/universidade-da-familia/portal-lider/blob/master/LICENSE.MD) file for details
 
 ## Acknowledgments
 
