@@ -64,7 +64,7 @@ $> yarn start
 
 ## Built With
 
-* [React](https://reactjs.org/docs/getting-started.html) - A JavaScript library for building user interfaces
+* [React](https://reactjs.org/docs/getting-started.html) - A JavaScript library for building user interfaces.
 * [AdonisJS](https://adonisjs.com/docs/4.1/installation) - AdonisJs is a Node.js MVC framework that runs on all major operating systems.
 
 ## Authors
