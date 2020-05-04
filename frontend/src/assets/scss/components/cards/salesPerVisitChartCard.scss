@@ -1,0 +1,44 @@
+// Line area chart CSS Starts
+
+//Line Chart 1 CSS Starts
+.lineAreaChart .ct-series-a .ct-point,
+.lineAreaChart .ct-series-a .ct-line{
+   stroke: #009da0;
+}
+.lineAreaChart .ct-series-b .ct-point,
+.lineAreaChart .ct-series-b .ct-line{
+   stroke: #ff8d60;
+}
+.lineAreaChart .ct-series-c .ct-point,
+.lineAreaChart .ct-series-c .ct-line{
+   stroke: #ff586b;
+}
+
+.lineAreaChart .ct-series-a .ct-area {
+   fill: url(#gradient) !important;
+}
+
+.lineAreaChart .ct-series-b .ct-area {
+   fill: #ff8d60;
+   fill-opacity: 0.1;
+}
+
+.lineAreaChart .ct-point-circle {
+   stroke-width: 2px;
+   fill: white;
+}
+
+.lineAreaChart .ct-series-b .ct-point-circle {
+   stroke: #ff8d60;
+}
+
+.lineAreaChart .ct-series-a .ct-point-circle {
+   stroke: #31afb2;
+}
+
+.lineAreaChart .ct-line {
+   fill: none;
+   stroke-width: 1px;
+}
+
+// Line area chart CSS Ends

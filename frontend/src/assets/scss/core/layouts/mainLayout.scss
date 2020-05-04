@@ -1,0 +1,111 @@
+@import "../../color";
+@import "../../util";
+
+.main-layout {
+   padding: 5px 30px;
+   main {
+      color: $heading-color;
+      min-height: calc(100vh - 133px);
+      .content {
+         font-family: $font-family-content;
+      }
+      p {
+         color: $content-color;
+      }
+   }
+   footer {
+      font-family: $font-family-content;
+      p {
+         color: $heading-color;
+         font-size: 1rem;
+         letter-spacing: 0.3px;
+         font-weight: 300;
+         margin-top: 0.5rem;
+         margin-bottom: 0.5rem;
+         a {
+            color: $primary;
+            cursor: pointer;
+            text-decoration: none;
+            background-color: transparent;
+         }
+      }
+   }   
+}
+
+.sidebar-lg {
+   &.main-layout {
+      margin-left: 280px;
+   }
+}
+.sidebar-md {
+   &.main-layout {
+      margin-left: 250px;
+   }
+}
+.sidebar-sm {
+   &.main-layout {
+      margin-left: 220px;
+   }
+}
+
+.menu-collapsed {
+   margin-left: 60px;
+   padding: 0 16px;
+   main {
+      margin-top: 15px;
+      color: $heading-color;
+      .content {
+         font-family: $font-family-content;
+      }
+      p {
+         color: $content-color;
+      }
+   }
+   footer {
+      font-family: $font-family-content;
+      p {
+         color: $heading-color;
+         font-size: 1rem;
+         letter-spacing: 0.3px;
+         font-weight: 300;
+         margin-top: 0.5rem;
+         margin-bottom: 0.5rem;
+         a {
+            color: $primary;
+            cursor: pointer;
+            text-decoration: none;
+            background-color: transparent;
+         }
+      }
+   }
+}
+
+@media (max-width: 768px) {
+   .menu-collapsed {
+      margin-left: 0px;
+   }
+}
+@media (max-width: 990px) {
+   .main-layout {
+      margin-left: 0px !important;
+   }
+}
+
+.animate-shake {
+   animation: 0.15s ease-in 2s infinite alternate animate-shake;
+   animation-fill-mode: initial;
+   top: 1px;
+   position: relative;
+}
+
+@keyframes animate-shake {
+   0% {
+      -webkit-transform: rotate(12deg);
+      transform: rotate(12deg);
+   }
+   100% {
+      -webkit-transform-origin: center center;
+      -webkit-transform: rotate(-12deg);
+      transform: rotate(-12deg);
+   }
+}

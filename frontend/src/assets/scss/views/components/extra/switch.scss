@@ -1,0 +1,21 @@
+/* These are example-specific */
+
+.react-toggle {
+   margin-right: 8px;
+   vertical-align: middle;
+ }
+ 
+ label,
+ .label-text {
+   vertical-align: middle;
+   margin-bottom: 0; /* override bootstrap */
+ }
+ 
+ .example {
+   margin-top: 36px;
+   margin-bottom: 36px;
+ }
+ 
+ .custom-classname.react-toggle--checked .react-toggle-track {
+   background-color: #ab199f;
+ }

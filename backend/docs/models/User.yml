@@ -1,0 +1,110 @@
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 1
+      netsuite_id:
+        type: integer
+        example: 69900
+      church_id:
+        type: integer
+        example: 15
+      file_id:
+        type: integer
+        example: 1
+      personal_state_id:
+        type: integer
+        example: 3
+      type:
+        type: string
+        example: 'PF'
+      name:
+        type: string
+        example: 'Lucas Alves'
+      fantasy_name:
+        type: string
+        example: 'Igreja São João'
+      email:
+        type: string
+        unique: true
+        example: 'lucas.alves@udf.org.br'
+      cpf_cnpj:
+        type: string
+        maxLength: 14
+        example: '42317441819'
+      inscricao_estadual:
+        type: string
+        example: '455123658990'
+      password:
+        type: string
+        format: password
+        example: '$2a$10$dtWH6Zz0EsxlDZ1EvP7ZjeeLWb71xKee98q5jPsdG/qY8ndsll0XC'
+      birthday:
+        type: date
+        example: '1993-04-27'
+      sex:
+        type: string
+        example: 'M'
+      phone:
+        type: string
+        maxLength: 21
+        example: '14981107819'
+      alt_phone:
+        type: string
+        maxLength: 21
+        example: '1434058500'
+      facebook:
+        type: string
+        example: 'lcoalves'
+      instagram:
+        type: string
+        example: 'lucascoalves'
+      linkedin:
+        type: string
+        example: 'lcoalves'
+      cmn_hierarchy_id:
+        type: integer
+        example: 4
+      mu_hierarchy_id:
+        type: integer
+        example: 0
+      crown_hierarchy_id:
+        type: integer
+        example: 1
+      mp_hierarchy_id:
+        type: integer
+        example: 0
+      ffi_hierarchy_id:
+        type: integer
+        example: 6
+      gfi_hierarchy_id:
+        type: integer
+        example: 0
+      pg_hab_hierarchy_id:
+        type: integer
+        example: 4
+      pg_yes_hierarchy_id:
+        type: integer
+        example: 1
+      user_legacy:
+        type: boolean
+        example: false
+      admin:
+        type: boolean
+        example: true
+      afl_id:
+        type: integer
+        example: 144008
+      token:
+        type: string
+        example: '4cb596933f29898c2566'
+      token_created_at:
+        type: string
+        example: '2020-03-05 17:57:48'
+    required:
+      - id
+      - name
+      - password
+      - sex

@@ -1,0 +1,61 @@
+.icon-dount-center {
+   position: absolute;
+   top: calc(50% - 16px);
+   left: calc(50% - 32px);
+}
+//Donut Chart 1 CSS Starts
+
+.donut1 .ct-label {
+   text-anchor: middle;
+   alignment-baseline: middle;
+   font-size: 60px;
+   fill: #009da0;
+}
+
+.donut1 .ct-outstanding .ct-slice-donut {
+   stroke: #eee;
+}
+
+.donut1 .ct-done .ct-slice-donut {
+   stroke: #009da0;
+}
+
+//Donut Chart 1 CSS Ends
+
+//Donut Chart 2 CSS Starts
+
+.donut2 .ct-label {
+   text-anchor: middle;
+   alignment-baseline: middle;
+   font-size: 60px;
+   fill: #ff8d60;
+}
+
+.donut2 .ct-outstanding .ct-slice-donut {
+   stroke: #eee;
+}
+
+.donut2 .ct-done .ct-slice-donut {
+   stroke: #ff8d60;
+}
+
+//Donut Chart 2 CSS Ends
+
+//Donut Chart 3 CSS Starts
+
+.donut3 .ct-label {
+   text-anchor: middle;
+   alignment-baseline: middle;
+   font-size: 60px;
+   fill: #ff586b;
+}
+
+.donut3 .ct-outstanding .ct-slice-donut {
+   stroke: #eee;
+}
+
+.donut3 .ct-done .ct-slice-donut {
+   stroke: #ff586a;
+}
+
+//Donut Chart 3 CSS Ends

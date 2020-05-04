@@ -1,0 +1,40 @@
+// Line with Area Chart 2 CSS Starts
+
+.lineAreaDashboard {
+   margin-left: 14px;
+
+   .ct-series-a .ct-area {
+      fill: url(#gradient2) !important;
+      fill-opacity: 0.8;
+   }
+
+   .ct-series-b .ct-area {
+      fill: url(#gradient3) !important;
+      fill-opacity: 0.8;
+   }
+
+   .ct-point-circle {
+      stroke-width: 2px;
+      fill: white;
+   }
+
+   .ct-series-b .ct-point-circle {
+      stroke: #843cf7;
+   }
+
+   .ct-series-b .ct-line {
+      stroke: #a675f4;
+   }
+
+   .ct-series-a .ct-point-circle {
+      stroke: #31afb2;
+   }
+
+   .ct-line {
+      stroke: #00a0a2;
+      fill: none;
+      stroke-width: 2px;
+   }
+}
+
+// Line with Area Chart 2 CSS Ends

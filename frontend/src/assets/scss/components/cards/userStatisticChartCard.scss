@@ -1,0 +1,14 @@
+//widget Line Chart 1 CSS Starts
+.WidgetlineChart1 .ct-point {
+   stroke-width: 0px;
+}
+.WidgetlineChart1 .ct-line{
+   stroke: url(#widgradient) !important; // #009DA0; 
+}
+
+.WidgetlineChart1Shadow {
+   -webkit-filter: drop-shadow( 0px 20px 5px rgba(0,0,0,0.3) );
+           filter: drop-shadow( 0px 20px 5px rgba(0,0,0,0.3) ); /* Same syntax as box-shadow, except 
+                                                      for the spread property */
+}
+//widget Line Chart 1 CSS Ends

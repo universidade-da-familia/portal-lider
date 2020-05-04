@@ -1,0 +1,49 @@
+// Theme Colors
+$theme-colors: (
+  primary: #000230,
+  success: #0cc27e,
+  info: #1cbcd8,
+  warning: #ffc107,
+  danger: #ff586b,
+  secondary: #868e96,
+  light: #f8f9fa,
+  dark: #343a40,
+  facebook-bg: #3b5998,
+  google-bg: #db3236
+);
+
+// Spacing
+
+$spacer: 1.5rem;
+
+$spacers: (
+  0: 0,
+  1: (
+    $spacer * 0.25
+  ),
+  2: (
+    $spacer * 0.5
+  ),
+  3: $spacer,
+  4: (
+    $spacer * 1.5
+  ),
+  5: (
+    $spacer * 3
+  )
+) !default;
+
+// Body
+$body-bg: #f5f7fa;
+
+// Fonts
+$font-family-sans-serif: "Montserrat", "Segoe UI", Roboto, "Helvetica Neue",
+  Arial, sans-serif;
+$font-family-content: "Rubik", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+  sans-serif;
+
+$font-size-root: 16px;
+
+//Navbar
+$navbar-padding-y: 0.75rem;
+$navbar-padding-x: 0;

@@ -1,0 +1,45 @@
+@import "../../color";
+
+.wrapper {
+   display: flex;
+   justify-content: space-between !important;
+   align-items: center;
+   padding-top: 18px;
+   padding-bottom: 12px;
+   svg {
+      stroke: $black;
+      stroke-width: 1.6;
+      &:hover {
+         cursor: pointer;
+      }
+   }
+
+   .navbar-header {
+      .head-content {
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         svg {
+            transform: translateX(-25px);
+            stroke: $black;
+            stroke-width: 1.6;
+            &:hover {
+               cursor: pointer;
+            }
+         }
+         input.form-control {
+            border-radius: 1.25rem;
+            border: 1px solid $secondary;
+         }
+      }
+   }
+   .navbar-content {
+      svg {
+         stroke: $dark;
+         stroke-width: 1.8;
+         &:hover {
+            cursor: pointer;
+         }
+      }
+   }
+}

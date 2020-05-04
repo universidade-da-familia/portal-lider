@@ -1,0 +1,89 @@
+// Spacing
+
+$spacer: 1.5rem;
+
+$spacers: (
+  0: 0,
+  1: (
+    $spacer * 0.25
+  ),
+  2: (
+    $spacer * 0.5
+  ),
+  3: $spacer,
+  4: (
+    $spacer * 1.5
+  ),
+  5: (
+    $spacer * 3
+  )
+) !default;
+
+$padding-base: 1rem !default;
+$margin-base: 1rem !default;
+
+$padding-base-vertical: 0.5rem !default;
+$padding-base-horizontal: 0.75rem !default;
+
+$padding-large-vertical: 0.6rem !default;
+$padding-large-horizontal: 1rem !default;
+
+$padding-small-vertical: 0.4rem !default;
+$padding-small-horizontal: 0.75rem !default;
+
+$padding-xs-vertical: 0.1rem !default;
+$padding-xs-horizontal: 0.33rem !default;
+
+$line-height-large: 1.3333333 !default; // extra decimals for Win 8.1 Chrome
+$line-height-small: 1.5 !default;
+
+// Fonts
+$font-family-sans-serif: "Montserrat", "Segoe UI", Roboto, "Helvetica Neue",
+  Arial, sans-serif;
+$font-family-content: "Rubik", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+  sans-serif;
+
+$font-size-root: 16px;
+
+//  Transitions
+$general-transition-time: 300ms !default;
+
+$slow-transition-time: 370ms !default;
+$fast-transition-time: 150ms !default;
+
+$transition-linear: linear !default;
+$transition-bezier: cubic-bezier(0.34, 1.61, 0.7, 1) !default;
+$transition-ease: ease 0s;
+
+// variables from lbd
+
+$transition-ease-in: ease-in !default;
+$transition-ease-out: ease-out !default;
+$ultra-fast-transition-time: 60ms !default;
+$navbar-padding-a: 10px 15px;
+$padding-zero: 0px !default;
+$sidebar-width: calc(100% - 250px) !default;
+$topbar-back: topbar-back !default;
+$bottombar-back: bottombar-back !default;
+$topbar-x: topbar-x !default;
+$bottombar-x: bottombar-x !default;
+$margin-bottom: 0 0 10px 0 !default;
+$margin-base-vertical: 15px !default;
+
+$border-radius: 0.125rem !default;
+$border-radius-sm: 0.0625rem !default;
+
+$border-radius-base: 4px !default;
+$border-radius-large: 6px !default;
+$border-radius-small: 3px !default;
+$border-radius-extreme: 30px !default;
+
+//** Global color for active items (e.g., navs or dropdowns).
+$component-active-color: #fff !default;
+//** Global background color for active items (e.g., navs or dropdowns).
+$component-active-bg: #009da0 !default;
+
+//** Width of the `border` for generating carets that indicator dropdowns.
+$caret-width-base: 4px !default;
+//** Carets increase slightly in size for larger components.
+$caret-width-large: 5px !default;

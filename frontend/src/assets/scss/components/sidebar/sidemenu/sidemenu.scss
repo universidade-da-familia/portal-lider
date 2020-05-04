@@ -1,0 +1,42 @@
+@import "../../../color";
+@import "../../../util";
+
+.item {
+  line-height: 2rem;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  padding: 10px 30px 10px 24px;
+  position: relative;
+  margin: 5px 0;
+  .menu-icon {
+    top: 9px;
+    left: 22px;
+    position: absolute;
+    svg {
+      stroke-width: 1.6;
+      color: $light;
+    }
+  }
+  .menu-item-text {
+    display: block;
+    margin-left: 40px;
+    font-weight: 400;
+    text-decoration: none;
+    color: $light;
+    font-size: 0.95rem;
+  }  
+  &:hover {
+    background-color: $transparent-bg;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  &.singleItem {
+    padding: 10px 30px 10px 14px;
+  }
+}
+
+
+div[data-background-color="white"] .menu-item-text{
+  color: $dark;
+}

@@ -1,0 +1,84 @@
+/users:
+  get:
+    tags:
+      - users
+    description: Rota utilizada para listar todos usuários com paginação.
+    summary: List all users (paginated).
+    responses:
+      201:
+        description: Return users paginateds.
+        schema:
+          type: object
+          properties:
+            page:
+              type: string
+              example: 1
+            perPage:
+              type: string
+              example: 10
+            total:
+              type: string
+              example: 1300
+            users:
+              type: array
+              items:
+                $ref: '#/definitions/User'
+  post:
+    tags:
+      - users
+    description: Rota utilizada para criar um usuário.
+    summary: Create one user
+    parameters:
+      - name: name
+        description: 'Name and surname of the user.'
+        in: body
+        required: true
+        type: string
+      - name: cpf_cnpj
+        description: 'CPF or CNPJ of the user.'
+        in: body
+        type: string
+      - name: email
+        description: 'Email of the user.'
+        in: body
+        type: string
+      - name: password
+        description: 'Password of the user.'
+        in: body
+        required: true
+        type: string
+      - name: sex
+        description: 'Sex of the user.'
+        in: body
+        required: true
+        type: string
+        example: 'M'
+    responses:
+      201:
+        description: Return file created
+        message: Hello 2
+        schema:
+          $ref: '#/definitions/User'
+      401:
+        description: Request unauthorized (insufficient permissions).
+        message: Unauthorized Request.
+/users/:id:
+  get:
+    tags:
+      - users
+    description: Rota utilizada para listar um usuário.
+    summary: List one user.
+    parameters:
+      - name: id
+        description: ID for search a user.
+        in: path
+        required: true
+        type: string
+        schema:
+          $ref: '#/definitions/User'
+    responses:
+      201:
+        description: Return user searched.
+        schema:
+            $ref: '#/definitions/User'
+

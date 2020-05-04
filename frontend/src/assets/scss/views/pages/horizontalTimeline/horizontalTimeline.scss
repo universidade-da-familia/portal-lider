@@ -1,0 +1,55 @@
+.cd-horizontal-timeline .events-content {
+   position: relative;
+   li {
+     position: absolute;
+     z-index: 1;
+     width: 100%;
+     left: 0;
+     top: 0;
+     transform: translateX(-100%);
+     opacity: 0;
+     animation-duration: 0.4s;
+     animation-timing-function: ease-in-out;
+     &.selected {
+       /* visible event content */
+       position: relative;
+       z-index: 2;
+       opacity: 1;
+       transform: translateX(0);
+     }
+     &.enter-right, &.leave-right {
+       animation-name: cd-enter-right;
+     }
+     &.enter-left, &.leave-left {
+       animation-name: cd-enter-left;
+     }
+     &.leave-right, &.leave-left {
+       animation-direction: reverse;
+     }
+   }
+ }
+ 
+ @keyframes cd-enter-right {
+   0% {
+     opacity: 0;
+     transform: translateX(100%);
+   }
+ 
+   100% {
+     opacity: 1;
+     transform: translateX(0%);
+   }
+ }
+ 
+ 
+ @keyframes cd-enter-left {
+   0% {
+     opacity: 0;
+     transform: translateX(-100%);
+   }
+ 
+   100% {
+     opacity: 1;
+     transform: translateX(0%);
+   }
+ }

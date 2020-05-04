@@ -1,0 +1,35 @@
+// Line Chart CSS Starts
+
+.lineChart .ct-point-circle {
+   stroke-width: 2px;
+   fill: white;
+}
+
+.lineChart .ct-series-a .ct-point-circle {
+   stroke: white;
+}
+.lineChart .ct-series-a .ct-point {
+   stroke: white;
+}
+
+.lineChart .ct-line {
+   fill: none;
+   stroke: white;
+   stroke-width: 1px;
+}
+
+.lineChart .ct-label {
+   color: #fff;
+}
+
+.lineChartShadow {
+   position: relative;
+   right: 8px;
+   -webkit-filter: drop-shadow(0px 25px 8px rgba(0, 0, 0, 0.3));
+   filter: drop-shadow(
+      0px 25px 8px rgba(0, 0, 0, 0.3)
+   ); /* Same syntax as box-shadow, except 
+                                                      for the spread property */
+}
+
+// Line Chart  CSS Ends

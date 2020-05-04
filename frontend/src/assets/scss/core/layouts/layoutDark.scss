@@ -1,0 +1,298 @@
+.wrapper {
+   &.layout-dark {
+      // Main
+      background-color: $dl-body-bg;
+      color: $dl-body-text-color;
+      height: 100%;
+      main {
+         color: $dl-body-text-color;
+      }
+      .bg-white {
+         background-color: $dl-bg-color !important;
+      }
+      //Typo & tables
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      .h1,
+      .h2,
+      .h3,
+      .h4,
+      .h5,
+      .h6,
+      .content-header,
+      .table th {
+         color: $dl-body-headings-color;
+      }
+      p,
+      .content-sub-header,
+      .table td,
+      .list-group-item-action,
+      .nav-tabs .nav-link.active,
+      .content-sub-header {
+         color: $dl-body-text-color;
+      }
+      .input-group-text {
+         background-color: $dl-bg-color;
+         color: $dl-body-text-color;
+      }
+      .page-item {
+         &.active {
+            .page-link {
+               background-color: $dl-body-bg;
+            }
+         }
+         .page-link {
+            background-color: $dl-bg-color;
+            color: $dl-body-text-color;
+            border-color: $dl-border-color;
+         }
+      }
+      .progress {
+         background-color: $dl-body-bg;
+      }
+
+      .breadcrumb {
+         background-color: $dl-body-bg;
+         .active.breadcrumb-item {
+            color: $dl-body-headings-color;
+         }
+      }
+      // Charts & SVG
+      svg {
+         stroke: $dl-body-headings-color !important;
+      }
+      .ct-grid {
+         // stroke: #77798e;
+         stroke: #ffffff38;
+      }
+      .ct-label {
+         color: #77798e;
+      }
+      .table {
+         thead th {
+            border-bottom: 2px solid $dl-border-color;
+         }
+         th,
+         td {
+            border-top: 2px solid $dl-border-color;
+         }
+      }
+      .text-muted {
+         color: $dl-body-text-muted-color !important;
+      }
+
+      // List group
+      .list-group-item {
+         background-color: inherit;
+      }
+
+      //dropdown
+      .dropdown-menu {
+         background-color: $dl-bg-color;
+         color: $dl-body-text-color;
+         .dropdown-item {
+            color: $dl-body-text-color;
+            &:hover,
+            &:focus {
+               background-color: $dl-body-bg;
+               color: $dl-body-headings-color;
+            }
+         }
+      }
+
+      //Navbar
+      .navbar {
+         .navbar-nav .nav-link {
+            color: $dl-body-text-color;
+         }
+         .list-group-item {
+            background-color: $dl-bg-color;
+         }
+         .scrollbar-container {
+            &.bg-grey.bg-lighten-5 {
+               background-color: $dl-bg-color !important;
+            }
+            .border-bottom-grey.border-bottom-lighten-3 {
+               border-color: $dl-border-color !important;
+            }
+         }
+      }
+
+      // Form
+      form {
+         label {
+            color: $dl-body-text-color;
+         }
+         &.form-bordered .form-group {
+            border-color: $dl-border-color;
+            > div {
+               border-color: $dl-border-color;
+            }
+         }
+         &.striped-rows .form-group:nth-child(even) {
+            background-color: $dl-body-bg;
+         }
+      }
+      .form-control {
+         background-color: $dl-bg-color;
+         color: $dl-body-text-color;
+      }
+      //Card
+      .card {
+         background-color: $dl-bg-color;
+         .card-title,
+         .card-subtitle {
+            color: $dl-body-headings-color;
+         }
+         .card-footer,
+         .nav-item .nav-link,
+         .nav-tabs-vc > ul.nav {
+            background-color: $dl-bg-color;
+         }
+      }
+
+      //Email App
+      .email-application {
+         .email-app-sidebar,
+         .email-app-list-mails,
+         .email-app-mail-content {
+            background-color: $dl-bg-color;
+            border-right: 1px solid $dl-body-text-color;
+            border-color: $dl-border-color;
+         }
+         .email-app-menu .form-group-compose,
+         .email-app-list-mails .email-actions {
+            border-bottom: 1px solid $dl-border-color;
+         }
+         .email-app-list-mails .email-actions {
+            border-top: 1px solid $dl-border-color;
+         }
+         .list-group-item.active,
+         .list-group-item.active:focus,
+         .list-group-item.active:hover {
+            background-color: #009da0;
+            border-color: #009da0;
+            color: $white;
+         }
+         .list-group-item-action {
+            color: $dl-body-text-color;
+            &.bg-grey.bg-lighten-4 {
+               background-color: #4f5069 !important;
+            }
+         }
+      }
+
+      // Chat application
+      .chat-application {
+         .chat-app-window,
+         .chat-sidebar,
+         .chat-fixed-search {
+            background-color: $dl-bg-color;
+         }
+         .chat-name,
+         .chat-sidebar,
+         .chat-fixed-search {
+            border-color: $dl-border-color;
+         }
+         .bg-blue-grey.bg-lighten-5 {
+            background-color: #4f5069 !important;
+         }
+      }
+
+      // Contact application
+      .contact-application {
+         .contact-app-sidebar,
+         .contact-app-list-mails,
+         .contact-app-mail-content {
+            background-color: $dl-bg-color;
+            border-color: $dl-border-color;
+         }
+         .contact-app-menu .form-group-compose {
+            border-bottom: 1px solid $dl-border-color;
+         }
+         .list-group-item.active,
+         .list-group-item.active:focus,
+         .list-group-item.active:hover {
+            background-color: #009da0;
+            border-color: #009da0;
+            color: $white;
+         }
+         .list-group-item-action {
+            color: $dl-body-text-color;
+            &.bg-grey.bg-lighten-4 {
+               background-color: #4f5069 !important;
+            }
+         }
+      }
+
+      // Todo application
+      .todo-application {
+         .todo-app-sidebar,
+         .todo-app-list-mails,
+         .todo-app-mail-content {
+            background-color: $dl-bg-color;
+            border-color: $dl-border-color;
+         }
+         .todo-app-menu .form-group-compose {
+            border-bottom: 1px solid $dl-border-color;
+         }
+         .list-group-item.active,
+         .list-group-item.active:focus,
+         .list-group-item.active:hover {
+            background-color: #009da0;
+            border-color: #009da0;
+            color: $white;
+         }
+         .list-group-item-action {
+            color: $dl-body-text-color;
+            &.bg-grey.bg-lighten-4 {
+               background-color: #4f5069 !important;
+            }
+         }
+      }
+
+      //Timeline
+      .horizontal-timeline-wrapper li[data-radium="true"] {
+         background-image: none !important;
+      }
+      //Invoice template
+      .invoice-template {
+         .bg-grey.bg-lighten-4 {
+            background-color: $dl-bg-color !important;
+         }
+      }
+
+      //User auth & error pages
+      .login-layout {
+         background-color: $dl-bg-color;
+      }
+
+      //Misc
+      ol.progtrckr li.progtrckr-doing {
+         color: $dl-body-headings-color;
+      }
+      .ReactTable .rt-thead.-filters input,
+      .ReactTable .rt-thead.-filters select {
+         background-color: $dl-body-bg;
+      }
+      .ReactTable .-pagination .-btn {
+         color: $dl-body-headings-color;
+      }
+      .rbc-off-range-bg {
+         background-color: $dl-bg-color;
+      }
+      .rbc-today {
+         background-color: $dl-body-bg;
+      }
+      .rbc-toolbar button {
+         color: $dl-body-text-color;
+      }
+      .customizer .customizer-content{
+         background-color: $dl-body-bg;
+      }
+   }
+}

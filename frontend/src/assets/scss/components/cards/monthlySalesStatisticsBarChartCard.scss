@@ -1,0 +1,16 @@
+// Stack Bar Chart CSS Starts
+
+.Stackbarchart{
+   .ct-series-a {
+       .ct-bar{
+           stroke: url(#linear) !important
+       }
+   }
+   .ct-series-b {
+       .ct-bar{
+           stroke: #e9e9e9;
+       }
+   }
+}
+
+// Stack Bar Chart CSS Ends

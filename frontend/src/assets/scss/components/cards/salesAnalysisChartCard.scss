@@ -1,0 +1,38 @@
+//Line Chart 1 CSS Starts
+.lineChart1 .ct-series-a .ct-point,
+.lineChart1 .ct-series-a .ct-line,
+.lineChart1 .ct-series-a .ct-bar,
+.lineChart1 .ct-series-a .ct-slice-donut {
+   stroke: #009da0;
+}
+.lineChart1 .ct-series-b .ct-point,
+.lineChart1 .ct-series-b .ct-line,
+.lineChart1 .ct-series-b .ct-bar,
+.lineChart1 .ct-series-b .ct-slice-donut {
+   stroke: #ff8d60;
+}
+.lineChart1 .ct-series-c .ct-point,
+.lineChart1 .ct-series-c .ct-line,
+.lineChart1 .ct-series-c .ct-bar,
+.lineChart1 .ct-series-c .ct-slice-donut {
+   stroke: #ff586b;
+}
+
+.lineChart1 .ct-line {
+   fill: none;
+   stroke-width: 3px;
+}
+
+.lineChart1 .ct-point {
+   stroke-width: 0px;
+}
+
+.lineChart1Shadow {
+   margin-left: 14px;
+   -webkit-filter: drop-shadow(0px 20px 6px rgba(0, 0, 0, 0.3));
+   filter: drop-shadow(
+      0px 20px 6px rgba(0, 0, 0, 0.3)
+   ); /* Same syntax as box-shadow, except 
+                                                      for the spread property */
+}
+//Line Chart 1 CSS Ends

@@ -1,0 +1,61 @@
+@import "../../color";
+
+.menu-title {
+   line-height: 2rem;
+   margin: 5px 0;
+   display: block;
+   width: 100%;
+   overflow: hidden;
+   padding: 10px 30px 10px 14px;
+   position: relative;
+
+//    &.active {
+//       background: $transparent-bg;
+//    }
+   .menu-icon {
+      top: 9px;
+      left: 22px;
+      position: absolute;
+      svg {
+         stroke-width: 1.6;
+         color: $light;
+      }
+   }
+   .menu-item-text {
+      display: block;
+      margin-left: 40px;
+      text-decoration: none;
+      color: $light;            
+      font-size: 0.95rem;
+      font-weight: 400;
+      letter-spacing: 0.6px;
+      opacity: 1;
+      height: auto;
+      transition: width 0.3s cubic-bezier(0, 0, 0.2, 1);
+   }
+//    &:hover {
+//       background-color: $transparent-bg;
+//       cursor: pointer;
+//    }
+   .item-arrow {
+      color: $light;
+      position: absolute;
+      display: inline-block;
+      top: 9px;
+      right: 17px;
+      svg {
+         transition: all ease-in-out 0.2s;
+         stroke-width: 1.6;
+      }
+      &.right-open {
+         svg {
+            transform: rotate(90deg);
+         }
+      }
+      &.right-close {
+         svg {
+            transform: rotate(0deg);
+         }
+      }
+   }
+}

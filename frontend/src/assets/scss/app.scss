@@ -1,0 +1,10 @@
+@import "variables.scss";
+@import "../../../node_modules/bootstrap/scss/bootstrap.scss";
+@import "core/palette.scss";
+@import "app-variables.scss";
+@import "mixins.scss";
+@import "custom-bootstrap.scss";
+@import "core.scss";
+@import "plugins.scss";
+@import "customizer.scss";
+@import "demo.scss"; // Remove this SCSS from production
