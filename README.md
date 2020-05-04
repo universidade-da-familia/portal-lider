@@ -14,7 +14,7 @@
   <img alt="License" src="https://img.shields.io/badge/license-MIT-%2304D361">
 
   <a href="https://github.com/universidade-da-familia">
-    <img alt="Made by Universidade da Família" src="https://img.shields.io/badge/made%20by-Lucas%20Alves-%2304D361">
+    <img alt="Made by Universidade da Família" src="https://img.shields.io/badge/made%20by-Universidade%20da%20Familia-%2304D361">
   </a>
 
   <a href="https://github.com/universidade-da-familia/portal-lider/stargazers">
