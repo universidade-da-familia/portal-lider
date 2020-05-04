@@ -51,13 +51,13 @@ $> code .
 ```
 
 #### Back-end
-Start back-end service in backend folder
+Start back-end service in backend folder.
 ```
 $> yarn dev
 ```
 
 #### Front-end
-Start front-end service in frontend folder
+Start front-end service in frontend folder.
 ```
 $> yarn start
 ```
