@@ -1,18 +1,18 @@
 /** @type {import('@adonisjs/lucid/src/Schema')} */
 const Schema = use('Schema');
 
-class UserSchema extends Schema {
+class UsersSchema extends Schema {
   up() {
     this.create('users', table => {
       table.increments();
       table.integer('netsuite_id').unsigned();
-      table
-        .integer('church_id')
-        .unsigned()
-        .references('id')
-        .inTable('users')
-        .onUpdate('CASCADE')
-        .onDelete('SET NULL');
+      // table
+      //   .integer('church_id')
+      //   .unsigned()
+      //   .references('id')
+      //   .inTable('users')
+      //   .onUpdate('CASCADE')
+      //   .onDelete('SET NULL');
       table
         .integer('file_id')
         .unsigned()
@@ -53,6 +53,7 @@ class UserSchema extends Schema {
         .defaultTo(0);
       table.bool('user_legacy');
       table.bool('admin').defaultTo(false);
+      table.integer('afl_id').unsigned();
       table.string('token'); // Token para resetar senha
       table.timestamp('token_created_at'); // Data do token para resetar senha
       table.timestamps();
@@ -64,4 +65,4 @@ class UserSchema extends Schema {
   }
 }
 
-module.exports = UserSchema;
+module.exports = UsersSchema;

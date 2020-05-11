@@ -1,7 +1,7 @@
 /** @type {import('@adonisjs/lucid/src/Schema')} */
 const Schema = use('Schema');
 
-class KitSchema extends Schema {
+class KitsSchema extends Schema {
   up() {
     this.create('kits', table => {
       table.increments();
@@ -15,4 +15,4 @@ class KitSchema extends Schema {
   }
 }
 
-module.exports = KitSchema;
+module.exports = KitsSchema;

@@ -1,7 +1,7 @@
 /** @type {import('@adonisjs/lucid/src/Schema')} */
 const Schema = use('Schema');
 
-class CreditCardSchema extends Schema {
+class CreditCardsSchema extends Schema {
   up() {
     this.create('credit_cards', table => {
       table.increments();
@@ -26,4 +26,4 @@ class CreditCardSchema extends Schema {
   }
 }
 
-module.exports = CreditCardSchema;
+module.exports = CreditCardsSchema;
