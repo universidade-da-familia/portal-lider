@@ -1,6 +1,6 @@
 const Schema = use('Schema');
 
-class FileSchema extends Schema {
+class FilesSchema extends Schema {
   up() {
     this.create('files', table => {
       table.increments();
@@ -17,4 +17,4 @@ class FileSchema extends Schema {
   }
 }
 
-module.exports = FileSchema;
+module.exports = FilesSchema;

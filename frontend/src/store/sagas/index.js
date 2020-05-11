@@ -152,6 +152,14 @@ function* signup(action) {
       });
     }
 
+    // yield call(api.post, '/user', {
+    //   user_type: entity_company,
+    //   name,
+    //   email,
+    //   cpf_cnpj: cpf_cnpj,
+    //   password,
+    // });
+
     yield put(SignupActions.signupSuccess());
 
     if (entity_company === 'pf') {
@@ -543,6 +551,12 @@ function* editProfile(action) {
       );
     }
 
+    // if (id) {
+    //   yield call(api.put, `/user/${id}`, data);
+    // } else {
+    //   yield call(api.put, `/user/${user_id}`, data);
+    // }
+
     yield put(ProfileActions.editProfileSuccess());
     toastr.confirm('Perfil atualizado com sucesso.', {
       onOk: () => window.location.reload(),
@@ -634,6 +648,7 @@ function* consultEntity(action) {
     const { id } = action.payload;
 
     const response = yield call(api.get, `/entity/${id}`);
+    // const response = yield call(api.get, `/user/${id}`);
 
     yield put(EntityActions.entitySuccess(response.data));
   } catch (err) {
@@ -652,6 +667,7 @@ function* consultEntityCpf(action) {
     const { cpf, profile_id } = action.payload;
 
     const response = yield call(api.get, `/entity/cpf/${cpf}/${profile_id}`);
+    // const response = yield call(api.get, `/user/cpf/${cpf}/${profile_id}`);
 
     yield put(EntityActions.entityCpfSuccess(response.data));
   } catch (err) {
@@ -892,6 +908,14 @@ function* createByInviteParticipant(action) {
       sex,
       password,
     });
+
+    // const response = yield call(api.post, '/user', {
+    //   name,
+    //   cpf_cnpj,
+    //   email,
+    //   sex,
+    //   password,
+    // });
 
     const entity_id = response.data.id;
     yield put(ParticipantActions.createParticipantSuccess());
@@ -1145,6 +1169,14 @@ function* createParticipant(action) {
       sex,
       password,
     });
+
+    // const response = yield call(api.post, '/user', {
+    //   name,
+    //   cpf_cnpj,
+    //   email,
+    //   sex,
+    //   password,
+    // });
 
     if (response.data.id) {
       const entity_id = response.data.id;
@@ -1729,6 +1761,10 @@ function* addOrder(action) {
       { phone: formattedPhone }
     );
 
+    // const response_user = yield call(
+    //   api.put,`/user/${user_id}`, { phone: formattedPhone }
+    // );
+
     if (response_user.data.id) {
       delete data.shipping_address.phone;
 
@@ -2251,6 +2287,14 @@ function* createRelationship(action) {
       password,
     });
 
+    // const response = yield call(api.post, '/user', {
+    //   name,
+    //   cpf_cnpj,
+    //   email,
+    //   sex,
+    //   password,
+    // });
+
     if (response.data.id) {
       const relationship_id = response.data.id;
       yield put(RelationshipActions.createRelationshipSuccess());
@@ -2336,6 +2380,18 @@ function* editOrganization(action) {
         data
       );
     }
+
+    // if (id) {
+    //   yield call(api.put, `/user/pj/${id}`, data);
+    // } else {
+    //   yield call(
+    //     api.put,
+    //     `${
+    //       user_type === 'entity' ? `/user/pf/${user_id}` : `/user/pj/${user_id}`
+    //     }`,
+    //     data
+    //   );
+    // }
 
     yield put(OrganizationActions.editOrganizationSuccess());
     toastr.confirm('Perfil atualizado com sucesso.', {
