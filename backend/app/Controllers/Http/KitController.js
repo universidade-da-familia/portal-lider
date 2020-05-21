@@ -4,13 +4,10 @@
 
 const Kit = use('App/Models/Kit');
 
-/**
- * Resourceful controller for interacting with kits
- */
 class KitController {
   /**
-   * Show a list of all kits.
-   * GET kits
+   * Show a list of all users.
+   * GET users
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -24,8 +21,8 @@ class KitController {
   }
 
   /**
-   * Create/save a new kit.
-   * POST kits
+   * Create/save a new user.
+   * POST users
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -46,8 +43,8 @@ class KitController {
   }
 
   /**
-   * Display a single kit.
-   * GET kits/:id
+   * Display a single user.
+   * GET users/:id
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -63,8 +60,8 @@ class KitController {
   }
 
   /**
-   * Update kit details.
-   * PUT or PATCH kits/:id
+   * Update user details.
+   * PUT or PATCH users/:id
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -91,6 +88,7 @@ class KitController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
+          title: 'Falha!',
           message: 'Tente atualizar novamente',
         },
       });
@@ -98,8 +96,8 @@ class KitController {
   }
 
   /**
-   * Delete a kit with id.
-   * DELETE kits/:id
+   * Delete a user with id.
+   * DELETE users/:id
    *
    * @param {object} ctx
    * @param {Request} ctx.request
@@ -112,11 +110,13 @@ class KitController {
       await kit.delete();
 
       return response.status(200).send({
+        title: 'Sucesso!',
         message: 'O kit foi removido.',
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
+          title: 'Falha!',
           message: 'Tente remover novamente',
         },
       });

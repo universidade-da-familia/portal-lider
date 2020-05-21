@@ -41,6 +41,7 @@ class MinisteryController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
+          title: 'Falha!',
           message: 'Erro ao criar o ministério',
         },
       });
@@ -84,6 +85,7 @@ class MinisteryController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
+          title: 'Falha!',
           message: 'Erro ao atualizar o ministério',
         },
       });
@@ -105,11 +107,13 @@ class MinisteryController {
       await ministery.delete();
 
       return response.status(200).send({
+        title: 'Sucesso!',
         message: 'O ministério foi removido.',
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
+          title: 'Falha!',
           message: 'Erro ao deletar o ministério',
         },
       });

@@ -75,14 +75,31 @@ function AdminTableOrganizations({ data, reload }) {
 
       setExcelData(
         excel_data.map(organization => {
+          let formattedPhone = null;
+          let formattedAltPhone = null;
+
+          if (organization.phone !== null) {
+            formattedPhone = organization.phone
+              .replace(/\D/g, '')
+              .replace(/^(\d{2})(\d)/g, '($1) $2')
+              .replace(/(\d)(\d{4})$/, '$1-$2');
+          }
+
+          if (organization.alt_phone !== null) {
+            formattedAltPhone = organization.alt_phone
+              .replace(/\D/g, '')
+              .replace(/^(\d{2})(\d)/g, '($1) $2')
+              .replace(/(\d)(\d{4})$/, '$1-$2');
+          }
+
           return {
             id: organization.id,
             name: organization.corporate_name,
             email: organization.email,
             cnpj: organization.cnpj,
             foundation: organization.foundation,
-            phone: organization.phone,
-            alt_phone: organization.alt_phone,
+            phone: formattedPhone,
+            alt_phone: formattedAltPhone,
             facebook: organization.facebook,
             instagram: organization.instagram,
             linkedin: organization.linkedin,
@@ -199,7 +216,18 @@ function AdminTableOrganizations({ data, reload }) {
           {
             Header: 'Telefone',
             id: 'phone',
-            accessor: d => d.phone,
+            accessor: d => {
+              let formattedPhoneTable = null;
+
+              if (d.phone !== null) {
+                formattedPhoneTable = d.phone
+                  .replace(/\D/g, '')
+                  .replace(/^(\d{2})(\d)/g, '($1) $2')
+                  .replace(/(\d)(\d{4})$/, '$1-$2');
+              }
+
+              return formattedPhoneTable;
+            },
           },
         ]}
         getTdProps={(state, rowInfo, column) => {

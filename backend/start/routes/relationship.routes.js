@@ -10,4 +10,6 @@ Route.group(() => {
   Route.put('/:id', 'RelationshipController.update');
   // Delete one relationship
   Route.delete('/:id', 'RelationshipController.destroy');
+  //
+  Route.get('/user/:user_id', 'RelationshipController.indexUser');
 }).prefix('/relationships');
