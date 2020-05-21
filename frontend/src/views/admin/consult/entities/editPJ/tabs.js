@@ -223,6 +223,16 @@ export default function OrganizationTabs({ match }) {
       alt_phone: formattedAltPhone,
     };
 
+    // const toSend = {
+    //   organization_id: parseInt(match.params.id, 10),
+    //   name: values.corporate_name,
+    //   fantasy_name: values.fantasy_name,
+    //   inscricao_estadual: values.inscricao_estadual,
+    //   birthday: values.foundation,
+    //   phone: formattedPhone,
+    //   alt_phone: formattedAltPhone,
+    // };
+
     if (values.email !== data.email) {
       toSend.email = values.email;
     }
@@ -231,6 +241,7 @@ export default function OrganizationTabs({ match }) {
     }
 
     dispatch(OrganizationActions.editOrganizationRequest(toSend));
+    // dispatch(UserActions.editUserRequest(toSend));
   }
 
   function handleUpdateAddress(values) {

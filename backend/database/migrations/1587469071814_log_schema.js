@@ -12,9 +12,9 @@ class LogSchema extends Schema {
         .integer('user_id')
         .unsigned()
         .references('id')
-        .inTable('user')
+        .inTable('users')
         .onUpdate('CASCADE')
-        .onDelete('CASCADE');
+        .onDelete('SET NULL');
       table.integer('model_id').unsigned();
       table.string('description', 254);
       table.timestamps();

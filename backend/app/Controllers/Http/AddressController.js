@@ -4,7 +4,8 @@
 
 const Database = use('Database');
 const Address = use('App/Models/Address');
-const User = use('App/Models/User');
+const Entity = use('App/Models/Entity');
+const Organization = use('App/Models/Organization');
 const Log = use('App/Models/Log');
 
 const Kue = use('Kue');
@@ -35,7 +36,7 @@ class AddressController {
    * @param {View} ctx.view
    */
   async index() {
-    const address = await Address.query().with('user').fetch();
+    const address = await Address.query().with('entity').fetch();
 
     return address;
   }
@@ -50,9 +51,15 @@ class AddressController {
    */
   async store({ request, response }) {
     try {
-      // LEMBRAR DE TIRAR O USER TYPE NO SAGA E DUCKS
-      const { user_netsuite_id, addressesPost, addressesPut } = request.only([
-        'user_netsuite_id',
+      let user;
+      const {
+        netsuite_id,
+        user_type,
+        addressesPost,
+        addressesPut,
+      } = request.only([
+        'netsuite_id',
+        'user_type',
         'addressesPost',
         'addressesPut',
       ]);
@@ -78,10 +85,11 @@ class AddressController {
 
       trx.commit();
 
-      const user = await User.findByOrFail(
-        'user_netsuite_id',
-        user_netsuite_id,
-      );
+      if (user_type === 'entity') {
+        user = await Entity.findByOrFail('netsuite_id', netsuite_id);
+      } else {
+        user = await Organization.findByOrFail('netsuite_id', netsuite_id);
+      }
 
       await user.load('addresses');
 
@@ -89,7 +97,7 @@ class AddressController {
 
       Kue.dispatch(
         Job.key,
-        { user_netsuite_id, netsuiteAddresses },
+        { netsuite_id, netsuiteAddresses },
         { attempts: 5 },
       );
 
@@ -110,13 +118,13 @@ class AddressController {
       }
 
       return response.status(200).send({
+        title: 'Sucesso!',
         message: 'Seus endereços foram atualizados.',
       });
     } catch (err) {
       return response.status(err.status).send({
-        error: {
-          message: 'Erro ao atualizar os endereços',
-        },
+        title: 'Falha!',
+        message: 'Erro ao atualizar os endereços',
       });
     }
   }
@@ -134,13 +142,80 @@ class AddressController {
     try {
       const address = await Address.findOrFail(params.id);
 
-      await address.loadMany('user');
+      await address.loadMany(['entity', 'organization']);
 
       return address;
     } catch (err) {
       return response.status(err.status).send({
         error: {
+          title: 'Falha!',
           message: 'Erro ao mostrar o endereço',
+        },
+      });
+    }
+  }
+
+  /**
+   * Update address details.
+   * PUT or PATCH addresses/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   */
+  async update({ params, request, response }) {
+    try {
+      const {
+        entity_id,
+        organization_id,
+        type,
+        cep,
+        city,
+        uf,
+        country,
+        street,
+        street_number,
+        neighborhood,
+        complement,
+        receiver,
+      } = request.only([
+        'entity_id',
+        'organization_id',
+        'type',
+        'cep',
+        'city',
+        'uf',
+        'country',
+        'street',
+        'street_number',
+        'neighborhood',
+        'complement',
+        'receiver',
+      ]);
+
+      const address = await Address.findOrFail(params.id);
+
+      address.entity_id = entity_id || address.entity_id;
+      address.organization_id = organization_id || address.organization_id;
+      address.type = type || address.type;
+      address.cep = cep || address.cep;
+      address.city = city || address.city;
+      address.uf = uf || address.uf;
+      address.country = country || address.country;
+      address.street = street || address.street;
+      address.street_number = street_number || address.street_number;
+      address.neighborhood = neighborhood || address.neighborhood;
+      address.complement = complement || address.complement;
+      address.receiver = receiver || address.receiver;
+
+      await address.save();
+
+      return address;
+    } catch (err) {
+      return response.status(err.status).send({
+        error: {
+          title: 'Falha!',
+          message: 'Erro ao atualizar o endereço',
         },
       });
     }
@@ -167,11 +242,13 @@ class AddressController {
       );
 
       return response.status(200).send({
+        title: 'Sucesso!',
         message: 'O endereço foi removido.',
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
+          title: 'Falha!',
           message: 'Erro ao deletar o endereço',
         },
       });

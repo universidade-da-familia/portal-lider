@@ -44,7 +44,7 @@ class UserController {
           this.where('id', filterData.id);
         }
         if (filterData.cpf !== '') {
-          this.where('cpf', filterData.cpf);
+          this.where('cpf_cnpj', filterData.cpf);
         }
         if (filterData.email !== '') {
           this.where('email', filterData.email);

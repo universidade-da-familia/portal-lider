@@ -1,23 +1,30 @@
-/** @typedef {import('@adonisjs/framework/src/Request')} Request */
-/** @typedef {import('@adonisjs/framework/src/Response')} Response */
-/** @typedef {import('@adonisjs/framework/src/View')} View */
-
 const Drive = use('Drive');
 const File = use('App/Models/File');
-const User = use('App/Models/User');
+const Entity = use('App/Models/Entity');
+const Organization = use('App/Models/Organization');
 
-/**
- * Resourceful controller for interacting with files
- */
 class FileController {
-  /**
-   * Create/save a new file.
-   * POST files
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
+  async show({ params, response }) {
+    try {
+      const { id } = params;
+      const file = await File.findOrFail(id);
+
+      response.implicitEnd = false;
+      response.header('Content-Type', file.type);
+
+      const stream = await Drive.getStream(file.file);
+
+      stream.pipe(response.response);
+    } catch (err) {
+      return response.status(err.status).send({
+        error: {
+          message: 'Arquivo não existe!',
+          err_message: err.message,
+        },
+      });
+    }
+  }
+
   async store({ request, response, params }) {
     request.multipart.file(
       'file',
@@ -41,27 +48,31 @@ class FileController {
           const dbFile = await File.create({
             file: Key,
             name: file.clientName,
-            type: ContentType,
             url,
+            type: ContentType,
+            subtype: file.subtype,
           });
 
-          const user = await User.findOrFail(params.user_id);
+          if (params.type === 'entity') {
+            const entity = await Entity.findOrFail(params.user_id);
 
-          if (user.file_id) {
-            await user.load('file');
+            entity.file_id = dbFile.id || entity.file_id;
 
-            await Drive.delete(user.file.file);
+            await entity.save();
+          } else {
+            const organization = await Organization.findOrFail(params.user_id);
+
+            organization.file_id = dbFile.id || organization.file_id;
+
+            await organization.save();
           }
 
-          user.file_id = dbFile.id || user.file_id;
-
-          await user.save();
-
-          return file;
+          return response.status(200).send(file);
         } catch (err) {
           return response.status(err.status).send({
             error: {
-              message: 'Falha ao criar/atualizar o arquivo.',
+              message: 'Não foi possível enviar o arquivo!',
+              err_message: err.message,
             },
           });
         }
@@ -71,45 +82,6 @@ class FileController {
     await request.multipart.process();
   }
 
-  /**
-   * Display a single file.
-   * GET files/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async show({ params, response }) {
-    try {
-      const { id } = params;
-      const file = await File.findOrFail(id);
-
-      response.implicitEnd = false;
-      response.header('Content-Type', file.type);
-
-      const stream = await Drive.getStream(file.file);
-
-      stream.pipe(response.response);
-
-      return stream;
-    } catch (err) {
-      return response.status(err.status).send({
-        error: {
-          message: 'Arquivo não existe.',
-        },
-      });
-    }
-  }
-
-  /**
-   * Delete a file with id.
-   * DELETE files/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
   async destroy({ params, response }) {
     try {
       const { id } = params;
@@ -119,13 +91,14 @@ class FileController {
 
       await file.delete();
 
-      return response.status(201).send({
-        message: 'Imagem removida com sucesso.',
+      return response.status(200).send({
+        message: 'A imagem foi removida.',
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          message: 'O arquivo não pode ser removido ou não existe.',
+          message: 'O arquivo não existe',
+          err_message: err.message,
         },
       });
     }

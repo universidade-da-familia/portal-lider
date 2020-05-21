@@ -1,34 +1,32 @@
 /** @type {import('@adonisjs/lucid/src/Schema')} */
 const Schema = use('Schema');
 
-class RelationshipSchema extends Schema {
+class KitProductsSchema extends Schema {
   up() {
-    this.create('relationships', table => {
+    this.create('kit_products', table => {
       table.increments();
       table
-        .integer('user_id')
+        .integer('kit_id')
         .unsigned()
-        .notNullable()
         .references('id')
-        .inTable('users')
+        .inTable('kits')
         .onUpdate('CASCADE')
         .onDelete('CASCADE');
       table
-        .integer('relationship_id')
+        .integer('product_id')
         .unsigned()
-        .notNullable()
         .references('id')
-        .inTable('users')
+        .inTable('products')
         .onUpdate('CASCADE')
         .onDelete('CASCADE');
-      table.string('relationship_type', 254).notNullable();
+      table.unique(['kit_id', 'product_id']);
       table.timestamps();
     });
   }
 
   down() {
-    this.drop('relationships');
+    this.drop('kit_products');
   }
 }
 
-module.exports = RelationshipSchema;
+module.exports = KitProductsSchema;
