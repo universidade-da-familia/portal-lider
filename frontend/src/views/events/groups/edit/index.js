@@ -1432,14 +1432,11 @@ export default function UserProfile({ match, className }) {
                 </div>
                 <div className="align-self-start col-md-1 d-none d-sm-none d-md-none d-lg-block" />
                 <div className="align-self-center col-md-7">
-                  <h1 className="text-center font-large-1 font-weight-bold text-white text-uppercase text-wrap">
-                    ID: {event_data.id}
-                    <br />
+                  <h1 className="text-center font-medium-5 font-weight-bold text-white text-uppercase text-wrap">
                     {event_data.defaultEvent.event_type}:{' '}
                     {event_data.defaultEvent.name}
                   </h1>
-                  <br />
-                  <h4 className="text-center font-weight-bold text-white text-uppercase text-wrap">
+                  <h4 className="text-center font-medium-4 text-white text-uppercase text-wrap">
                     Inicio do grupo:{' '}
                     {moment(event_data.start_date).format('DD/MM/YYYY')}
                   </h4>

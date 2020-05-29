@@ -44,7 +44,7 @@ export default function Faq() {
         <Col xs="12">
           <Card className="gradient-purple-bliss white text-center p-4">
             <CardHeader className="p-0">
-              <h1>Perguntas frequentes portal do líder</h1>
+              <h1>Dúvidas frequentes portal do líder</h1>
               <p className="mb-5">
                 <em>Como podemos ajudá-lo?</em>
               </p>

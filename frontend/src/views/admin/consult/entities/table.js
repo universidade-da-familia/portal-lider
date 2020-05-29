@@ -166,6 +166,23 @@ function AdminTableEntities({ data, reload }) {
 
       setExcelData(
         excel_data.map(entity => {
+          let formattedPhone = null;
+          let formattedAltPhone = null;
+
+          if (entity.phone !== null) {
+            formattedPhone = entity.phone
+              .replace(/\D/g, '')
+              .replace(/^(\d{2})(\d)/g, '($1) $2')
+              .replace(/(\d)(\d{4})$/, '$1-$2');
+          }
+
+          if (entity.alt_phone !== null) {
+            formattedAltPhone = entity.alt_phone
+              .replace(/\D/g, '')
+              .replace(/^(\d{2})(\d)/g, '($1) $2')
+              .replace(/(\d)(\d{4})$/, '$1-$2');
+          }
+
           return {
             id: entity.id,
             name: entity.name,
@@ -173,8 +190,8 @@ function AdminTableEntities({ data, reload }) {
             cpf: entity.cpf,
             birthday: entity.birthday,
             sex: entity.sex,
-            phone: entity.phone,
-            alt_phone: entity.alt_phone,
+            phone: formattedPhone,
+            alt_phone: formattedAltPhone,
             facebook: entity.facebook,
             instagram: entity.instagram,
             linkedin: entity.linkedin,
@@ -343,7 +360,18 @@ function AdminTableEntities({ data, reload }) {
           {
             Header: 'Telefone',
             id: 'phone',
-            accessor: d => d.phone,
+            accessor: d => {
+              let formattedPhoneTable = null;
+
+              if (d.phone !== null) {
+                formattedPhoneTable = d.phone
+                  .replace(/\D/g, '')
+                  .replace(/^(\d{2})(\d)/g, '($1) $2')
+                  .replace(/(\d)(\d{4})$/, '$1-$2');
+              }
+
+              return formattedPhoneTable;
+            },
           },
         ]}
         getTdProps={(state, rowInfo, column) => {
