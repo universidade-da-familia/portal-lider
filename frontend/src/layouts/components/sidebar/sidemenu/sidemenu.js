@@ -83,8 +83,6 @@ export default function SideMenuContent({
             <HelpCircle size={18} />
           </i>
           <span className="menu-item-text">Dúvidas</span>
-          <br></br>
-          <span className="ml-4 menu-item-text">Frequentes</span>
         </NavLink>
       </SideMenu.MenuSingleItem>
 
