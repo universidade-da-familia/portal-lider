@@ -1,8 +1,10 @@
+"use strict";
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Category = use('App/Models/Category');
+const Category = use("App/Models/Category");
 
 class CategoryController {
   /**
@@ -30,7 +32,7 @@ class CategoryController {
    */
   async store({ request, response }) {
     try {
-      const data = request.only(['name']);
+      const data = request.only(["name"]);
 
       const category = await Category.create(data);
 
@@ -38,9 +40,9 @@ class CategoryController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente cadastrar novamente',
-        },
+          title: "Falha!",
+          message: "Tente cadastrar novamente"
+        }
       });
     }
   }
@@ -62,9 +64,9 @@ class CategoryController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Nenhuma categoria encontrada.',
-        },
+          title: "Falha!",
+          message: "Nenhuma categoria encontrada."
+        }
       });
     }
   }
@@ -91,9 +93,9 @@ class CategoryController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente atualizar novamente',
-        },
+          title: "Falha!",
+          message: "Tente atualizar novamente"
+        }
       });
     }
   }
@@ -113,15 +115,15 @@ class CategoryController {
       await category.delete();
 
       return response.status(200).send({
-        title: 'Sucesso!',
-        message: 'A categoria foi removida.',
+        title: "Sucesso!",
+        message: "A categoria foi removida."
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro a categoria',
-        },
+          title: "Falha!",
+          message: "Erro a categoria"
+        }
       });
     }
   }

@@ -1,8 +1,10 @@
+"use strict";
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Ministery = use('App/Models/Ministery');
+const Ministery = use("App/Models/Ministery");
 
 /**
  * Resourceful controller for interacting with ministeries
@@ -18,7 +20,9 @@ class MinisteryController {
    * @param {View} ctx.view
    */
   async index() {
-    const ministery = await Ministery.query().orderBy('id').fetch();
+    const ministery = await Ministery.query()
+      .orderBy("id")
+      .fetch();
 
     return ministery;
   }
@@ -33,7 +37,7 @@ class MinisteryController {
    */
   async store({ request, response }) {
     try {
-      const data = request.only(['name']);
+      const data = request.only(["name"]);
 
       const ministery = await Ministery.create(data);
 
@@ -41,9 +45,9 @@ class MinisteryController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao criar o ministério',
-        },
+          title: "Falha!",
+          message: "Erro ao criar o ministério"
+        }
       });
     }
   }
@@ -57,7 +61,7 @@ class MinisteryController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show({ params }) {
+  async show({ params, response }) {
     const ministery = await Ministery.findOrFail(params.id);
 
     return ministery;
@@ -73,7 +77,7 @@ class MinisteryController {
    */
   async update({ params, request, response }) {
     try {
-      const data = request.only(['name']);
+      const data = request.only(["name"]);
 
       const ministery = await Ministery.findOrFail(params.id);
 
@@ -85,9 +89,9 @@ class MinisteryController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao atualizar o ministério',
-        },
+          title: "Falha!",
+          message: "Erro ao atualizar o ministério"
+        }
       });
     }
   }
@@ -107,15 +111,15 @@ class MinisteryController {
       await ministery.delete();
 
       return response.status(200).send({
-        title: 'Sucesso!',
-        message: 'O ministério foi removido.',
+        title: "Sucesso!",
+        message: "O ministério foi removido."
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao deletar o ministério',
-        },
+          title: "Falha!",
+          message: "Erro ao deletar o ministério"
+        }
       });
     }
   }

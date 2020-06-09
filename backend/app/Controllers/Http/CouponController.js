@@ -1,8 +1,10 @@
+"use strict";
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Coupon = use('App/Models/Coupon');
+const Coupon = use("App/Models/Coupon");
 
 class CouponController {
   /**
@@ -30,7 +32,7 @@ class CouponController {
    */
   async store({ request, response }) {
     try {
-      const data = request.only(['name', 'percent']);
+      const data = request.only(["name", "percent"]);
 
       const coupon = await Coupon.create(data);
 
@@ -38,9 +40,9 @@ class CouponController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente cadastrar novamente',
-        },
+          title: "Falha!",
+          message: "Tente cadastrar novamente"
+        }
       });
     }
   }
@@ -62,9 +64,9 @@ class CouponController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Nenhum cupom encontrado.',
-        },
+          title: "Falha!",
+          message: "Nenhum cupom encontrado."
+        }
       });
     }
   }
@@ -91,9 +93,9 @@ class CouponController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente atualizar novamente',
-        },
+          title: "Falha!",
+          message: "Tente atualizar novamente"
+        }
       });
     }
   }
@@ -113,15 +115,15 @@ class CouponController {
       await coupon.delete();
 
       return response.status(200).send({
-        title: 'Sucesso!',
-        message: 'O cupom foi removido.',
+        title: "Sucesso!",
+        message: "O cupom foi removido."
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao excluir o cupom',
-        },
+          title: "Falha!",
+          message: "Erro ao excluir o cupom"
+        }
       });
     }
   }

@@ -1,8 +1,10 @@
+'use strict'
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Lesson = use('App/Models/Lesson');
+const Lesson = use('App/Models/Lesson')
 
 class LessonController {
   /**
@@ -14,10 +16,12 @@ class LessonController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index() {
-    const lessons = await Lesson.query().with('defaultEvent.ministery').fetch();
+  async index () {
+    const lessons = await Lesson.query()
+      .with('defaultEvent.ministery')
+      .fetch()
 
-    return lessons;
+    return lessons
   }
 
   /**
@@ -28,26 +32,26 @@ class LessonController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({ request, response }) {
+  async store ({ request, response }) {
     try {
       const data = request.only([
         'default_event_id',
         'title',
         'description',
         'video_id',
-        'img_url',
-      ]);
+        'img_url'
+      ])
 
-      const lesson = await Lesson.create(data);
+      const lesson = await Lesson.create(data)
 
-      return lesson;
+      return lesson
     } catch (err) {
       return response.status(err.status).send({
         error: {
           title: 'Falha!',
-          message: 'Tente cadastrar novamente',
-        },
-      });
+          message: 'Tente cadastrar novamente'
+        }
+      })
     }
   }
 
@@ -60,12 +64,12 @@ class LessonController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show({ params }) {
-    const lesson = await Lesson.findOrFail(params.id);
+  async show ({ params }) {
+    const lesson = await Lesson.findOrFail(params.id)
 
-    await lesson.load('defaultEvent');
+    await lesson.load('defaultEvent')
 
-    return lesson;
+    return lesson
   }
 
   /**
@@ -76,30 +80,30 @@ class LessonController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({ params, request, response }) {
+  async update ({ params, request, response }) {
     try {
       const data = request.only([
         'default_event_id',
         'title',
         'description',
         'video_id',
-        'img_url',
-      ]);
+        'img_url'
+      ])
 
-      const lesson = await Lesson.findOrFail(params.id);
+      const lesson = await Lesson.findOrFail(params.id)
 
-      lesson.merge(data);
+      lesson.merge(data)
 
-      await lesson.save();
+      await lesson.save()
 
-      return lesson;
+      return lesson
     } catch (err) {
       return response.status(err.status).send({
         error: {
           title: 'Falha!',
-          message: 'Tente atualizar novamente',
-        },
-      });
+          message: 'Tente atualizar novamente'
+        }
+      })
     }
   }
 
@@ -111,25 +115,25 @@ class LessonController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy({ params, response }) {
+  async destroy ({ params, response }) {
     try {
-      const lesson = await Lesson.findOrFail(params.id);
+      const lesson = await Lesson.findOrFail(params.id)
 
-      await lesson.delete();
+      await lesson.delete()
 
       return response.status(200).send({
         title: 'Sucesso!',
-        message: 'A lição foi removida.',
-      });
+        message: 'A lição foi removida.'
+      })
     } catch (err) {
       return response.status(err.status).send({
         error: {
           title: 'Falha!',
-          message: 'Tente remover novamente',
-        },
-      });
+          message: 'Tente remover novamente'
+        }
+      })
     }
   }
 }
 
-module.exports = LessonController;
+module.exports = LessonController

@@ -1,8 +1,10 @@
+"use strict";
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const LayoutCertificate = use('App/Models/LayoutCertificate');
+const LayoutCertificate = use("App/Models/LayoutCertificate");
 
 /**
  * Resourceful controller for interacting with layoutcertificates
@@ -34,14 +36,14 @@ class LayoutCertificateController {
   async store({ request, response }) {
     try {
       const data = request.only([
-        'content_justify',
-        'content_align',
-        'name_margin',
-        'name_font_family',
-        'name_font_size',
-        'emission_margin',
-        'emission_font_family',
-        'emission_font_size',
+        "content_justify",
+        "content_align",
+        "name_margin",
+        "name_font_family",
+        "name_font_size",
+        "emission_margin",
+        "emission_font_family",
+        "emission_font_size"
       ]);
 
       const layoutCertificate = await LayoutCertificate.create(data);
@@ -50,9 +52,9 @@ class LayoutCertificateController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao criar o layout do certificado',
-        },
+          title: "Falha!",
+          message: "Erro ao criar o layout do certificado"
+        }
       });
     }
   }
@@ -74,9 +76,9 @@ class LayoutCertificateController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao mostrar o layout do certificado',
-        },
+          title: "Falha!",
+          message: "Erro ao mostrar o layout do certificado"
+        }
       });
     }
   }
@@ -92,14 +94,14 @@ class LayoutCertificateController {
   async update({ params, request, response }) {
     try {
       const data = request.only([
-        'content_justify',
-        'content_align',
-        'name_margin',
-        'name_font_family',
-        'name_font_size',
-        'emission_margin',
-        'emission_font_family',
-        'emission_font_size',
+        "content_justify",
+        "content_align",
+        "name_margin",
+        "name_font_family",
+        "name_font_size",
+        "emission_margin",
+        "emission_font_family",
+        "emission_font_size"
       ]);
 
       const layoutCertificate = await LayoutCertificate.findOrFail(params.id);
@@ -112,9 +114,9 @@ class LayoutCertificateController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao atualizar o layout do certificado',
-        },
+          title: "Falha!",
+          message: "Erro ao atualizar o layout do certificado"
+        }
       });
     }
   }
@@ -134,15 +136,15 @@ class LayoutCertificateController {
       await layoutCertificate.delete();
 
       return response.status(200).send({
-        title: 'Sucesso!',
-        message: 'O layout do certificado foi removido.',
+        title: "Sucesso!",
+        message: "O layout do certificado foi removido."
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao deletar o layout do certificado',
-        },
+          title: "Falha!",
+          message: "Erro ao deletar o layout do certificado"
+        }
       });
     }
   }

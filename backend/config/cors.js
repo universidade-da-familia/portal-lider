@@ -1,4 +1,6 @@
-const Env = use('Env');
+'use strict'
+
+const Env = use('Env')
 
 module.exports = {
   /*
@@ -19,10 +21,10 @@ module.exports = {
   origin:
     Env.get('NODE_ENV') === 'production'
       ? [
-          'http://lider.udf.org.br',
-          'https://lider.udf.org.br',
-          'https://5260046.app.netsuite.com',
-        ]
+        'http://lider.udf.org.br',
+        'https://lider.udf.org.br',
+        'https://5260046.app.netsuite.com'
+      ]
       : true,
 
   /*
@@ -90,5 +92,5 @@ module.exports = {
   | Define Access-Control-Allow-Max-Age
   |
   */
-  maxAge: 90,
-};
+  maxAge: 90
+}

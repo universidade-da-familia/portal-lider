@@ -1,8 +1,10 @@
+"use strict";
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Hierarchy = use('App/Models/Hierarchy');
+const Hierarchy = use("App/Models/Hierarchy");
 
 class HierarchyController {
   /**
@@ -30,7 +32,7 @@ class HierarchyController {
    */
   async store({ request, response }) {
     try {
-      const data = request.only(['name']);
+      const data = request.only(["name"]);
 
       const hierarchy = await Hierarchy.create(data);
 
@@ -38,9 +40,9 @@ class HierarchyController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente cadastrar novamente',
-        },
+          title: "Falha!",
+          message: "Tente cadastrar novamente"
+        }
       });
     }
   }
@@ -68,9 +70,9 @@ class HierarchyController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({ params, request, response }) {
+  async update({ params, request }) {
     try {
-      const data = request.only(['name']);
+      const data = request.only(["name"]);
 
       const hierarchy = await Hierarchy.findOrFail(params.id);
 
@@ -82,9 +84,9 @@ class HierarchyController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente atualizar novamente',
-        },
+          title: "Falha!",
+          message: "Tente atualizar novamente"
+        }
       });
     }
   }
@@ -104,15 +106,15 @@ class HierarchyController {
       await hierarchy.delete();
 
       return response.status(200).send({
-        title: 'Sucesso!',
-        message: 'A hierarquia foi removida.',
+        title: "Sucesso!",
+        message: "A hierarquia foi removida."
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente remover novamente',
-        },
+          title: "Falha!",
+          message: "Tente remover novamente"
+        }
       });
     }
   }

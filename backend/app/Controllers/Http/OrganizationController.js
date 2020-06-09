@@ -1,10 +1,12 @@
+'use strict'
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Organization = use('App/Models/Organization');
+const Organization = use('App/Models/Organization')
 
-const ConvertUnicode = use('App/Controllers/Http/Validations/ConvertUnicode');
+const ConvertUnicode = use('App/Controllers/Http/Validations/ConvertUnicode')
 
 /**
  * Resourceful controller for interacting with organizations
@@ -19,10 +21,10 @@ class OrganizationController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index() {
-    const organization = await Organization.all();
+  async index () {
+    const organization = await Organization.all()
 
-    return organization;
+    return organization
   }
 
   /**
@@ -34,99 +36,93 @@ class OrganizationController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async indexPaginate({ request }) {
-    const { page, filterData } = request.only(['page', 'filterData']);
+  async indexPaginate ({ request }) {
+    const { page, filterData } = request.only(['page', 'filterData'])
 
-    const { perPage } = filterData;
+    const { perPage } = filterData
 
     const organizations = await Organization.query()
       .with('addresses')
       .with('events.defaultEvent.ministery')
       .where(function () {
-        const currentDate = new Date();
-        const [start_date] = filterData.start_date.split('T');
-        const [end_date] = filterData.end_date.split('T');
-        const [, ministery_id] = filterData.ministery.split('/');
+        const currentDate = new Date()
+        const [start_date] = filterData.start_date.split('T')
+        const [end_date] = filterData.end_date.split('T')
+        const [, ministery_id] = filterData.ministery.split('/')
 
         if (filterData.id !== '') {
-          this.where('id', filterData.id);
+          this.where('id', filterData.id)
         }
         if (filterData.cnpj !== '') {
-          this.where('cnpj', filterData.cnpj);
+          this.where('cnpj', filterData.cnpj)
         }
         if (filterData.email !== '') {
-          this.where('email', filterData.email);
+          this.where('email', filterData.email)
         }
 
         // busca dados endereço entidade
         if (filterData.cep !== '') {
           this.whereHas('addresses', builder => {
-            builder.where('cep', filterData.cep);
-          });
+            builder.where('cep', filterData.cep)
+          })
         }
         if (filterData.uf !== '') {
           this.whereHas('addresses', builder => {
-            builder.whereRaw(
-              "LOWER(uf) like '%' || LOWER(?) || '%'",
-              filterData.uf,
-            );
-          });
+            builder.whereRaw("LOWER(uf) like '%' || LOWER(?) || '%'", filterData.uf)
+          })
         }
         if (filterData.city !== '') {
           this.whereHas('addresses', builder => {
-            builder.whereRaw(
-              "LOWER(city) like '%' || LOWER(?) || '%'",
-              filterData.city,
-            );
-          });
+            builder.whereRaw("LOWER(city) like '%' || LOWER(?) || '%'", filterData.city)
+          })
         }
 
         if (filterData.collapse) {
-          this.whereHas('events');
+          this.whereHas('events')
 
           if (filterData.ministery !== '') {
             this.whereHas('events.defaultEvent', builder => {
-              builder.where('ministery_id', ministery_id);
-            });
+              builder.where('ministery_id', ministery_id)
+            })
           }
           if (filterData.default_event_id) {
             this.whereHas('events', builder => {
-              builder.where('default_event_id', filterData.default_event_id);
-            });
+              builder.where('default_event_id', filterData.default_event_id)
+            })
           }
           if (filterData.status === 'Finalizado') {
             this.whereHas('events', builder => {
-              builder.where('is_finished', true);
-            });
+              builder.where('is_finished', true)
+            })
           }
           if (filterData.status === 'Não iniciado') {
             this.whereHas('events', builder => {
-              builder.where('start_date', '>', currentDate);
-              builder.where('is_finished', false);
-            });
+              builder.where('start_date', '>', currentDate)
+              builder.where('is_finished', false)
+            })
           }
           if (filterData.status === 'Em andamento') {
             this.whereHas('events', builder => {
-              builder.where('start_date', '<=', currentDate);
-              builder.where('is_finished', false);
-            });
+              builder.where('start_date', '<=', currentDate)
+              builder.where('is_finished', false)
+            })
           }
           if (start_date) {
             this.whereHas('events', builder => {
-              builder.where('start_date', '>=', start_date);
-            });
+              builder.where('start_date', '>=', start_date)
+            })
           }
           if (end_date) {
             this.whereHas('events', builder => {
-              builder.where('start_date', '<=', end_date);
-            });
+              builder.where('start_date', '<=', end_date)
+            })
           }
         }
       })
       .orderBy('id', 'asc')
-      .paginate(page, perPage);
+      .paginate(page, perPage)
 
-    return organizations;
+    return organizations
   }
 
   /**
@@ -138,104 +134,98 @@ class OrganizationController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async exportExcel({ request }) {
-    const { lastPage, filterData } = request.only(['lastPage', 'filterData']);
+  async exportExcel ({ request }) {
+    const { lastPage, filterData } = request.only(['lastPage', 'filterData'])
 
-    const { perPage } = filterData;
-    const allData = [];
+    const { perPage } = filterData
+    const allData = []
 
     for (let index = 1; index <= lastPage; index++) {
       const organization = await Organization.query()
         .with('addresses')
         .with('events.defaultEvent.ministery')
         .where(function () {
-          const currentDate = new Date();
-          const [start_date] = filterData.start_date.split('T');
-          const [end_date] = filterData.end_date.split('T');
-          const [, ministery_id] = filterData.ministery.split('/');
+          const currentDate = new Date()
+          const [start_date] = filterData.start_date.split('T')
+          const [end_date] = filterData.end_date.split('T')
+          const [, ministery_id] = filterData.ministery.split('/')
 
           if (filterData.id !== '') {
-            this.where('id', filterData.id);
+            this.where('id', filterData.id)
           }
           if (filterData.cnpj !== '') {
-            this.where('cnpj', filterData.cnpj);
+            this.where('cnpj', filterData.cnpj)
           }
           if (filterData.email !== '') {
-            this.where('email', filterData.email);
+            this.where('email', filterData.email)
           }
 
           // busca dados endereço entidade
           if (filterData.cep !== '') {
             this.whereHas('addresses', builder => {
-              builder.where('cep', filterData.cep);
-            });
+              builder.where('cep', filterData.cep)
+            })
           }
           if (filterData.uf !== '') {
             this.whereHas('addresses', builder => {
-              builder.whereRaw(
-                "LOWER(uf) like '%' || LOWER(?) || '%'",
-                filterData.uf,
-              );
-            });
+              builder.whereRaw("LOWER(uf) like '%' || LOWER(?) || '%'", filterData.uf)
+            })
           }
           if (filterData.city !== '') {
             this.whereHas('addresses', builder => {
-              builder.whereRaw(
-                "LOWER(city) like '%' || LOWER(?) || '%'",
-                filterData.city,
-              );
-            });
+              builder.whereRaw("LOWER(city) like '%' || LOWER(?) || '%'", filterData.city)
+            })
           }
 
           if (filterData.collapse) {
-            this.whereHas('events');
+            this.whereHas('events')
 
             if (filterData.ministery !== '') {
               this.whereHas('events.defaultEvent', builder => {
-                builder.where('ministery_id', ministery_id);
-              });
+                builder.where('ministery_id', ministery_id)
+              })
             }
             if (filterData.default_event_id) {
               this.whereHas('events', builder => {
-                builder.where('default_event_id', filterData.default_event_id);
-              });
+                builder.where('default_event_id', filterData.default_event_id)
+              })
             }
             if (filterData.status === 'Finalizado') {
               this.whereHas('events', builder => {
-                builder.where('is_finished', true);
-              });
+                builder.where('is_finished', true)
+              })
             }
             if (filterData.status === 'Não iniciado') {
               this.whereHas('events', builder => {
-                builder.where('start_date', '>', currentDate);
-                builder.where('is_finished', false);
-              });
+                builder.where('start_date', '>', currentDate)
+                builder.where('is_finished', false)
+              })
             }
             if (filterData.status === 'Em andamento') {
               this.whereHas('events', builder => {
-                builder.where('start_date', '<=', currentDate);
-                builder.where('is_finished', false);
-              });
+                builder.where('start_date', '<=', currentDate)
+                builder.where('is_finished', false)
+              })
             }
             if (start_date) {
               this.whereHas('events', builder => {
-                builder.where('start_date', '>=', start_date);
-              });
+                builder.where('start_date', '>=', start_date)
+              })
             }
             if (end_date) {
               this.whereHas('events', builder => {
-                builder.where('start_date', '<=', end_date);
-              });
+                builder.where('start_date', '<=', end_date)
+              })
             }
           }
         })
         .orderBy('id', 'asc')
-        .paginate(index, perPage);
+        .paginate(index, perPage)
 
-      allData.push(...organization.toJSON().data);
+      allData.push(...organization.toJSON().data)
     }
 
-    return allData;
+    return allData
   }
 
   /**
@@ -247,9 +237,9 @@ class OrganizationController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async indexParams({ request, response }) {
+  async indexParams ({ request, response }) {
     try {
-      const { uf, city, name } = request.only(['uf', 'city', 'name']);
+      const { uf, city, name } = request.only(['uf', 'city', 'name'])
 
       const organizations = await Organization.query()
         .with('file')
@@ -257,32 +247,29 @@ class OrganizationController {
         .with('events.defaultEvent.ministery')
         .where(function () {
           if (name) {
-            this.whereRaw(
-              "LOWER(corporate_name) like '%' || LOWER(?) || '%'",
-              name,
-            );
+            this.whereRaw("LOWER(corporate_name) like '%' || LOWER(?) || '%'", name)
           }
 
           if (uf) {
             this.whereHas('addresses', builder => {
-              builder.whereRaw("LOWER(uf) like '%' || LOWER(?) || '%'", uf);
-            });
+              builder.whereRaw("LOWER(uf) like '%' || LOWER(?) || '%'", uf)
+            })
           }
 
           if (city) {
             this.whereHas('addresses', builder => {
-              builder.whereRaw("LOWER(city) like '%' || LOWER(?) || '%'", city);
-            });
+              builder.whereRaw("LOWER(city) like '%' || LOWER(?) || '%'", city)
+            })
           }
         })
-        .fetch();
+        .fetch()
 
-      return organizations;
+      return organizations
     } catch (err) {
       return response.status(err.status).send({
         title: 'Falha!',
-        message: 'Houve um erro ao buscar as igrejas.',
-      });
+        message: 'Houve um erro ao buscar as igrejas.'
+      })
     }
   }
 
@@ -294,25 +281,25 @@ class OrganizationController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({ request, response }) {
+  async store ({ request, response }) {
     try {
-      const data = request.all();
+      const data = request.all()
 
-      const convertUnicode = new ConvertUnicode();
+      const convertUnicode = new ConvertUnicode()
 
-      data.corporate_name = await convertUnicode.convert(data.corporate_name);
-      data.fantasy_name = await convertUnicode.convert(data.fantasy_name);
+      data.corporate_name = await convertUnicode.convert(data.corporate_name)
+      data.fantasy_name = await convertUnicode.convert(data.fantasy_name)
 
-      const organization = await Organization.create(data);
+      const organization = await Organization.create(data)
 
-      return organization;
+      return organization
     } catch (err) {
       return response.status(err.status).send({
         error: {
           title: 'Falha!',
-          message: 'Erro ao criar a organização',
-        },
-      });
+          message: 'Erro ao criar a organização'
+        }
+      })
     }
   }
 
@@ -325,26 +312,26 @@ class OrganizationController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show({ params, response }) {
+  async show ({ params, response }) {
     try {
-      const organization = await Organization.findOrFail(params.id);
+      const organization = await Organization.findOrFail(params.id)
 
       await organization.loadMany([
         'file',
         'addresses',
         'events.defaultEvent.ministery',
         'entities',
-        'orders',
-      ]);
+        'orders'
+      ])
 
-      return organization;
+      return organization
     } catch (err) {
       return response.status(err.status).send({
         error: {
           title: 'Falha!',
-          message: 'Erro ao mostrar a organização',
-        },
-      });
+          message: 'Erro ao mostrar a organização'
+        }
+      })
     }
   }
 
@@ -356,24 +343,24 @@ class OrganizationController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({ params, request, response }) {
+  async update ({ params, request, response }) {
     try {
-      const data = request.all();
+      const data = request.all()
 
-      const organization = await Organization.findOrFail(params.id);
+      const organization = await Organization.findOrFail(params.id)
 
-      organization.merge(data);
+      organization.merge(data)
 
-      await organization.save();
+      await organization.save()
 
-      return organization;
+      return organization
     } catch (err) {
       return response.status(err.status).send({
         error: {
           title: 'Falha!',
-          message: 'Erro ao atualizar a organização',
-        },
-      });
+          message: 'Erro ao atualizar a organização'
+        }
+      })
     }
   }
 
@@ -385,39 +372,36 @@ class OrganizationController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update_netsuite({ params, request, response }) {
+  async update_netsuite ({ params, request, response }) {
     try {
-      const data = request.all();
+      const data = request.all()
 
-      const convertUnicode = new ConvertUnicode();
+      const convertUnicode = new ConvertUnicode()
 
-      data.corporate_name = await convertUnicode.convert(data.corporate_name);
-      data.fantasy_name = await convertUnicode.convert(data.fantasy_name);
+      data.corporate_name = await convertUnicode.convert(data.corporate_name)
+      data.fantasy_name = await convertUnicode.convert(data.fantasy_name)
 
-      data.netsuite_id = params.netsuite_id;
+      data.netsuite_id = params.netsuite_id
 
-      console.log('iniciando atualizacao de organization');
+      console.log('iniciando atualizacao de organization')
 
-      const organization = await Organization.findOrCreate(
-        {
-          netsuite_id: params.netsuite_id,
-        },
-        data,
-      );
+      const organization = await Organization.findOrCreate({
+        netsuite_id: params.netsuite_id
+      }, data)
 
-      organization.merge(data);
+      organization.merge(data)
 
-      await organization.save();
+      await organization.save()
 
-      console.log('organization criada ou atualizada com sucesso');
+      console.log('organization criada ou atualizada com sucesso')
 
-      return organization;
+      return organization
     } catch (err) {
-      console.log(err);
+      console.log(err)
       return response.status(err.status).send({
         title: 'Falha!',
-        message: 'Erro ao criar organization',
-      });
+        message: 'Erro ao criar organization'
+      })
     }
   }
 
@@ -429,25 +413,25 @@ class OrganizationController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy({ params, request, response }) {
+  async destroy ({ params, request, response }) {
     try {
-      const organization = await Organization.findOrFail(params.id);
+      const organization = await Organization.findOrFail(params.id)
 
-      await organization.delete();
+      await organization.delete()
 
       return response.status(200).send({
         title: 'Sucesso!',
-        message: 'A organização foi removida.',
-      });
+        message: 'A organização foi removida.'
+      })
     } catch (err) {
       return response.status(err.status).send({
         error: {
           title: 'Falha!',
-          message: 'Erro ao deletar a organização',
-        },
-      });
+          message: 'Erro ao deletar a organização'
+        }
+      })
     }
   }
 }
 
-module.exports = OrganizationController;
+module.exports = OrganizationController

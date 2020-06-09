@@ -1,10 +1,12 @@
+"use strict";
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Family = use('App/Models/Family');
+const Family = use("App/Models/Family");
 
-const Database = use('Database');
+const Database = use("Database");
 
 /**
  * Resourceful controller for interacting with families
@@ -20,7 +22,9 @@ class FamilyController {
    * @param {View} ctx.view
    */
   async index() {
-    const families = await Family.query().with('entities').fetch();
+    const families = await Family.query()
+      .with("entities")
+      .fetch();
 
     return families;
   }
@@ -40,13 +44,13 @@ class FamilyController {
         wedding_date,
         is_divorced,
         husband_id,
-        wife_id,
+        wife_id
       } = request.only([
-        'name',
-        'wedding_date',
-        'is_divorced',
-        'husband_id',
-        'wife_id',
+        "name",
+        "wedding_date",
+        "is_divorced",
+        "husband_id",
+        "wife_id"
       ]);
 
       const trx = await Database.beginTransaction();
@@ -56,17 +60,17 @@ class FamilyController {
       await family.entities().attach(
         [husband_id],
         row => {
-          row.relationship = 'Marido';
+          row.relationship = "Marido";
         },
-        trx,
+        trx
       );
 
       await family.entities().attach(
         [wife_id],
         row => {
-          row.relationship = 'Esposa';
+          row.relationship = "Esposa";
         },
-        trx,
+        trx
       );
 
       family.entities = await family.entities().fetch();
@@ -77,9 +81,9 @@ class FamilyController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente cadastrar novamente',
-        },
+          title: "Falha!",
+          message: "Tente cadastrar novamente"
+        }
       });
     }
   }
@@ -95,14 +99,14 @@ class FamilyController {
    */
   async show({ params, response }) {
     try {
-      const family = await Family.findByOrFail('name', params.id);
+      const family = await Family.findByOrFail("name", params.id);
 
-      await family.load('entities');
+      await family.load("entities");
 
       return family;
     } catch (err) {
       return response.status(404).send({
-        teste: 'familia nao encontrada',
+        teste: "familia nao encontrada"
       });
     }
   }
@@ -118,10 +122,10 @@ class FamilyController {
   async update({ params, request, response }) {
     try {
       const { name, wedding_date, is_divorced, entities } = request.only([
-        'name',
-        'wedding_date',
-        'is_divorced',
-        'entities',
+        "name",
+        "wedding_date",
+        "is_divorced",
+        "entities"
       ]);
 
       const family = await Family.findOrFail(params.id);
@@ -135,14 +139,13 @@ class FamilyController {
       if (entities && entities.length > 0) {
         await family.entities().detach();
 
-        await family.entities().attach(
-          entities.map(entity => entity.id),
-          row => {
+        await family
+          .entities()
+          .attach(entities.map(entity => entity.id), row => {
             const entity = entities.find(entity => entity.id === row.entity_id);
 
             row.relationship = entity.relationship;
-          },
-        );
+          });
 
         family.entities = await family.entities().fetch();
       }
@@ -151,9 +154,9 @@ class FamilyController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente atualizar novamente',
-        },
+          title: "Falha!",
+          message: "Tente atualizar novamente"
+        }
       });
     }
   }
@@ -173,15 +176,15 @@ class FamilyController {
       await family.delete();
 
       return response.status(200).send({
-        title: 'Sucesso!',
-        message: 'A família foi removida.',
+        title: "Sucesso!",
+        message: "A família foi removida."
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente remover novamente',
-        },
+          title: "Falha!",
+          message: "Tente remover novamente"
+        }
       });
     }
   }

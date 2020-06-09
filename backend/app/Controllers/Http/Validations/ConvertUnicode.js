@@ -1,7 +1,8 @@
+'use strict'
+
 class ConvertUnicode {
-  async convert(str) {
-    return str
-      .replace(/%U00C0/g, 'À')
+  async convert (str) {
+    return str.replace(/%U00C0/g, 'À')
       .replace(/%U00C1/g, 'Á')
       .replace(/%U00C2/g, 'Â')
       .replace(/%U00C3/g, 'Ã')
@@ -59,8 +60,8 @@ class ConvertUnicode {
       .replace(/%U00FB/g, 'Û')
       .replace(/%U00FC/g, 'Ü')
       .replace(/%U00FD/g, 'Ý')
-      .replace(/%U00FF/g, 'Ÿ');
+      .replace(/%U00FF/g, 'Ÿ')
   }
 }
 
-module.exports = ConvertUnicode;
+module.exports = ConvertUnicode

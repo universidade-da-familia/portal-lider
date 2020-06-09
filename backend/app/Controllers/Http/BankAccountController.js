@@ -1,11 +1,13 @@
+'use strict'
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Database = use('Database');
-const BankAccount = use('App/Models/BankAccount');
-const Entity = use('App/Models/Entity');
-const Organization = use('App/Models/Organization');
+const Database = use('Database')
+const BankAccount = use('App/Models/BankAccount')
+const Entity = use('App/Models/Entity')
+const Organization = use('App/Models/Organization')
 // const Log = use('App/Models/Log')
 
 /**
@@ -21,10 +23,12 @@ class BankAccountController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index() {
-    const bank_account = await BankAccount.query().with('entity').fetch();
+  async index ({ request, response, view }) {
+    const bank_account = await BankAccount.query()
+      .with('entity')
+      .fetch()
 
-    return bank_account;
+    return bank_account
   }
 
   /**
@@ -35,46 +39,41 @@ class BankAccountController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({ request, response }) {
+  async store ({ request, response }) {
     try {
-      let user;
-      const {
-        netsuite_id,
-        user_type,
-        bankAccountsPost,
-        bankAccountsPut,
-      } = request.only([
+      let user
+      const { netsuite_id, user_type, bankAccountsPost, bankAccountsPut } = request.only([
         'netsuite_id',
         'user_type',
         'bankAccountsPost',
-        'bankAccountsPut',
-      ]);
+        'bankAccountsPut'
+      ])
 
-      const trx = await Database.beginTransaction();
+      const trx = await Database.beginTransaction()
 
       if (bankAccountsPost && bankAccountsPost.length > 0) {
-        await BankAccount.createMany(bankAccountsPost, trx);
+        await BankAccount.createMany(bankAccountsPost, trx)
       }
 
       if (bankAccountsPut && bankAccountsPut.length > 0) {
         bankAccountsPut.map(async banks => {
-          const searchBanks = await BankAccount.findOrFail(banks.id);
+          const searchBanks = await BankAccount.findOrFail(banks.id)
 
-          searchBanks.merge(banks, trx);
+          searchBanks.merge(banks, trx)
 
-          await searchBanks.save();
-        });
+          await searchBanks.save()
+        })
       }
 
-      trx.commit();
+      trx.commit()
 
       if (user_type === 'entity') {
-        user = await Entity.findByOrFail('netsuite_id', netsuite_id);
+        user = await Entity.findByOrFail('netsuite_id', netsuite_id)
       } else {
-        user = await Organization.findByOrFail('netsuite_id', netsuite_id);
+        user = await Organization.findByOrFail('netsuite_id', netsuite_id)
       }
 
-      await user.load('bankAccounts');
+      await user.load('bankAccounts')
 
       // if (user_logged_id && user_logged_type) {
       //   await Log.create({
@@ -88,13 +87,13 @@ class BankAccountController {
 
       return response.status(200).send({
         title: 'Sucesso!',
-        message: 'Suas contas bancárias foram atualizadas.',
-      });
+        message: 'Suas contas bancárias foram atualizadas.'
+      })
     } catch (err) {
       return response.status(err.status).send({
         title: 'Falha!',
-        message: 'Erro ao atualizar as contas bancárias',
-      });
+        message: 'Erro ao atualizar as contas bancárias'
+      })
     }
   }
 
@@ -107,22 +106,44 @@ class BankAccountController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show({ params, response }) {
+  async show ({ params, response }) {
     try {
-      const bankAccount = await BankAccount.findOrFail(params.id);
+      const bankAccount = await BankAccount.findOrFail(params.id)
 
-      await bankAccount.loadMany(['entity', 'organization']);
+      await bankAccount.loadMany(['entity', 'organization'])
 
-      return bankAccount;
+      return bankAccount
     } catch (err) {
       return response.status(err.status).send({
         error: {
           title: 'Falha!',
-          message: 'Erro ao mostrar a conta bancaria',
-        },
-      });
+          message: 'Erro ao mostrar a conta bancaria'
+        }
+      })
     }
+  }
+
+  /**
+   * Update bankaccount details.
+   * PUT or PATCH bankaccounts/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   */
+  async update ({ params, request, response }) {
+  }
+
+  /**
+   * Delete a bankaccount with id.
+   * DELETE bankaccounts/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   */
+  async destroy ({ params, request, response }) {
   }
 }
 
-module.exports = BankAccountController;
+module.exports = BankAccountController

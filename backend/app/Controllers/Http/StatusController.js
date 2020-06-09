@@ -1,8 +1,10 @@
+"use strict";
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Status = use('App/Models/Status');
+const Status = use("App/Models/Status");
 
 class StatusController {
   /**
@@ -30,7 +32,7 @@ class StatusController {
    */
   async store({ request, response }) {
     try {
-      const data = request.only(['name']);
+      const data = request.only(["name"]);
 
       const status = await Status.create(data);
 
@@ -38,9 +40,9 @@ class StatusController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente cadastrar novamente',
-        },
+          title: "Falha!",
+          message: "Tente cadastrar novamente"
+        }
       });
     }
   }
@@ -62,9 +64,9 @@ class StatusController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Nenhum status encontrado.',
-        },
+          title: "Falha!",
+          message: "Nenhum status encontrado."
+        }
       });
     }
   }
@@ -91,9 +93,9 @@ class StatusController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente atualizar novamente',
-        },
+          title: "Falha!",
+          message: "Tente atualizar novamente"
+        }
       });
     }
   }
@@ -113,15 +115,15 @@ class StatusController {
       await status.delete();
 
       return response.status(200).send({
-        title: 'Sucesso!',
-        message: 'O status foi removido.',
+        title: "Sucesso!",
+        message: "O status foi removido."
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao excluir o status',
-        },
+          title: "Falha!",
+          message: "Erro ao excluir o status"
+        }
       });
     }
   }

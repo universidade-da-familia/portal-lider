@@ -1,30 +1,14 @@
-/** @type {typeof import('@adonisjs/lucid/src/Lucid/Model')} */
-const Model = use('Model');
+"use strict";
 
-/**
- *  @swagger
- *  definitions:
- *    File:
- *      type: object
- *      properties:
- *        id:
- *          type: integer
- *        file:
- *          type: string
- *        name:
- *          type: string
- *        type:
- *          type: string
- *        url:
- *          type: string
- *      required:
- *        - file
- *        - name
- *        - type
- */
+const Model = use("Model");
+
 class File extends Model {
-  user() {
-    return this.hasOne('App/Models/User');
+  entity() {
+    return this.hasOne("App/Models/Entity");
+  }
+
+  organization() {
+    return this.hasOne("App/Models/Organization");
   }
 }
 

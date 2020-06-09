@@ -1,5 +1,7 @@
-// phone number 5519933007189
-const Invite = use('App/Models/Invite');
+"use strict";
+
+//phone number 5519933007189
+const Invite = use("App/Models/Invite");
 
 class InviteController {
   /**
@@ -12,13 +14,15 @@ class InviteController {
    * @param {View} ctx.view
    */
   async index({ params }) {
-    const invites = await Invite.query().where('event_id', params.id).fetch();
+    const invites = await Invite.query()
+      .where("event_id", params.id)
+      .fetch();
 
     return invites;
   }
 
   async store({ request }) {
-    const data = request.only(['event_id', 'event_type', 'name', 'email']);
+    const data = request.only(["event_id", "event_type", "name", "email"]);
 
     const invite = await Invite.create(data);
 
@@ -42,9 +46,9 @@ class InviteController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao mostrar o convite',
-        },
+          title: "Falha!",
+          message: "Erro ao mostrar o convite"
+        }
       });
     }
   }
@@ -71,9 +75,9 @@ class InviteController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao atualizar o convite',
-        },
+          title: "Falha!",
+          message: "Erro ao atualizar o convite"
+        }
       });
     }
   }
@@ -93,15 +97,15 @@ class InviteController {
       await invite.delete();
 
       return response.status(200).send({
-        title: 'Sucesso!',
-        message: 'O convite foi removido.',
+        title: "Sucesso!",
+        message: "O convite foi removido."
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Erro ao deletar o convite',
-        },
+          title: "Falha!",
+          message: "Erro ao deletar o convite"
+        }
       });
     }
   }

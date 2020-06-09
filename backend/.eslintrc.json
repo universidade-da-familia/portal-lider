@@ -1,7 +1,7 @@
 {
   "env": {
     "commonjs": true,
-    "es6": true,
+    "es2020": true,
     "node": true
   },
   "extends": [
@@ -14,7 +14,7 @@
     "SharedArrayBuffer": "readonly"
   },
   "parserOptions": {
-    "ecmaVersion": 2018
+    "ecmaVersion": 11
   },
   "plugins": [
     "prettier"

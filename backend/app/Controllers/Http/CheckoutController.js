@@ -1,8 +1,10 @@
+"use strict";
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Checkout = use('App/Models/Checkout');
+const Checkout = use("App/Models/Checkout");
 
 class CheckoutController {
   /**
@@ -14,12 +16,12 @@ class CheckoutController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index({ request }) {
-    const data = request.only(['entity_id', 'organization_id']);
+  async index() {
+    const data = request.only(["entity_id", "organization_id"]);
 
     const checkouts = await Checkout.query()
-      .where('entity_id', data.entity_id)
-      .orWhere('organization_id', data.organization_id)
+      .where("entity_id", data.entity_id)
+      .orWhere("organization_id", data.organization_id)
       .fetch();
 
     return checkouts;
@@ -36,12 +38,12 @@ class CheckoutController {
   async store({ request, response }) {
     try {
       const data = request.only([
-        'entity_id',
-        'organization_id',
-        'total',
-        'tax',
-        'current',
-        'items',
+        "entity_id",
+        "organization_id",
+        "total",
+        "tax",
+        "current",
+        "items"
       ]);
 
       const checkout = await Checkout.create(data);
@@ -50,9 +52,9 @@ class CheckoutController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente cadastrar novamente',
-        },
+          title: "Falha!",
+          message: "Tente cadastrar novamente"
+        }
       });
     }
   }
@@ -70,10 +72,10 @@ class CheckoutController {
     const checkout = await Checkout.findOrFail(params.id);
 
     await checkout.loadMany([
-      'transaction',
-      'checkoutItems',
-      'entity',
-      'organization',
+      "transaction",
+      "checkoutItems",
+      "entity",
+      "organization"
     ]);
 
     return checkout;
@@ -87,15 +89,15 @@ class CheckoutController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({ params, request, response }) {
+  async update({ params, request }) {
     try {
       const data = request.only([
-        'entity_id',
-        'organization_id',
-        'total',
-        'tax',
-        'current',
-        'items',
+        "entity_id",
+        "organization_id",
+        "total",
+        "tax",
+        "current",
+        "items"
       ]);
 
       const checkout = await Checkout.findOrFail(params.id);
@@ -108,9 +110,9 @@ class CheckoutController {
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente atualizar novamente',
-        },
+          title: "Falha!",
+          message: "Tente atualizar novamente"
+        }
       });
     }
   }
@@ -130,15 +132,15 @@ class CheckoutController {
       await checkout.delete();
 
       return response.status(200).send({
-        title: 'Sucesso!',
-        message: 'O checkout foi removido.',
+        title: "Sucesso!",
+        message: "O checkout foi removido."
       });
     } catch (err) {
       return response.status(err.status).send({
         error: {
-          title: 'Falha!',
-          message: 'Tente remover novamente',
-        },
+          title: "Falha!",
+          message: "Tente remover novamente"
+        }
       });
     }
   }

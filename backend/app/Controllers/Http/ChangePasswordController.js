@@ -1,5 +1,7 @@
-const Entity = use('App/Models/Entity');
-const Organization = use('App/Models/Organization');
+'use strict'
+
+const Entity = use('App/Models/Entity')
+const Organization = use('App/Models/Organization')
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -17,40 +19,40 @@ class ChangePasswordController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({ params, request, response, auth }) {
+  async update ({ params, request, response, auth }) {
     try {
-      let user;
-      let token;
-      const data = request.only(['password', 'newPassword']);
+      let user
+      let token
+      const data = request.only(['password', 'newPassword'])
 
       if (params.user_type === 'entity') {
-        user = await Entity.findOrFail(params.id);
+        user = await Entity.findOrFail(params.id)
 
         token = await auth
           .authenticator('jwt_entity')
-          .attempt(user.email, data.password);
+          .attempt(user.email, data.password)
       } else {
-        user = await Organization.findOrFail(params.id);
+        user = await Organization.findOrFail(params.id)
 
         token = await auth
           .authenticator('jwt_organization')
-          .attempt(user.email, data.password);
+          .attempt(user.email, data.password)
       }
 
       if (token) {
-        user.password = data.newPassword;
+        user.password = data.newPassword
       }
 
-      await user.save();
+      await user.save()
 
-      return user;
+      return user
     } catch (err) {
       return response.status(err.status).send({
         title: 'Falha!',
-        message: 'Senha atual incorreta.',
-      });
+        message: 'Senha atual incorreta.'
+      })
     }
   }
 }
 
-module.exports = ChangePasswordController;
+module.exports = ChangePasswordController

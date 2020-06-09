@@ -1,8 +1,4 @@
-const Env = use('Env');
-
-const Url = require('url-parse');
-
-const REDIS_URL = new Url(Env.get('REDIS_URL'));
+'use strict'
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +9,11 @@ const REDIS_URL = new Url(Env.get('REDIS_URL'));
 | can make use of multiple redis connections using the redis provider.
 |
 */
+
+const Env = use('Env')
+
+const Url = require('url-parse')
+const REDIS_URL = new Url(Env.get('REDIS_URL'))
 
 module.exports = {
   /*
@@ -38,12 +39,12 @@ module.exports = {
     port: 6379,
     password: null,
     db: 0,
-    keyPrefix: '',
+    keyPrefix: ''
   },
 
   /*
   |--------------------------------------------------------------------------
-  | Heroku connection config
+  | heroku connection config
   |--------------------------------------------------------------------------
   |
   | Configuration for a named connection.
@@ -55,7 +56,7 @@ module.exports = {
     user: Env.get('REDIS_USER', REDIS_URL.username),
     password: Env.get('REDIS_PASSWORD', REDIS_URL.password),
     db: 0,
-    keyPrefix: '',
+    keyPrefix: ''
   },
 
   /*
@@ -72,14 +73,14 @@ module.exports = {
         host: '127.0.0.1',
         port: 6379,
         password: null,
-        db: 0,
+        db: 0
       },
       {
         host: '127.0.0.1',
         port: 6380,
         password: null,
-        db: 0,
-      },
-    ],
-  },
-};
+        db: 0
+      }
+    ]
+  }
+}

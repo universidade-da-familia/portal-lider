@@ -1,12 +1,14 @@
+'use strict'
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const LessonReport = use('App/Models/LessonReport');
-const Log = use('App/Models/Log');
+const LessonReport = use('App/Models/LessonReport')
+const Log = use('App/Models/Log')
 
-const Kue = use('Kue');
-const Job = use('App/Jobs/SendLessonReport');
+const Kue = use('Kue')
+const Job = use('App/Jobs/SendLessonReport')
 
 /**
  * Resourceful controller for interacting with lessons
@@ -21,15 +23,15 @@ class LessonReportController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index({ params }) {
+  async index ({ params }) {
     const lessonReport = await LessonReport.query()
       .where('event_id', params.event_id)
       .with('lesson')
       .with('event.participants')
       .with('attendances')
-      .fetch();
+      .fetch()
 
-    return lessonReport;
+    return lessonReport
   }
 
   /**
@@ -41,16 +43,16 @@ class LessonReportController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show({ params }) {
-    const lessonReport = await LessonReport.findOrFail(params.id);
+  async show ({ params }) {
+    const lessonReport = await LessonReport.findOrFail(params.id)
 
     await lessonReport.loadMany([
       'event.participants',
       'lesson',
-      'attendances',
-    ]);
+      'attendances'
+    ])
 
-    return lessonReport;
+    return lessonReport
   }
 
   /**
@@ -61,39 +63,39 @@ class LessonReportController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({ params, request, response }) {
+  async update ({ params, request, response }) {
     try {
-      const data = request.all();
+      const data = request.all()
 
-      const { participants, offer, date, pray_request } = data;
+      const { participants, offer, date, pray_request } = data
 
-      const user_logged_id = parseInt(request.header('user_logged_id'));
-      const user_logged_type = request.header('user_logged_type');
+      const user_logged_id = parseInt(request.header('user_logged_id'))
+      const user_logged_type = request.header('user_logged_type')
 
-      const lessonReport = await LessonReport.findOrFail(params.id);
+      const lessonReport = await LessonReport.findOrFail(params.id)
       await lessonReport.loadMany([
         'event.defaultEvent.ministery',
         'lesson',
-        'event.organizators',
-      ]);
+        'event.organizators'
+      ])
 
-      lessonReport.date = date || lessonReport.date;
-      lessonReport.offer = offer;
-      lessonReport.pray_request = pray_request;
-      lessonReport.is_finished = true;
+      lessonReport.date = date || lessonReport.date
+      lessonReport.offer = offer
+      lessonReport.pray_request = pray_request
+      lessonReport.is_finished = true
 
-      await lessonReport.save();
+      await lessonReport.save()
 
-      Kue.dispatch(Job.key, lessonReport, { attempts: 5 });
+      Kue.dispatch(Job.key, lessonReport, { attempts: 5 })
 
       if (participants && participants.length > 0) {
         participants.map(async participant => {
-          await lessonReport.attendances().detach([participant.id]);
+          await lessonReport.attendances().detach([participant.id])
 
           await lessonReport.attendances().attach([participant.id], row => {
-            row.is_present = participant.is_present;
-          });
-        });
+            row.is_present = participant.is_present
+          })
+        })
       }
 
       if (user_logged_id && user_logged_type) {
@@ -108,23 +110,23 @@ class LessonReportController {
             date,
             offer,
             pray_request,
-            participants,
+            participants
           },
-          [`${user_logged_type}_id`]: user_logged_id,
-        });
+          [`${user_logged_type}_id`]: user_logged_id
+        })
       }
 
       return response.status(200).send({
         title: 'Sucesso!',
-        message: 'O relatório foi enviado corretamente.',
-      });
+        message: 'O relatório foi enviado corretamente.'
+      })
     } catch (err) {
       return response.status(err.status).send({
         title: 'Falha!',
-        message: 'Erro ao atualizar o relatório.',
-      });
+        message: 'Erro ao atualizar o relatório.'
+      })
     }
   }
 }
 
-module.exports = LessonReportController;
+module.exports = LessonReportController
