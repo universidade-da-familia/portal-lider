@@ -16,6 +16,10 @@ import {
   Types as AvatarTypes,
 } from '~/store/ducks/avatar';
 import {
+  Creators as BankActions,
+  Types as BankTypes,
+} from '~/store/ducks/bank';
+import {
   Creators as BankAccountActions,
   Types as BankAccountTypes,
 } from '~/store/ducks/bankAccount';
@@ -477,6 +481,22 @@ function* deleteAddress(action) {
   }
 }
 
+function* bank() {
+  try {
+    const response = yield call(api.get, '/banks');
+
+    yield put(BankActions.bankSuccess(response.data));
+  } catch (err) {
+    if (err.message === 'Network Error') {
+      toastr.error('Falha!', 'Tente acessar novamente mais tarde.');
+      yield put(BankActions.bankFailure());
+    } else {
+      toastr.error('Falha!', 'Houve um erro ao visualizar os bancos.');
+      yield put(BankActions.bankFailure());
+    }
+  }
+}
+
 function* bankAccount(action) {
   try {
     const {
@@ -511,9 +531,9 @@ function* bankAccount(action) {
 
 function* deleteBankAccount(action) {
   try {
-    const { id, index } = action.payload;
+    const { id } = action.payload;
 
-    yield call(api.delete, `/bank_account/${id}/${index}`);
+    yield call(api.delete, `/bank_account/${id}`);
 
     yield put(BankAccountActions.deleteBankAccountSuccess());
     toastr.success('Sucesso!', 'A conta bancária foi removida.');
@@ -2530,6 +2550,7 @@ export default function* rootSaga() {
     takeLatest(ExpiredTitlesTypes.REQUEST, expiredTitles),
     takeLatest(AddressTypes.REQUEST, address),
     takeLatest(AddressTypes.DELETE_REQUEST, deleteAddress),
+    takeLatest(BankTypes.REQUEST, bank),
     takeLatest(BankAccountTypes.REQUEST, bankAccount),
     takeLatest(BankAccountTypes.DELETE_REQUEST, deleteBankAccount),
     takeLatest(ProfileTypes.EDIT_REQUEST, editProfile),

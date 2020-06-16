@@ -62,7 +62,6 @@ import pt from 'date-fns/locale/pt';
 import { Formik, Field, Form, FieldArray, getIn } from 'formik';
 import * as Yup from 'yup';
 
-import banks from '~/assets/data/banks';
 import UFsAndCities from '~/assets/data/statesCities';
 import CepFormat from '~/components/fields/CepFormat';
 import CNPJFormat from '~/components/fields/CNPJFormat';
@@ -73,6 +72,7 @@ import { validateCNPJ } from '~/services/validateCNPJ';
 import { validateCPF } from '~/services/validateCPF';
 import { Creators as AddressActions } from '~/store/ducks/address';
 import { Creators as AvatarActions } from '~/store/ducks/avatar';
+import { Creators as BankActions } from '~/store/ducks/bank';
 import { Creators as BankAccountActions } from '~/store/ducks/bankAccount';
 import { Creators as CepActions } from '~/store/ducks/cep';
 import { Creators as ChurchActions } from '~/store/ducks/church';
@@ -126,12 +126,12 @@ const addressSchema = Yup.object().shape({
 const bankAccountsSchema = Yup.object().shape({
   bankAccounts: Yup.array().of(
     Yup.object().shape({
-      bank: Yup.string().required('Banco é obrigatório.'),
-      branch: Yup.string().required('A agência é obrigatório.'),
-      account: Yup.string().required('Número da conta é obrigatório.'),
+      bank_id: Yup.string().required('Banco é obrigatório.'),
+      agency: Yup.string().required('A agência é obrigatório.'),
+      account_number: Yup.string().required('Número da conta é obrigatório.'),
       favored: Yup.string().required('Favorecido é obrigatória.'),
       account_type: Yup.string().required('Tipo de conta é obrigatório.'),
-      entity_type: Yup.string().required('Tipo de pessoa é obrigatório.'),
+      favored_type: Yup.string().required('Tipo de pessoa é obrigatório.'),
       cpf_cnpj: Yup.string().required('Este campo é obrigatório.'),
     })
   ),
@@ -179,12 +179,12 @@ export default function TabsBorderBottom() {
     {
       id: null,
       entity_id: parseInt(userId, 10),
-      bank: '',
-      branch: '',
-      account: '',
+      bank_id: '',
+      agency: '',
+      account_number: '',
       favored: '',
       account_type: '',
-      entity_type: '',
+      favored_type: '',
       cpf_cnpj: '',
     },
   ]);
@@ -204,6 +204,7 @@ export default function TabsBorderBottom() {
   const addressLoading = useSelector(state => state.address.loading);
   const bankAccountLoading = useSelector(state => state.bankAccount.loading);
   const data = useSelector(state => state.profile.data);
+  const bankData = useSelector(state => state.bank.allData);
   const cepData = useSelector(state => state.cep.data);
   const cepLoading = useSelector(state => state.cep.loading);
   const churchs = useSelector(state => state.church.data);
@@ -358,13 +359,13 @@ export default function TabsBorderBottom() {
     let bankAccountsToUpdate = values.bankAccounts;
 
     bankAccountsToUpdate.map(bank => {
-      if (bank.entity_type === 'pf') {
+      if (bank.favored_type === 'pf') {
         bank.cpf_cnpj = bank.cpf_cnpj
           .replace('.', '')
           .replace('.', '')
           .replace('-', '');
       }
-      if (bank.entity_type === 'pj') {
+      if (bank.favored_type === 'pj') {
         bank.cpf_cnpj = bank.cpf_cnpj
           .replace('.', '')
           .replace('.', '')
@@ -414,7 +415,7 @@ export default function TabsBorderBottom() {
   function handleDeleteBankAccount(id, remove, index) {
     toastr.confirm('Deseja realmente remover essa conta bancária?', {
       onOk: () => {
-        dispatch(BankAccountActions.deleteBankAccountRequest(id, index));
+        dispatch(BankAccountActions.deleteBankAccountRequest(id));
         remove(index);
       },
       onCancel: () => {},
@@ -530,6 +531,8 @@ export default function TabsBorderBottom() {
 
   useEffect(() => {
     const storageTab = localStorage.getItem('@dashboard/profileActiveTab');
+
+    dispatch(BankActions.bankRequest());
 
     if (storageTab) {
       setActiveTab(storageTab);
@@ -2267,12 +2270,12 @@ export default function TabsBorderBottom() {
                     <>
                       {values.bankAccounts.length > 0 &&
                         values.bankAccounts.map((bankAccount, index) => {
-                          const bank = `bankAccounts[${index}].bank`;
-                          const errorBank = getIn(errors, bank);
-                          const touchedBank = getIn(touched, bank);
+                          const bank_id = `bankAccounts[${index}].bank_id`;
+                          const errorBank = getIn(errors, bank_id);
+                          const touchedBank = getIn(touched, bank_id);
 
-                          const branch = `bankAccounts[${index}].branch`;
-                          const account = `bankAccounts[${index}].account`;
+                          const agency = `bankAccounts[${index}].agency`;
+                          const account_number = `bankAccounts[${index}].account_number`;
 
                           const account_type = `bankAccounts[${index}].account_type`;
                           const error_account_type = getIn(
@@ -2284,11 +2287,14 @@ export default function TabsBorderBottom() {
                             account_type
                           );
 
-                          const entity_type = `bankAccounts[${index}].entity_type`;
-                          const error_entity_type = getIn(errors, entity_type);
-                          const touched_entity_type = getIn(
+                          const favored_type = `bankAccounts[${index}].favored_type`;
+                          const error_favored_type = getIn(
+                            errors,
+                            favored_type
+                          );
+                          const touched_favored_type = getIn(
                             touched,
-                            entity_type
+                            favored_type
                           );
 
                           const favored = `bankAccounts[${index}].favored`;
@@ -2322,12 +2328,12 @@ export default function TabsBorderBottom() {
                               <Row>
                                 <Col sm="12" md="12" lg="12" xl="6">
                                   <FormGroup>
-                                    <Label for={bank}>Banco</Label>
+                                    <Label for={bank_id}>Banco</Label>
                                     <Field
                                       type="select"
                                       component="select"
-                                      id={bank}
-                                      name={bank}
+                                      id={bank_id}
+                                      name={bank_id}
                                       className={`
                                               form-control
                                               ${errorBank &&
@@ -2343,16 +2349,17 @@ export default function TabsBorderBottom() {
                                       >
                                         Selecione uma opção
                                       </option>
-                                      {banks.map(bank => {
-                                        return (
-                                          <option
-                                            key={bank.Code}
-                                            value={bank.Code}
-                                          >
-                                            {bank.Code} - {bank.Name}
-                                          </option>
-                                        );
-                                      })}
+                                      {bankData.length > 0 &&
+                                        bankData.map(bank => {
+                                          return (
+                                            <option
+                                              key={bank.id}
+                                              value={bank.id}
+                                            >
+                                              {bank.id} - {bank.name}
+                                            </option>
+                                          );
+                                        })}
                                     </Field>
                                     {errorBank && touchedBank ? (
                                       <div className="invalid-feedback">
@@ -2365,22 +2372,22 @@ export default function TabsBorderBottom() {
                               <Row>
                                 <Col sm="12" md="12" lg="12" xl="4">
                                   <FormGroup>
-                                    <Label for={branch}>Agência</Label>
+                                    <Label for={agency}>Agência</Label>
                                     <Field
                                       type="number"
-                                      id={branch}
-                                      name={branch}
+                                      id={agency}
+                                      name={agency}
                                       className="form-control"
                                     />
                                   </FormGroup>
                                 </Col>
                                 <Col sm="12" md="12" lg="12" xl="8">
                                   <FormGroup>
-                                    <Label for={account}>Conta</Label>
+                                    <Label for={account_number}>Conta</Label>
                                     <Field
                                       type="number"
-                                      id={account}
-                                      name={account}
+                                      id={account_number}
+                                      name={account_number}
                                       className="form-control"
                                     />
                                   </FormGroup>
@@ -2441,18 +2448,18 @@ export default function TabsBorderBottom() {
                                 </Col>
                                 <Col sm="12" md="12" lg="12" xl="6">
                                   <FormGroup>
-                                    <Label for={entity_type}>
+                                    <Label for={favored_type}>
                                       Tipo de pessoa
                                     </Label>
                                     <Field
                                       type="select"
                                       component="select"
-                                      id={entity_type}
-                                      name={entity_type}
+                                      id={favored_type}
+                                      name={favored_type}
                                       className={`
                                               form-control
-                                              ${error_entity_type &&
-                                                touched_entity_type &&
+                                              ${error_favored_type &&
+                                                touched_favored_type &&
                                                 'is-invalid'}
                                             `}
                                       onChange={handleChange}
@@ -2471,16 +2478,16 @@ export default function TabsBorderBottom() {
                                         Jurídica
                                       </option>
                                     </Field>
-                                    {error_entity_type &&
-                                    touched_entity_type ? (
+                                    {error_favored_type &&
+                                    touched_favored_type ? (
                                       <div className="invalid-feedback">
-                                        {error_entity_type}
+                                        {error_favored_type}
                                       </div>
                                     ) : null}
                                   </FormGroup>
                                 </Col>
                               </Row>
-                              {values.bankAccounts[index].entity_type ===
+                              {values.bankAccounts[index].favored_type ===
                                 'pf' && (
                                 <Row>
                                   <Col sm="12" md="12" lg="12" xl="12">
@@ -2525,7 +2532,7 @@ export default function TabsBorderBottom() {
                                 </Row>
                               )}
 
-                              {values.bankAccounts[index].entity_type ===
+                              {values.bankAccounts[index].favored_type ===
                                 'pj' && (
                                 <Row>
                                   <Col sm="12" md="12" lg="12" xl="12">
@@ -2612,12 +2619,12 @@ export default function TabsBorderBottom() {
                               push({
                                 id: null,
                                 entity_id: parseInt(userId, 10),
-                                bank: '',
-                                branch: '',
-                                account: '',
+                                bank_id: '',
+                                agency: '',
+                                account_number: '',
                                 favored: '',
                                 account_type: '',
-                                entity_type: '',
+                                favored_type: '',
                                 cpf_cnpj: '',
                               })
                             }
