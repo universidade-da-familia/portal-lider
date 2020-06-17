@@ -11,7 +11,6 @@ import {
   ChevronDown,
   CheckSquare,
   Calendar,
-  Edit2,
   Search,
   X,
   Eye,
@@ -26,6 +25,7 @@ import {
   Plus,
 } from 'react-feather';
 import { Datepicker } from 'react-formik-ui';
+import { FaChurch } from 'react-icons/fa';
 import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { toastr } from 'react-redux-toastr';
@@ -76,6 +76,7 @@ import randomstring from 'randomstring';
 import * as Yup from 'yup';
 
 import history from '~/app/history';
+import UFsAndCities from '~/assets/data/statesCities';
 import CepFormat from '~/components/fields/CepFormat';
 import CPFFormat from '~/components/fields/CPFFormat';
 import PhoneFormat from '~/components/fields/PhoneFormat';
@@ -84,6 +85,7 @@ import CustomModal from '~/components/modal';
 import { validateCPF } from '~/services/validateCPF';
 import { Creators as AddressActions } from '~/store/ducks/address';
 import { Creators as CepActions } from '~/store/ducks/cep';
+import { Creators as ChurchActions } from '~/store/ducks/church';
 import { Creators as EventActions } from '~/store/ducks/event';
 import { Creators as InviteActions } from '~/store/ducks/invite';
 import { Creators as LogActions } from '~/store/ducks/log';
@@ -92,6 +94,7 @@ import { Creators as ParticipantActions } from '~/store/ducks/participant';
 import Certificate from '~/views/certificate/index';
 
 import CustomTabs from '../../../../components/tabs/default';
+import ChurchsTable from './churchsTable';
 import { formatName } from './formatName';
 import InvitedTable from './invitedTable';
 import ParticipantTable from './participantTable';
@@ -220,6 +223,11 @@ const formRegisterNewAddress = Yup.object().shape({
   complement: Yup.string().max(60, 'Máximo de 60 caracteres'),
 });
 
+const formChurchSchema = Yup.object().shape({
+  uf: Yup.string().required('O estado é obrigatório.'),
+  city: Yup.string().required('A cidade é obrigatória.'),
+});
+
 export default function UserProfile({ match, className }) {
   const [activeTab, setActiveTab] = useState('1');
   const [modalOrganizator, setModalOrganizator] = useState(false);
@@ -288,6 +296,16 @@ export default function UserProfile({ match, className }) {
   const [pdfButton, setPdfButton] = useState(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [participantsIds, setParticipantsIds] = useState([]);
+  const [modalChurch, setModalChurch] = useState(false);
+  const [modalChurchData, setModalChurchData] = useState({
+    uf: '',
+    city: '',
+    name: '',
+  });
+  const [selectedChurch, setSelectedChurch] = useState({
+    id: null,
+    corporate_name: '',
+  });
 
   // eslint-disable-next-line no-unused-vars
   const [sendCertificateAdmin, setSendCertificateAdmin] = useState(null);
@@ -313,6 +331,8 @@ export default function UserProfile({ match, className }) {
   const cep_loading = useSelector(state => state.cep.loading);
   const cep_data = useSelector(state => state.cep.data);
   const logs_data = useSelector(state => state.log.data);
+  const churchs = useSelector(state => state.church.data);
+  const loadingChurchs = useSelector(state => state.church.loading);
 
   const DatepickerButton = ({ value, onClick }) => (
     <Button
@@ -466,6 +486,20 @@ export default function UserProfile({ match, className }) {
         setCities(CountryStateCity.getCitiesOfState(event_data.uf));
       }
 
+      // checkpoint
+
+      if (event_data.responsible_organization_id) {
+        setSelectedChurch({
+          id: event_data.organization.id,
+          corporate_name: event_data.organization.corporate_name,
+        });
+      } else {
+        setSelectedChurch({
+          id: null,
+          corporate_name: 'Sem igreja',
+        });
+      }
+
       setEventDetails({
         ...eventDetails,
         id: event_data.id,
@@ -488,6 +522,15 @@ export default function UserProfile({ match, className }) {
 
   const dispatch = useDispatch();
   const store = useStore();
+
+  function toggleModalChurch() {
+    setModalChurch(!modalChurch);
+    setModalChurchData({
+      uf: '',
+      city: '',
+      name: '',
+    });
+  }
 
   function toggleModalOrganizator() {
     setLeaderData(null);
@@ -711,6 +754,10 @@ export default function UserProfile({ match, className }) {
         assistant
       )
     );
+  }
+
+  function handleSearchChurchs(values) {
+    dispatch(ChurchActions.churchRequest(values));
   }
 
   // USEEFFECT PARA FECHAR O MODAL DA FUNCAO confirmModalAddParticipant
@@ -1029,6 +1076,7 @@ export default function UserProfile({ match, className }) {
       admin_print_date:
         values.isAdminPrinted && profile_data.admin ? new Date() : null,
       admin_print_id: profile_data.id,
+      responsible_organization_id: selectedChurch.id,
     };
 
     if (!profile_data.admin || event_data.is_admin_printed) {
@@ -1734,7 +1782,8 @@ export default function UserProfile({ match, className }) {
                                 </div>
                               </FormGroup>
                             </Col>
-                            <Col sm="12" md="8" lg="7" xl="7">
+
+                            {/* <Col sm="12" md="8" lg="7" xl="7">
                               <FormGroup>
                                 <Label for="church">Igreja</Label>
                                 <div className="position-relative has-icon-left">
@@ -1750,7 +1799,43 @@ export default function UserProfile({ match, className }) {
                                   </div>
                                 </div>
                               </FormGroup>
+                            </Col> */}
+
+                            <Col
+                              sm="12"
+                              md="8"
+                              lg="7"
+                              xl="7"
+                              className="has-icon-left"
+                            >
+                              <Label for="church">Igreja</Label>
+                              <div className="position-relative has-icon-left">
+                                <InputGroup>
+                                  <Field
+                                    name="church"
+                                    id="church"
+                                    className="form-control"
+                                    disabled
+                                    value={
+                                      selectedChurch.corporate_name ||
+                                      values.church
+                                    }
+                                  />
+                                  <div className="form-control-position">
+                                    <FaChurch size={18} color="#212529" />
+                                  </div>
+                                  <InputGroupAddon addonType="append">
+                                    <NavLink
+                                      className="btn bg-info"
+                                      onClick={toggleModalChurch}
+                                    >
+                                      <Search size={18} color="#fff" />
+                                    </NavLink>
+                                  </InputGroupAddon>
+                                </InputGroup>
+                              </div>
                             </Col>
+
                             {profile_data.admin && (
                               <Col sm="12" md="12" lg="3" xl="3">
                                 <FormGroup>
@@ -4599,6 +4684,131 @@ export default function UserProfile({ match, className }) {
                     Cadastrar endereço
                   </Button>
                   {/* )} */}
+                </ModalFooter>
+              </Form>
+            )}
+          </Formik>
+        </Modal>
+
+        {/* --------------- MODAL PESQUISAR IGREJA --------------- */}
+        <Modal isOpen={modalChurch} toggle={toggleModalChurch} size="lg">
+          <ModalHeader toggle={toggleModalChurch}>
+            Pesquise por sua igreja
+          </ModalHeader>
+          <Formik
+            enableReinitialize
+            initialValues={modalChurchData}
+            validationSchema={formChurchSchema}
+            onSubmit={values => handleSearchChurchs(values)}
+          >
+            {({ values, errors, touched }) => (
+              <Form>
+                <ModalBody>
+                  <Row>
+                    <Col lg="2" md="5" sm="12">
+                      <Label>Estado</Label>
+                      <Field
+                        type="select"
+                        component="select"
+                        name="uf"
+                        id="uf"
+                        className={`
+                        form-control
+                        ${errors.uf && touched.uf && 'is-invalid'}
+                      `}
+                      >
+                        <option value="">Sem f...</option>
+                        {UFsAndCities.map(uf => (
+                          <option key={uf.sigla} value={uf.sigla}>
+                            {uf.sigla}
+                          </option>
+                        ))}
+                      </Field>
+                      {errors.uf && touched.uf ? (
+                        <div className="invalid-feedback">{errors.uf}</div>
+                      ) : null}
+                    </Col>
+                    <Col lg="4" md="7" sm="12">
+                      <Label>Cidade</Label>
+                      <Field
+                        type="select"
+                        component="select"
+                        name="city"
+                        id="city"
+                        className={`
+                        form-control
+                        ${errors.city && touched.city && 'is-invalid'}
+                      `}
+                      >
+                        <option value="">Sem filtro</option>
+
+                        {values.uf &&
+                          UFsAndCities.map(uf => {
+                            if (values.uf === uf.sigla) {
+                              const cities = uf.cidades.map(city => {
+                                return (
+                                  <option key={city} value={city}>
+                                    {city}
+                                  </option>
+                                );
+                              });
+
+                              return cities;
+                            }
+                          })}
+                      </Field>
+                      {errors.city && touched.city ? (
+                        <div className="invalid-feedback">{errors.city}</div>
+                      ) : null}
+                    </Col>
+                    <Col lg="6" md="12" sm="12">
+                      <Label>Nome ou parte do nome</Label>
+                      <Field
+                        type="text"
+                        name="name"
+                        id="name"
+                        className="form-control"
+                      />
+                    </Col>
+                  </Row>
+                  <Row className="mt-3">
+                    <Col>
+                      {loadingChurchs ? (
+                        <Button color="success" type="submit" block disabled>
+                          <BounceLoader
+                            size={23}
+                            color="#fff"
+                            css={css`
+                              display: block;
+                              margin: 0 auto;
+                            `}
+                          />
+                        </Button>
+                      ) : (
+                        <Button color="success" type="submit" block>
+                          <Search size={18} color="#fff" /> Pesquisar
+                        </Button>
+                      )}
+                    </Col>
+                  </Row>
+                  {churchs && churchs.length > 0 && (
+                    <Row className="mt-3">
+                      <Col>
+                        <ChurchsTable
+                          churchs={churchs}
+                          value={value => setSelectedChurch(value)}
+                          modalChurch={modalChurch =>
+                            setModalChurch(modalChurch)
+                          }
+                        />
+                      </Col>
+                    </Row>
+                  )}
+                </ModalBody>
+                <ModalFooter>
+                  <Button color="danger" onClick={toggleModalChurch}>
+                    Cancelar busca
+                  </Button>
                 </ModalFooter>
               </Form>
             )}
