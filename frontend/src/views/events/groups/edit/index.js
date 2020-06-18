@@ -1783,24 +1783,6 @@ export default function UserProfile({ match, className }) {
                               </FormGroup>
                             </Col>
 
-                            {/* <Col sm="12" md="8" lg="7" xl="7">
-                              <FormGroup>
-                                <Label for="church">Igreja</Label>
-                                <div className="position-relative has-icon-left">
-                                  <Field
-                                    type="text"
-                                    id="church"
-                                    name="church"
-                                    className="form-control"
-                                    readOnly
-                                  />
-                                  <div className="form-control-position">
-                                    <Edit2 size={14} color="#212529" />
-                                  </div>
-                                </div>
-                              </FormGroup>
-                            </Col> */}
-
                             <Col
                               sm="12"
                               md="8"
