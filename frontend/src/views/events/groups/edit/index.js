@@ -1037,10 +1037,21 @@ export default function UserProfile({ match, className }) {
 
     setModalRegisterNewAddress(false);
 
-    toastr.confirm('Tem certeza de que deseja finalizar as inscrições?', {
-      onOk: () => finishInscriptions(),
-      onCancel: () => {},
-    });
+    toastr.confirm(
+      <>
+        <h5>Tem certeza que deseja finalizar as incrições?</h5>
+        <br />
+        <div>
+          Os certificados impressos serão enviados e eventuais participantes
+          adicionados após a finalização das inscrições somente poderão receber
+          a via digital
+        </div>
+      </>,
+      {
+        onOk: () => finishInscriptions(),
+        onCancel: () => {},
+      }
+    );
   }
 
   function verifyInscriptionsFinished(e) {
@@ -1431,7 +1442,18 @@ export default function UserProfile({ match, className }) {
                           className="btn-raised mr-3"
                           onClick={() => {
                             toastr.confirm(
-                              'Tem certeza de que deseja finalizar as inscrições?',
+                              <>
+                                <h5>
+                                  Tem certeza que deseja finalizar as incrições?
+                                </h5>
+                                <br />
+                                <div>
+                                  Os certificados impressos serão enviados e
+                                  eventuais participantes adicionados após a
+                                  finalização das inscrições somente poderão
+                                  receber a via digital
+                                </div>
+                              </>,
                               {
                                 onOk: () => finishInscriptions(),
                                 onCancel: () => {},
@@ -1553,7 +1575,20 @@ export default function UserProfile({ match, className }) {
                                     toggleModalRegisterNewAddress();
                                   } else {
                                     toastr.confirm(
-                                      'Tem certeza de que deseja finalizar as inscrições?',
+                                      <>
+                                        <h5>
+                                          Tem certeza que deseja finalizar as
+                                          incrições?
+                                        </h5>
+                                        <br />
+                                        <div>
+                                          Os certificados impressos serão
+                                          enviados e eventuais participantes
+                                          adicionados após a finalização das
+                                          inscrições somente poderão receber a
+                                          via digital
+                                        </div>
+                                      </>,
                                       {
                                         onOk: () => finishInscriptions(),
                                         onCancel: () => {},
