@@ -46,7 +46,11 @@ import * as Yup from 'yup';
 // import history from '~/app/history';
 import ContentHeader from '~/components/contentHead/contentHeader';
 import CepFormat from '~/components/fields/CepFormat';
-// import { validateCPF } from '~/services/validateCPF';
+import CNPJFormat from '~/components/fields/CNPJFormat';
+import CPFFormat from '~/components/fields/CPFFormat';
+import { validateCNPJ } from '~/services/validateCNPJ';
+import { validateCPF } from '~/services/validateCPF';
+import { Creators as BankActions } from '~/store/ducks/bank';
 import { Creators as CepActions } from '~/store/ducks/cep';
 import { Creators as DefaultEventActions } from '~/store/ducks/defaultEvent';
 import { Creators as EventActions } from '~/store/ducks/event';
@@ -80,11 +84,12 @@ const formDetails = Yup.object().shape({
   //   is: country => country !== '30',
   //   then: Yup.string().required('A cidade é obrigatória'),
   // }),
-  branch: Yup.string().required('A agência é obrigatório.'),
-  account: Yup.string().required('Número da conta é obrigatório.'),
+  bank_id: Yup.string().required('O banco é obrigatório.'),
+  agency: Yup.string().required('A agência é obrigatório.'),
+  account_number: Yup.string().required('Número da conta é obrigatório.'),
   favored: Yup.string().required('Favorecido é obrigatória.'),
   account_type: Yup.string().required('Tipo de conta é obrigatório.'),
-  entity_type: Yup.string().required('Tipo de pessoa é obrigatório.'),
+  favored_type: Yup.string().required('Tipo de pessoa é obrigatório.'),
   cpf_cnpj: Yup.string().required('Este campo é obrigatório.'),
 });
 
@@ -128,30 +133,50 @@ class CurrencyFormat extends Component {
 
 // eslint-disable-next-line no-unused-vars
 export default function TrainingCreate({ className }) {
+  const userId = localStorage.getItem('@dashboard/user');
+
   const [initialState, setInitialState] = useState({
-    cnpj: '',
-    cpf: '',
-    organization_id: null,
-    organization_name: '',
-    organizator_id: null,
-    organizator_name: '',
-    aux_organizator_id: '',
-    aux_organizator_name: '',
     is_public: 'true',
-    is_online_payment: '',
     initial_date: '',
     end_date: '',
-    default_event_id: '',
     ministery: '',
-    address: '',
-    cep: '',
+    default_event_id: '',
+    organizator_id: null,
+    organizator_name: '',
+    organization_id: null,
+    organization_name: '',
+    aux_organizator_id: '',
+    aux_organizator_name: '',
     country: '30',
-    apiUf: '',
-    apiCity: '',
+    cep: '',
     uf: '',
     city: '',
+    apiUf: '',
+    apiCity: '',
+    address: '',
+    is_online_payment: '',
     bank_account_id: '',
+    bank_id: '',
+    agency: '',
+    account_number: '',
+    favored: '',
+    account_type: '',
+    favored_type: '',
+    cpf_cnpj: '',
   });
+  const [bankAccounts, setBankAccounts] = useState([
+    {
+      id: null,
+      entity_id: parseInt(userId, 10),
+      bank_id: '',
+      agency: '',
+      account_number: '',
+      favored: '',
+      account_type: '',
+      favored_type: '',
+      cpf_cnpj: '',
+    },
+  ]);
   const [ministeriesOrganizer, setMinisteriesOrganizer] = useState([]);
   const [defaultEventsOrganizer, setDefaultEventsOrganizer] = useState([]);
   const [loadCep, setLoadCep] = useState(false);
@@ -162,9 +187,9 @@ export default function TrainingCreate({ className }) {
   const [modalPaymentPlan, setModalPaymentPlan] = useState(false);
   const [modalEditPaymentPlan, setModalEditPaymentPlan] = useState(false);
   const [editPaymentPlan, setEditPaymentPlan] = useState(null);
-  const [bankAccounts, setBankAccounts] = useState(null);
 
   const userData = useSelector(state => state.profile.data);
+  const bankData = useSelector(state => state.bank.allData);
   const cep_data = useSelector(state => state.cep.data);
   const defaultData = useSelector(state => state.defaultEvent.data);
   const event_loading = useSelector(state => state.event.loading);
@@ -214,58 +239,95 @@ export default function TrainingCreate({ className }) {
     toggleCloseModalPaymentPlan();
   }
 
+  function handleChangeBankAccount(event, setFieldValue) {
+    const { name, value } = event.target;
+
+    setFieldValue(name, value);
+
+    if (value !== 'other' && value !== '') {
+      const bankAccount = bankAccounts.find(
+        bankAccountFind => bankAccountFind.id === parseInt(value, 10)
+      );
+
+      setFieldValue('bank_id', bankAccount.bank_id);
+      setFieldValue('agency', parseInt(bankAccount.agency, 10));
+      setFieldValue('account_number', parseInt(bankAccount.account_number, 10));
+      setFieldValue('favored', bankAccount.favored);
+      setFieldValue('account_type', bankAccount.account_type);
+      setFieldValue('favored_type', bankAccount.favored_type);
+      setFieldValue('cpf_cnpj', bankAccount.cpf_cnpj);
+    } else if (value === '') {
+      setFieldValue('bank_id', '');
+      setFieldValue('agency', '');
+      setFieldValue('account_number', '');
+      setFieldValue('favored', '');
+      setFieldValue('account_type', '');
+      setFieldValue('favored_type', '');
+      setFieldValue('cpf_cnpj', '');
+    } else {
+      setFieldValue('bank_account_id', 'other');
+      setFieldValue('bank_id', '');
+      setFieldValue('agency', '');
+      setFieldValue('account_number', '');
+      setFieldValue('favored', '');
+      setFieldValue('account_type', '');
+      setFieldValue('favored_type', '');
+      setFieldValue('cpf_cnpj', '');
+    }
+  }
+
   // function handleChangeAddressType(event, setFieldValue) {
   //   const { name, value } = event.target;
 
   //   setFieldValue(name, value);
 
-  //   if (value !== 'other' && value !== '') {
-  //     const address = addresses.find(
-  //       addressFind => addressFind.id === parseInt(value, 10)
+  // if (value !== 'other' && value !== '') {
+  //   const address = addresses.find(
+  //     addressFind => addressFind.id === parseInt(value, 10)
+  //   );
+
+  //   setCepState(address.cep);
+  //   setFieldValue('address_type', address.type);
+  //   setFieldValue('address_other_type_name', address.other_type_name);
+  //   setFieldValue('cep', address.cep);
+  //   setFieldValue('uf', address.uf);
+  //   setFieldValue('city', address.city);
+  //   setFieldValue('street', address.street);
+  //   setFieldValue('street_number', address.street_number);
+  //   setFieldValue('neighborhood', address.neighborhood);
+  //   setFieldValue('complement', address.complement);
+  //   setFieldValue('receiver', address.receiver);
+
+  //   if (dataProducts.length > 0) {
+  //     dispatch(
+  //       ShippingActions.shippingOptionsRequest(address.cep, dataProducts)
   //     );
-
-  //     setCepState(address.cep);
-  //     setFieldValue('address_type', address.type);
-  //     setFieldValue('address_other_type_name', address.other_type_name);
-  //     setFieldValue('cep', address.cep);
-  //     setFieldValue('uf', address.uf);
-  //     setFieldValue('city', address.city);
-  //     setFieldValue('street', address.street);
-  //     setFieldValue('street_number', address.street_number);
-  //     setFieldValue('neighborhood', address.neighborhood);
-  //     setFieldValue('complement', address.complement);
-  //     setFieldValue('receiver', address.receiver);
-
-  //     if (dataProducts.length > 0) {
-  //       dispatch(
-  //         ShippingActions.shippingOptionsRequest(address.cep, dataProducts)
-  //       );
-  //     }
-  //   } else if (value === '') {
-  //     setFieldValue('type', '');
-  //     setFieldValue('address_type', '');
-  //     setFieldValue('address_other_type_name', '');
-  //     setFieldValue('cep', '');
-  //     setFieldValue('uf', '');
-  //     setFieldValue('city', '');
-  //     setFieldValue('street', '');
-  //     setFieldValue('street_number', '');
-  //     setFieldValue('neighborhood', '');
-  //     setFieldValue('complement', '');
-  //     setFieldValue('receiver', '');
-  //   } else {
-  //     setFieldValue('type', 'other');
-  //     setFieldValue('address_type', '');
-  //     setFieldValue('address_other_type_name', '');
-  //     setFieldValue('cep', '');
-  //     setFieldValue('uf', '');
-  //     setFieldValue('city', '');
-  //     setFieldValue('street', '');
-  //     setFieldValue('street_number', '');
-  //     setFieldValue('neighborhood', '');
-  //     setFieldValue('complement', '');
-  //     setFieldValue('receiver', '');
   //   }
+  // } else if (value === '') {
+  //   setFieldValue('type', '');
+  //   setFieldValue('address_type', '');
+  //   setFieldValue('address_other_type_name', '');
+  //   setFieldValue('cep', '');
+  //   setFieldValue('uf', '');
+  //   setFieldValue('city', '');
+  //   setFieldValue('street', '');
+  //   setFieldValue('street_number', '');
+  //   setFieldValue('neighborhood', '');
+  //   setFieldValue('complement', '');
+  //   setFieldValue('receiver', '');
+  // } else {
+  //   setFieldValue('type', 'other');
+  //   setFieldValue('address_type', '');
+  //   setFieldValue('address_other_type_name', '');
+  //   setFieldValue('cep', '');
+  //   setFieldValue('uf', '');
+  //   setFieldValue('city', '');
+  //   setFieldValue('street', '');
+  //   setFieldValue('street_number', '');
+  //   setFieldValue('neighborhood', '');
+  //   setFieldValue('complement', '');
+  //   setFieldValue('receiver', '');
+  // }
   // }
 
   function handleEditPaymantPlan(values) {
@@ -308,6 +370,16 @@ export default function TrainingCreate({ className }) {
       uf: values.uf,
       city: values.city,
       paymentPlans,
+      bank_account: {
+        bank_account_id: values.bank_account_id,
+        bank_id: values.bank_id,
+        agency: values.agency,
+        account_number: values.account_number,
+        favored: values.favored,
+        account_type: values.account_type,
+        favored_type: values.favored_type,
+        cpf_cnpj: values.cpf_cnpj,
+      },
     };
 
     dispatch(EventActions.addEventRequest(data));
@@ -468,6 +540,8 @@ export default function TrainingCreate({ className }) {
   useEffect(() => {
     setCountries(CountryStateCity.getAllCountries());
     setStates(CountryStateCity.getStatesOfCountry('30'));
+
+    dispatch(BankActions.bankRequest());
 
     return () => {
       store.getState().cep.data = {};
@@ -1247,9 +1321,9 @@ export default function TrainingCreate({ className }) {
                                 touched.bank_account_id &&
                                 'is-invalid'}
                             `}
-                            // onChange={event =>
-                            //   handleChangeAddressType(event, setFieldValue)
-                            // }
+                            onChange={event =>
+                              handleChangeBankAccount(event, setFieldValue)
+                            }
                           >
                             <option value="" defaultValue="" disabled="">
                               Selecione uma opção
@@ -1261,7 +1335,7 @@ export default function TrainingCreate({ className }) {
                                   key={bankAccount.id}
                                   value={bankAccount.id}
                                 >
-                                  {bankAccount.bank}
+                                  {bankAccount.bank.name}
                                 </option>
                               ))}
                             <option key="other" value="other">
@@ -1283,54 +1357,103 @@ export default function TrainingCreate({ className }) {
                           return (
                             <>
                               <Row>
-                                <Col sm="12" md="12" lg="12" xl="4">
+                                <Col sm="12" md="12" lg="12" xl="6">
                                   <FormGroup>
-                                    <Label for="branch">Agência</Label>
+                                    <Label for="bank_id">Banco</Label>
                                     <Field
-                                      type="number"
-                                      id="branch"
-                                      name="branch"
+                                      type="select"
+                                      component="select"
+                                      id="bank_id"
+                                      name="bank_id"
                                       className={`
                                         form-control
                                         ${errors &&
-                                          errors.branch &&
+                                          errors.bank_id &&
                                           touched &&
-                                          touched.branch &&
+                                          touched.bank_id &&
+                                          'is-invalid'}
+                                      `}
+                                      onChange={handleChange}
+                                    >
+                                      <option
+                                        value=""
+                                        defaultValue=""
+                                        disabled=""
+                                      >
+                                        Selecione uma opção
+                                      </option>
+                                      {bankData.length > 0 &&
+                                        bankData.map(bank => {
+                                          return (
+                                            <option
+                                              key={bank.id}
+                                              value={bank.id}
+                                            >
+                                              {bank.id} - {bank.name}
+                                            </option>
+                                          );
+                                        })}
+                                    </Field>
+                                    {errors &&
+                                    errors.bank_id &&
+                                    touched &&
+                                    touched.bank_id ? (
+                                      <div className="invalid-feedback">
+                                        {errors.bank_id}
+                                      </div>
+                                    ) : null}
+                                  </FormGroup>
+                                </Col>
+                              </Row>
+                              <Row>
+                                <Col sm="12" md="12" lg="12" xl="4">
+                                  <FormGroup>
+                                    <Label for="agency">Agência</Label>
+                                    <Field
+                                      type="number"
+                                      id="agency"
+                                      name="agency"
+                                      className={`
+                                        form-control
+                                        ${errors &&
+                                          errors.agency &&
+                                          touched &&
+                                          touched.agency &&
                                           'is-invalid'}
                                       `}
                                     />
                                     {errors &&
-                                    errors.branch &&
+                                    errors.agency &&
                                     touched &&
-                                    touched.branch ? (
+                                    touched.agency ? (
                                       <div className="invalid-feedback">
-                                        {errors.branch}
+                                        {errors.agency}
                                       </div>
                                     ) : null}
                                   </FormGroup>
                                 </Col>
                                 <Col sm="12" md="12" lg="12" xl="8">
                                   <FormGroup>
-                                    <Label for="account">Conta</Label>
+                                    <Label for="account_number">Conta</Label>
                                     <Field
                                       type="number"
-                                      id="account"
-                                      name="account"
+                                      id="account_number"
+                                      name="account_number"
                                       className={`
                                         form-control
                                         ${errors &&
-                                          errors.account &&
+                                          errors.account_number &&
                                           touched &&
-                                          touched.account &&
+                                          touched.account_number &&
                                           'is-invalid'}
                                       `}
                                     />
                                     {errors &&
-                                    errors.account &&
+                                    errors.account_number &&
                                     touched &&
-                                    touched.account ? (
+                                    touched.account_number ? (
                                       <div className="invalid-feedback">
-                                        {errors.account}
+                                        {errors.account_number}
                                       </div>
                                     ) : null}
                                   </FormGroup>
@@ -1410,20 +1533,20 @@ export default function TrainingCreate({ className }) {
                                 </Col>
                                 <Col sm="12" md="12" lg="12" xl="6">
                                   <FormGroup>
-                                    <Label for="entity_type">
+                                    <Label for="favored_type">
                                       Tipo de pessoa
                                     </Label>
                                     <Field
                                       type="select"
                                       component="select"
-                                      id="entity_type"
-                                      name="entity_type"
+                                      id="favored_type"
+                                      name="favored_type"
                                       className={`
                                         form-control
                                         ${errors &&
-                                          errors.entity_type &&
+                                          errors.favored_type &&
                                           touched &&
-                                          touched.entity_type &&
+                                          touched.favored_type &&
                                           'is-invalid'}
                                       `}
                                       onChange={handleChange}
@@ -1443,54 +1566,57 @@ export default function TrainingCreate({ className }) {
                                       </option>
                                     </Field>
                                     {errors &&
-                                    errors.entity_type &&
+                                    errors.favored_type &&
                                     touched &&
-                                    touched.entity_type ? (
+                                    touched.favored_type ? (
                                       <div className="invalid-feedback">
-                                        {errors.entity_type}
+                                        {errors.favored_type}
                                       </div>
                                     ) : null}
                                   </FormGroup>
                                 </Col>
                               </Row>
-                              {/* {values.bankAccounts[index].entity_type ===
-                                'pf' && (
+                              {values.favored_type === 'pf' && (
                                 <Row>
                                   <Col sm="12" md="12" lg="12" xl="12">
                                     <FormGroup>
-                                      <Label for={cpf_cnpj}>CPF</Label>
+                                      <Label for="cpf_cnpj">CPF</Label>
                                       <Field
-                                        id={cpf_cnpj}
-                                        name={cpf_cnpj}
+                                        id="cpf_cnpj"
+                                        name="cpf_cnpj"
                                         className={`
-                                              form-control
-                                              ${errorCpfCnpj &&
-                                                touchedCpfCnpj &&
-                                                'is-invalid'}
-                                            `}
+                                          form-control
+                                          ${errors &&
+                                            errors.cpf_cnpj &&
+                                            touched &&
+                                            touched.cpf_cnpj &&
+                                            'is-invalid'}
+                                        `}
                                         validate={validateCPF}
                                         render={({ field }) => (
                                           <CPFFormat
                                             // eslint-disable-next-line react/jsx-props-no-spreading
                                             {...field}
-                                            id={cpf_cnpj}
-                                            name={cpf_cnpj}
+                                            id="cpf_cnpj"
+                                            name="cpf_cnpj"
                                             className={`
                                               form-control
-                                              ${errorCpfCnpj &&
-                                                touchedCpfCnpj &&
+                                              ${errors &&
+                                                errors.cpf_cnpj &&
+                                                touched &&
+                                                touched.cpf_cnpj &&
                                                 'is-invalid'}
                                             `}
-                                            value={
-                                              values.bankAccounts[index]
-                                                .cpf_cnpj
-                                            }
+                                            value={values.cpf_cnpj}
                                           />
                                         )}
                                       />
-                                      {errorCpfCnpj && touchedCpfCnpj ? (
+                                      {errors &&
+                                      errors.cpf_cnpj &&
+                                      touched &&
+                                      touched.cpf_cnpj ? (
                                         <div className="invalid-feedback">
-                                          {errorCpfCnpj}
+                                          {errors.cpf_cnpj}
                                         </div>
                                       ) : null}
                                     </FormGroup>
@@ -1498,50 +1624,338 @@ export default function TrainingCreate({ className }) {
                                 </Row>
                               )}
 
-                              {values.bankAccounts[index].entity_type ===
-                                'pj' && (
+                              {values.favored_type === 'pj' && (
                                 <Row>
                                   <Col sm="12" md="12" lg="12" xl="12">
                                     <FormGroup>
-                                      <Label for={cpf_cnpj}>CNPJ</Label>
+                                      <Label for="cpf_cnpj">CNPJ</Label>
                                       <Field
-                                        id={cpf_cnpj}
-                                        name={cpf_cnpj}
+                                        id="cpf_cnpj"
+                                        name="cpf_cnpj"
                                         className={`
-                                              form-control
-                                              ${errorCpfCnpj &&
-                                                touchedCpfCnpj &&
-                                                'is-invalid'}
-                                            `}
+                                        form-control
+                                          ${errors &&
+                                            errors.cpf_cnpj &&
+                                            touched &&
+                                            touched.cpf_cnpj &&
+                                            'is-invalid'}
+                                        `}
                                         validate={validateCNPJ}
                                         render={({ field }) => (
                                           <CNPJFormat
                                             // eslint-disable-next-line react/jsx-props-no-spreading
                                             {...field}
-                                            id={cpf_cnpj}
-                                            name={cpf_cnpj}
+                                            id="cpf_cnpj"
+                                            name="cpf_cnpj"
                                             className={`
                                               form-control
-                                              ${errorCpfCnpj &&
-                                                touchedCpfCnpj &&
+                                              ${errors &&
+                                                errors.cpf_cnpj &&
+                                                touched &&
+                                                touched.cpf_cnpj &&
                                                 'is-invalid'}
                                             `}
                                             value={values.cnpj}
                                           />
                                         )}
                                       />
-                                      {errorCpfCnpj && touchedCpfCnpj ? (
+                                      {errors &&
+                                      errors.cpf_cnpj &&
+                                      touched &&
+                                      touched.cpf_cnpj ? (
                                         <div className="invalid-feedback">
-                                          {errorCpfCnpj}
+                                          {errors.cpf_cnpj}
                                         </div>
                                       ) : null}
                                     </FormGroup>
                                   </Col>
                                 </Row>
-                              )} */}
+                              )}
                             </>
                           );
                         }
+                        return (
+                          <>
+                            <Row>
+                              <Col sm="12" md="12" lg="12" xl="4">
+                                <FormGroup>
+                                  <Label for="agency">Agência</Label>
+                                  <Field
+                                    type="number"
+                                    id="agency"
+                                    name="agency"
+                                    disabled
+                                    className={`
+                                      form-control
+                                      ${errors &&
+                                        errors.agency &&
+                                        touched &&
+                                        touched.agency &&
+                                        'is-invalid'}
+                                    `}
+                                  />
+                                  {errors &&
+                                  errors.agency &&
+                                  touched &&
+                                  touched.agency ? (
+                                    <div className="invalid-feedback">
+                                      {errors.agency}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                              </Col>
+                              <Col sm="12" md="12" lg="12" xl="8">
+                                <FormGroup>
+                                  <Label for="account_number">Conta</Label>
+                                  <Field
+                                    type="number"
+                                    id="account_number"
+                                    name="account_number"
+                                    disabled
+                                    className={`
+                                      form-control
+                                      ${errors &&
+                                        errors.account_number &&
+                                        touched &&
+                                        touched.account_number &&
+                                        'is-invalid'}
+                                    `}
+                                  />
+                                  {errors &&
+                                  errors.account_number &&
+                                  touched &&
+                                  touched.account_number ? (
+                                    <div className="invalid-feedback">
+                                      {errors.account_number}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col sm="12" md="12" lg="12" xl="12">
+                                <FormGroup>
+                                  <Label for="favored">Favorecido</Label>
+                                  <Field
+                                    type="text"
+                                    id="favored"
+                                    name="favored"
+                                    disabled
+                                    // value={values.cep}
+                                    // disabled={values.bank_account_id !== 'other'}
+                                    className={`
+                                      form-control
+                                      ${errors &&
+                                        errors.favored &&
+                                        touched &&
+                                        touched.favored &&
+                                        'is-invalid'}
+                                    `}
+                                  />
+                                  {errors &&
+                                  errors.favored &&
+                                  touched &&
+                                  touched.favored ? (
+                                    <div className="invalid-feedback">
+                                      {errors.favored}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col sm="12" md="12" lg="12" xl="6">
+                                <FormGroup>
+                                  <Label for="account_type">
+                                    Tipo de conta
+                                  </Label>
+                                  <Field
+                                    type="select"
+                                    component="select"
+                                    id="account_type"
+                                    name="account_type"
+                                    disabled
+                                    className={`
+                                      form-control
+                                      ${errors &&
+                                        errors.account_type &&
+                                        touched &&
+                                        touched.account_type &&
+                                        'is-invalid'}
+                                    `}
+                                    onChange={handleChange}
+                                  >
+                                    <option value="" disabled="">
+                                      Selecione uma opção
+                                    </option>
+                                    <option
+                                      key="transaction"
+                                      value="transaction"
+                                    >
+                                      Conta corrente
+                                    </option>
+                                    <option key="saving" value="saving">
+                                      Conta poupança
+                                    </option>
+                                  </Field>
+                                  {errors &&
+                                  errors.account_type &&
+                                  touched &&
+                                  touched.account_type ? (
+                                    <div className="invalid-feedback">
+                                      {errors.account_type}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                              </Col>
+                              <Col sm="12" md="12" lg="12" xl="6">
+                                <FormGroup>
+                                  <Label for="favored_type">
+                                    Tipo de pessoa
+                                  </Label>
+                                  <Field
+                                    type="select"
+                                    component="select"
+                                    id="favored_type"
+                                    name="favored_type"
+                                    disabled
+                                    className={`
+                                      form-control
+                                      ${errors &&
+                                        errors.favored_type &&
+                                        touched &&
+                                        touched.favored_type &&
+                                        'is-invalid'}
+                                    `}
+                                    onChange={handleChange}
+                                  >
+                                    <option
+                                      value=""
+                                      defaultValue=""
+                                      disabled=""
+                                    >
+                                      Selecione uma opção
+                                    </option>
+                                    <option key="pf" value="pf">
+                                      Física
+                                    </option>
+                                    <option key="pj" value="pj">
+                                      Jurídica
+                                    </option>
+                                  </Field>
+                                  {errors &&
+                                  errors.favored_type &&
+                                  touched &&
+                                  touched.favored_type ? (
+                                    <div className="invalid-feedback">
+                                      {errors.favored_type}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                              </Col>
+                            </Row>
+
+                            {values.favored_type === 'pf' && (
+                              <Row>
+                                <Col sm="12" md="12" lg="12" xl="12">
+                                  <FormGroup>
+                                    <Label for="cpf_cnpj">CPF</Label>
+                                    <Field
+                                      id="cpf_cnpj"
+                                      name="cpf_cnpj"
+                                      disabled
+                                      className={`
+                                          form-control
+                                          ${errors &&
+                                            errors.cpf_cnpj &&
+                                            touched &&
+                                            touched.cpf_cnpj &&
+                                            'is-invalid'}
+                                        `}
+                                      validate={validateCPF}
+                                      render={({ field }) => (
+                                        <CPFFormat
+                                          // eslint-disable-next-line react/jsx-props-no-spreading
+                                          {...field}
+                                          id="cpf_cnpj"
+                                          name="cpf_cnpj"
+                                          disabled
+                                          className={`
+                                              form-control
+                                              ${errors &&
+                                                errors.cpf_cnpj &&
+                                                touched &&
+                                                touched.cpf_cnpj &&
+                                                'is-invalid'}
+                                            `}
+                                          value={values.cpf_cnpj}
+                                        />
+                                      )}
+                                    />
+                                    {errors &&
+                                    errors.cpf_cnpj &&
+                                    touched &&
+                                    touched.cpf_cnpj ? (
+                                      <div className="invalid-feedback">
+                                        {errors.cpf_cnpj}
+                                      </div>
+                                    ) : null}
+                                  </FormGroup>
+                                </Col>
+                              </Row>
+                            )}
+
+                            {values.favored_type === 'pj' && (
+                              <Row>
+                                <Col sm="12" md="12" lg="12" xl="12">
+                                  <FormGroup>
+                                    <Label for="cpf_cnpj">CNPJ</Label>
+                                    <Field
+                                      id="cpf_cnpj"
+                                      name="cpf_cnpj"
+                                      disabled
+                                      className={`
+                                        form-control
+                                          ${errors &&
+                                            errors.cpf_cnpj &&
+                                            touched &&
+                                            touched.cpf_cnpj &&
+                                            'is-invalid'}
+                                        `}
+                                      validate={validateCNPJ}
+                                      render={({ field }) => (
+                                        <CNPJFormat
+                                          // eslint-disable-next-line react/jsx-props-no-spreading
+                                          {...field}
+                                          id="cpf_cnpj"
+                                          name="cpf_cnpj"
+                                          disabled
+                                          className={`
+                                              form-control
+                                              ${errors &&
+                                                errors.cpf_cnpj &&
+                                                touched &&
+                                                touched.cpf_cnpj &&
+                                                'is-invalid'}
+                                            `}
+                                          value={values.cnpj}
+                                        />
+                                      )}
+                                    />
+                                    {errors &&
+                                    errors.cpf_cnpj &&
+                                    touched &&
+                                    touched.cpf_cnpj ? (
+                                      <div className="invalid-feedback">
+                                        {errors.cpf_cnpj}
+                                      </div>
+                                    ) : null}
+                                  </FormGroup>
+                                </Col>
+                              </Row>
+                            )}
+                          </>
+                        );
                       }
                       return '';
                     })()}

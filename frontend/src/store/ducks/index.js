@@ -7,6 +7,7 @@ import history from '~/app/history';
 
 import address from './address';
 import avatar from './avatar';
+import bank from './bank';
 import bankAccount from './bankAccount';
 import calender from './calender';
 import cep from './cep';
@@ -46,6 +47,7 @@ import types from './types';
 
 export default combineReducers({
   toastr: toastrReducer,
+  bank,
   bankAccount,
   customizer,
   calender,

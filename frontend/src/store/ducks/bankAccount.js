@@ -81,12 +81,10 @@ export const Creators = {
   }),
 
   // DELETANDO
-  deleteBankAccountRequest: (id, index, netsuite_id) => ({
+  deleteBankAccountRequest: id => ({
     type: Types.DELETE_REQUEST,
     payload: {
       id,
-      index,
-      netsuite_id,
     },
   }),
   deleteBankAccountSuccess: () => ({
