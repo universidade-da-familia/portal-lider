@@ -151,7 +151,7 @@ function AdminTableOrganizations({ data, reload }) {
                 {
                   locale: pt,
                 }
-              )}`}
+              )}.csv`}
               id="csv-download"
               className="btn btn-outline-info"
               data={excelData}
