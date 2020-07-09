@@ -207,6 +207,7 @@ const formParticipantInvite = Yup.object().shape({
 });
 
 const formRegisterNewAddress = Yup.object().shape({
+  id: Yup.string().required('O tipo é obrigatório'),
   type: Yup.string().required('O tipo é obrigatório'),
   other_type_name: Yup.string().when('type', {
     is: 'other',
@@ -221,6 +222,7 @@ const formRegisterNewAddress = Yup.object().shape({
   street_number: Yup.string().required('O número da rua é obrigatório'),
   neighborhood: Yup.string().required('O bairro é obrigatório'),
   complement: Yup.string().max(60, 'Máximo de 60 caracteres'),
+  receiver: Yup.string().required('O recebedor é obrigatório'),
 });
 
 const formChurchSchema = Yup.object().shape({
@@ -244,8 +246,26 @@ export default function UserProfile({ match, className }) {
   const [modalLogs, setModalLogs] = useState(false);
 
   const userId = localStorage.getItem('@dashboard/user');
+  const [profileAddresses, setProfileAddresses] = useState([
+    {
+      entity_id: parseInt(userId, 10),
+      id: null,
+      type: '',
+      other_type_name: '',
+      cep: '',
+      country: 'Brasil',
+      uf: '',
+      city: '',
+      street: '',
+      street_number: '',
+      neighborhood: '',
+      complement: '',
+      receiver: '',
+    },
+  ]);
   const [newAddress, setNewAddress] = useState({
     entity_id: parseInt(userId, 10),
+    id: '',
     type: '',
     other_type_name: '',
     cep: '',
@@ -257,6 +277,7 @@ export default function UserProfile({ match, className }) {
     neighborhood: '',
     complement: '',
     receiver: '',
+    main_address: true,
   });
   const [eventDetails, setEventDetails] = useState({
     id: '',
@@ -486,8 +507,6 @@ export default function UserProfile({ match, className }) {
         setCities(CountryStateCity.getCitiesOfState(event_data.uf));
       }
 
-      // checkpoint
-
       if (event_data.responsible_organization_id) {
         setSelectedChurch({
           id: event_data.organization.id,
@@ -624,6 +643,7 @@ export default function UserProfile({ match, className }) {
 
     setNewAddress({
       entity_id: parseInt(userId, 10),
+      id: '',
       type: '',
       other_type_name: '',
       cep: '',
@@ -635,6 +655,7 @@ export default function UserProfile({ match, className }) {
       neighborhood: '',
       complement: '',
       receiver: '',
+      main_address: true,
     });
   }
 
@@ -1020,7 +1041,42 @@ export default function UserProfile({ match, className }) {
   }
 
   function handleRegisterNewAddress(values) {
-    const address = [values];
+    const addressesPost = [];
+    const addressesPut = [];
+
+    if (values.id === 'other') {
+      delete values.id;
+
+      profileAddresses.map(address => {
+        address.main_address = false;
+        delete address.created_at;
+        delete address.updated_at;
+
+        addressesPut.push(address);
+      });
+
+      addressesPost.push(values);
+    } else {
+      profileAddresses.map(address => {
+        if (
+          address.id !== parseInt(values.id, 10) &&
+          address.main_address === true
+        ) {
+          address.main_address = false;
+          delete address.created_at;
+          delete address.updated_at;
+
+          addressesPut.push(address);
+        }
+        if (parseInt(values.id, 10) === address.id) {
+          address.main_address = true;
+          delete address.created_at;
+          delete address.updated_at;
+
+          addressesPut.push(address);
+        }
+      });
+    }
 
     const user_type = 'entity';
 
@@ -1028,8 +1084,8 @@ export default function UserProfile({ match, className }) {
       AddressActions.addressRequest(
         profile_data.netsuite_id,
         user_type,
-        address,
-        []
+        addressesPost,
+        addressesPut
       )
     );
 
@@ -1049,9 +1105,59 @@ export default function UserProfile({ match, className }) {
       </>,
       {
         onOk: () => finishInscriptions(),
-        onCancel: () => {},
+        onCancel: () => {
+          window.location.reload();
+        },
       }
     );
+  }
+
+  function handleChangeAddressType(event, setFieldValue) {
+    const { name, value } = event.target;
+
+    setFieldValue(name, value);
+
+    if (value !== 'other' && value !== '') {
+      const address = profileAddresses.find(
+        addressFind => addressFind.id === parseInt(value, 10)
+      );
+
+      // setCepState(address.cep);
+      setFieldValue('type', address.type);
+      setFieldValue('other_type_name', address.other_type_name);
+      setFieldValue('cep', address.cep);
+      setFieldValue('uf', address.uf);
+      setFieldValue('city', address.city);
+      setFieldValue('street', address.street);
+      setFieldValue('street_number', address.street_number);
+      setFieldValue('neighborhood', address.neighborhood);
+      setFieldValue('complement', address.complement);
+      setFieldValue('receiver', address.receiver);
+    } else if (value === '') {
+      setFieldValue('id', '');
+      setFieldValue('type', '');
+      setFieldValue('other_type_name', '');
+      setFieldValue('cep', '');
+      setFieldValue('uf', '');
+      setFieldValue('city', '');
+      setFieldValue('street', '');
+      setFieldValue('street_number', '');
+      setFieldValue('neighborhood', '');
+      setFieldValue('complement', '');
+      setFieldValue('receiver', '');
+    } else {
+      setFieldValue('id', 'other');
+      setFieldValue('type', '');
+      setFieldValue('other_type_name', '');
+      setFieldValue('cep', '');
+      setFieldValue('uf', '');
+      setFieldValue('city', '');
+      setFieldValue('street', '');
+      setFieldValue('street_number', '');
+      setFieldValue('neighborhood', '');
+      setFieldValue('complement', '');
+      setFieldValue('receiver', '');
+    }
   }
 
   function verifyInscriptionsFinished(e) {
@@ -1195,6 +1301,7 @@ export default function UserProfile({ match, className }) {
     if (loadCep && cep.length === 8) {
       setNewAddress({
         ...newAddress,
+        id: values.id,
         type: values.type,
         other_type_name: values.other_type_name || '',
         receiver: values.receiver,
@@ -1271,6 +1378,10 @@ export default function UserProfile({ match, className }) {
     const assistantsData = [];
     const products = [];
     let verify_user = false;
+
+    if (profile_data.addresses && profile_data.addresses.length > 0) {
+      setProfileAddresses(profile_data.addresses);
+    }
 
     if (event_data && profile_data.id) {
       let auxVerify = 0;
@@ -1387,6 +1498,7 @@ export default function UserProfile({ match, className }) {
         neighborhood: cep_data.bairro || newAddress.neighborhood,
         complement: cep_data.complemento || newAddress.complement,
         receiver: newAddress.receiver,
+        main_address: newAddress.main_address,
       });
 
       if (!modalRegisterNewAddress) {
@@ -1568,34 +1680,37 @@ export default function UserProfile({ match, className }) {
                                 color="success"
                                 className="btn-raised mr-3"
                                 onClick={() => {
-                                  if (
-                                    profile_data.addresses &&
-                                    profile_data.addresses.length === 0
-                                  ) {
-                                    toggleModalRegisterNewAddress();
-                                  } else {
-                                    toastr.confirm(
-                                      <>
-                                        <h5>
-                                          Tem certeza que deseja finalizar as
-                                          incrições?
-                                        </h5>
-                                        <br />
-                                        <div>
-                                          Os certificados impressos serão
-                                          enviados e eventuais participantes
-                                          adicionados após a finalização das
-                                          inscrições somente poderão receber a
-                                          via digital
-                                        </div>
-                                      </>,
-                                      {
-                                        onOk: () => finishInscriptions(),
-                                        onCancel: () => {},
-                                      }
-                                    );
-                                  }
+                                  toggleModalRegisterNewAddress();
                                 }}
+                                // onClick={() => {
+                                //   if (
+                                //     profile_data.addresses &&
+                                //     profile_data.addresses.length === 0
+                                //   ) {
+                                //     toggleModalRegisterNewAddress();
+                                //   } else {
+                                //     toastr.confirm(
+                                //       <>
+                                //         <h5>
+                                //           Tem certeza que deseja finalizar as
+                                //           incrições?
+                                //         </h5>
+                                //         <br />
+                                //         <div>
+                                //           Os certificados impressos serão
+                                //           enviados e eventuais participantes
+                                //           adicionados após a finalização das
+                                //           inscrições somente poderão receber a
+                                //           via digital
+                                //         </div>
+                                //       </>,
+                                //       {
+                                //         onOk: () => finishInscriptions(),
+                                //         onCancel: () => {},
+                                //       }
+                                //     );
+                                //   }
+                                // }}
                               >
                                 <CheckSquare size={15} /> Finalizar inscrições
                               </Button>
@@ -4360,13 +4475,14 @@ export default function UserProfile({ match, className }) {
           </ModalBody>
         </Modal>
 
+        {/* ---- CADASTRAR UM ENDEREÇO CASO NAO EXISTA */}
         <Modal
           isOpen={modalRegisterNewAddress}
           toggle={toggleModalRegisterNewAddress}
           size="lg"
         >
           <ModalHeader toggle={toggleModalRegisterNewAddress}>
-            Cadastre um endereço primeiro
+            Confirmar endereço de entrega do certificado
           </ModalHeader>
           <Formik
             enableReinitialize
@@ -4378,36 +4494,43 @@ export default function UserProfile({ match, className }) {
               <Form>
                 <ModalBody>
                   <Row>
-                    <Col sm="12" md="12" lg="12" xl="4">
+                    <Col sm="6">
                       <FormGroup>
-                        <Label for="type">Tipo endereço</Label>
+                        <Label for="id">Endereço</Label>
                         <div className="position-relative has-icon-left">
                           <Field
                             type="select"
                             component="select"
-                            id="type"
-                            name="type"
+                            id="id"
+                            name="id"
                             className={`
                               form-control
                               ${errors &&
-                                errors.type &&
+                                errors.id &&
                                 touched &&
-                                touched.type &&
+                                touched.id &&
                                 'is-invalid'}
                             `}
-                            onChange={handleChange}
+                            onChange={event =>
+                              handleChangeAddressType(event, setFieldValue)
+                            }
                           >
                             <option value="" defaultValue="" disabled="">
                               Selecione uma opção
                             </option>
-                            <option key="home" value="home">
-                              Casa
-                            </option>
-                            <option key="work" value="work">
-                              Trabalho
-                            </option>
+                            {profileAddresses.length > 0 &&
+                              profileAddresses[0].id !== null &&
+                              profileAddresses.map(address => (
+                                <option key={address.id} value={address.id}>
+                                  {address.type === 'home' && 'Casa'}
+                                  {address.type === 'work' && 'Trabalho'}
+                                  {address.type === 'other' &&
+                                    address.other_type_name}
+                                  {`: ${address.cep}, ${address.street}, ${address.street_number}`}
+                                </option>
+                              ))}
                             <option key="other" value="other">
-                              Outro
+                              Novo endereço
                             </option>
                           </Field>
                           {errors && errors.type && touched && touched.type ? (
@@ -4421,18 +4544,70 @@ export default function UserProfile({ match, className }) {
                         </div>
                       </FormGroup>
                     </Col>
-                    {values.type === 'other' && (
-                      <Col sm="12" md="12" lg="12" xl="8">
-                        <FormGroup>
-                          <Label for="other_type_name">
-                            Apelido do endereço
-                          </Label>
-                          <Field
-                            type="text"
-                            id="other_type_name"
-                            name="other_type_name"
-                            placeholder="Ex: Casa da minha mãe"
-                            className={`
+                  </Row>
+
+                  {!!values.id && (
+                    <>
+                      {values.id === 'other' && (
+                        <Row>
+                          <Col sm="12" md="12" lg="12" xl="4">
+                            <FormGroup>
+                              <Label for="type">Tipo endereço</Label>
+                              <div className="position-relative has-icon-left">
+                                <Field
+                                  type="select"
+                                  component="select"
+                                  id="type"
+                                  name="type"
+                                  className={`
+                              form-control
+                              ${errors &&
+                                errors.type &&
+                                touched &&
+                                touched.type &&
+                                'is-invalid'}
+                            `}
+                                  onChange={handleChange}
+                                >
+                                  <option value="" defaultValue="" disabled="">
+                                    Selecione uma opção
+                                  </option>
+                                  <option key="home" value="home">
+                                    Casa
+                                  </option>
+                                  <option key="work" value="work">
+                                    Trabalho
+                                  </option>
+                                  <option key="other" value="other">
+                                    Outro
+                                  </option>
+                                </Field>
+                                {errors &&
+                                errors.type &&
+                                touched &&
+                                touched.type ? (
+                                  <div className="invalid-feedback">
+                                    {errors.type}
+                                  </div>
+                                ) : null}
+                                <div className="form-control-position">
+                                  <Map size={14} color="#212529" />
+                                </div>
+                              </div>
+                            </FormGroup>
+                          </Col>
+                          {values.type === 'other' && (
+                            <Col sm="12" md="12" lg="12" xl="8">
+                              <FormGroup>
+                                <Label for="other_type_name">
+                                  Apelido do endereço
+                                </Label>
+                                <Field
+                                  type="text"
+                                  id="other_type_name"
+                                  name="other_type_name"
+                                  placeholder="Ex: Casa da minha mãe"
+                                  className={`
                               form-control
                               ${errors &&
                                 errors.other_type_name &&
@@ -4440,32 +4615,33 @@ export default function UserProfile({ match, className }) {
                                 touched.other_type_name &&
                                 'is-invalid'}
                             `}
-                          />
-                          {errors &&
-                          errors.other_type_name &&
-                          touched &&
-                          touched.other_type_name ? (
-                            <div className="invalid-feedback">
-                              {errors.other_type_name}
-                            </div>
-                          ) : null}
-                        </FormGroup>
-                      </Col>
-                    )}
-                  </Row>
+                                />
+                                {errors &&
+                                errors.other_type_name &&
+                                touched &&
+                                touched.other_type_name ? (
+                                  <div className="invalid-feedback">
+                                    {errors.other_type_name}
+                                  </div>
+                                ) : null}
+                              </FormGroup>
+                            </Col>
+                          )}
+                        </Row>
+                      )}
 
-                  <Row>
-                    <Col sm="12" md="3" lg="3" xl="3">
-                      <FormGroup>
-                        <Label for="cep">CEP</Label>
-                        <div className="position-relative has-icon-right">
-                          <CepFormat
-                            autoComplete="cep"
-                            id="cep"
-                            name="cep"
-                            placeholder="Ex: 17580-000"
-                            value={values.cep}
-                            className={`
+                      <Row>
+                        <Col sm="12" md="3" lg="3" xl="3">
+                          <FormGroup>
+                            <Label for="cep">CEP</Label>
+                            <div className="position-relative has-icon-right">
+                              <CepFormat
+                                autoComplete="cep"
+                                id="cep"
+                                name="cep"
+                                placeholder="Ex: 17580-000"
+                                value={values.cep}
+                                className={`
                                   form-control
                                   ${errors &&
                                     errors.cep &&
@@ -4473,35 +4649,40 @@ export default function UserProfile({ match, className }) {
                                     touched.cep &&
                                     'is-invalid'}
                                 `}
-                            onValueChange={val => {
-                              setLoadCep(true);
-                              handleCep(val.value, setFieldValue, values);
-                            }}
-                          />
-                          {errors && errors.cep && touched && touched.cep ? (
-                            <div className="invalid-feedback">{errors.cep}</div>
-                          ) : null}
-                          {cep_loading && (
-                            <div className="form-control-position">
-                              <RefreshCw
-                                size={14}
-                                color="#212529"
-                                className="spinner"
+                                onValueChange={val => {
+                                  setLoadCep(true);
+                                  handleCep(val.value, setFieldValue, values);
+                                }}
                               />
+                              {errors &&
+                              errors.cep &&
+                              touched &&
+                              touched.cep ? (
+                                <div className="invalid-feedback">
+                                  {errors.cep}
+                                </div>
+                              ) : null}
+                              {cep_loading && (
+                                <div className="form-control-position">
+                                  <RefreshCw
+                                    size={14}
+                                    color="#212529"
+                                    className="spinner"
+                                  />
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      </FormGroup>
-                    </Col>
-                    <Col sm="12" md="3" lg="3" xl="3">
-                      <FormGroup>
-                        <Label for="uf">Estado</Label>
-                        <Field
-                          readOnly
-                          type="text"
-                          id="uf"
-                          name="uf"
-                          className={`
+                          </FormGroup>
+                        </Col>
+                        <Col sm="12" md="3" lg="3" xl="3">
+                          <FormGroup>
+                            <Label for="uf">Estado</Label>
+                            <Field
+                              readOnly
+                              type="text"
+                              id="uf"
+                              name="uf"
+                              className={`
                                   form-control
                                   ${errors &&
                                     errors.uf &&
@@ -4509,22 +4690,24 @@ export default function UserProfile({ match, className }) {
                                     touched.uf &&
                                     'is-invalid'}
                                 `}
-                        />
-                        {errors && errors.uf && touched && touched.uf ? (
-                          <div className="invalid-feedback">{errors.uf}</div>
-                        ) : null}
-                      </FormGroup>
-                    </Col>
-                    <Col sm="12" md="12" lg="6" xl="6">
-                      <FormGroup>
-                        <Label for="city">Cidade</Label>
-                        <Field
-                          readOnly
-                          type="text"
-                          id="city"
-                          name="city"
-                          disabled={values.type !== 'other' || cep_loading}
-                          className={`
+                            />
+                            {errors && errors.uf && touched && touched.uf ? (
+                              <div className="invalid-feedback">
+                                {errors.uf}
+                              </div>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        <Col sm="12" md="12" lg="6" xl="6">
+                          <FormGroup>
+                            <Label for="city">Cidade</Label>
+                            <Field
+                              readOnly
+                              type="text"
+                              id="city"
+                              name="city"
+                              disabled={values.id !== 'other' || cep_loading}
+                              className={`
                                   form-control
                                   ${errors &&
                                     errors.city &&
@@ -4532,23 +4715,28 @@ export default function UserProfile({ match, className }) {
                                     touched.city &&
                                     'is-invalid'}
                                 `}
-                        />
-                        {errors && errors.city && touched && touched.city ? (
-                          <div className="invalid-feedback">{errors.city}</div>
-                        ) : null}
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col sm="12" md="12" lg="8" xl="6">
-                      <FormGroup>
-                        <Label for="street">Rua</Label>
-                        <div className="position-relative has-icon-left">
-                          <Field
-                            type="text"
-                            id="street"
-                            name="street"
-                            className={`
+                            />
+                            {errors &&
+                            errors.city &&
+                            touched &&
+                            touched.city ? (
+                              <div className="invalid-feedback">
+                                {errors.city}
+                              </div>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col sm="12" md="12" lg="8" xl="6">
+                          <FormGroup>
+                            <Label for="street">Rua</Label>
+                            <div className="position-relative has-icon-left">
+                              <Field
+                                type="text"
+                                id="street"
+                                name="street"
+                                className={`
                                   form-control
                                   ${errors &&
                                     errors.street &&
@@ -4556,30 +4744,30 @@ export default function UserProfile({ match, className }) {
                                     touched.street &&
                                     'is-invalid'}
                                 `}
-                          />
-                          {errors &&
-                          errors.street &&
-                          touched &&
-                          touched.street ? (
-                            <div className="invalid-feedback">
-                              {errors.street}
+                              />
+                              {errors &&
+                              errors.street &&
+                              touched &&
+                              touched.street ? (
+                                <div className="invalid-feedback">
+                                  {errors.street}
+                                </div>
+                              ) : null}
+                              <div className="form-control-position">
+                                <i className="fa fa-road" />
+                              </div>
                             </div>
-                          ) : null}
-                          <div className="form-control-position">
-                            <i className="fa fa-road" />
-                          </div>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                    <Col sm="12" md="12" lg="4" xl="2">
-                      <FormGroup>
-                        <Label for="street_number">Número</Label>
-                        <div className="position-relative has-icon-left">
-                          <Field
-                            type="text"
-                            id="street_number"
-                            name="street_number"
-                            className={`
+                          </FormGroup>
+                        </Col>
+                        <Col sm="12" md="12" lg="4" xl="2">
+                          <FormGroup>
+                            <Label for="street_number">Número</Label>
+                            <div className="position-relative has-icon-left">
+                              <Field
+                                type="text"
+                                id="street_number"
+                                name="street_number"
+                                className={`
                                   form-control
                                   ${errors &&
                                     errors.street_number &&
@@ -4587,30 +4775,30 @@ export default function UserProfile({ match, className }) {
                                     touched.street_number &&
                                     'is-invalid'}
                                 `}
-                          />
-                          {errors &&
-                          errors.street_number &&
-                          touched &&
-                          touched.street_number ? (
-                            <div className="invalid-feedback">
-                              {errors.street_number}
+                              />
+                              {errors &&
+                              errors.street_number &&
+                              touched &&
+                              touched.street_number ? (
+                                <div className="invalid-feedback">
+                                  {errors.street_number}
+                                </div>
+                              ) : null}
+                              <div className="form-control-position">
+                                <Navigation size={14} color="#212529" />
+                              </div>
                             </div>
-                          ) : null}
-                          <div className="form-control-position">
-                            <Navigation size={14} color="#212529" />
-                          </div>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                    <Col sm="12" md="12" lg="12" xl="4">
-                      <FormGroup>
-                        <Label for="neighborhood">Bairro</Label>
-                        <div className="position-relative has-icon-left">
-                          <Field
-                            type="text"
-                            id="neighborhood"
-                            name="neighborhood"
-                            className={`
+                          </FormGroup>
+                        </Col>
+                        <Col sm="12" md="12" lg="12" xl="4">
+                          <FormGroup>
+                            <Label for="neighborhood">Bairro</Label>
+                            <div className="position-relative has-icon-left">
+                              <Field
+                                type="text"
+                                id="neighborhood"
+                                name="neighborhood"
+                                className={`
                                   form-control
                                   ${errors &&
                                     errors.neighborhood &&
@@ -4618,32 +4806,32 @@ export default function UserProfile({ match, className }) {
                                     touched.neighborhood &&
                                     'is-invalid'}
                                 `}
-                          />
-                          {errors &&
-                          errors.neighborhood &&
-                          touched &&
-                          touched.neighborhood ? (
-                            <div className="invalid-feedback">
-                              {errors.neighborhood}
+                              />
+                              {errors &&
+                              errors.neighborhood &&
+                              touched &&
+                              touched.neighborhood ? (
+                                <div className="invalid-feedback">
+                                  {errors.neighborhood}
+                                </div>
+                              ) : null}
+                              <div className="form-control-position">
+                                <i className="fa fa-map-signs" />
+                              </div>
                             </div>
-                          ) : null}
-                          <div className="form-control-position">
-                            <i className="fa fa-map-signs" />
-                          </div>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col sm="12" md="6" lg="6" xl="6">
-                      <FormGroup>
-                        <Label for="complement">Complemento</Label>
-                        <div className="position-relative has-icon-left">
-                          <Field
-                            type="text"
-                            id="complement"
-                            name="complement"
-                            className={`
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col sm="12" md="6" lg="6" xl="6">
+                          <FormGroup>
+                            <Label for="complement">Complemento</Label>
+                            <div className="position-relative has-icon-left">
+                              <Field
+                                type="text"
+                                id="complement"
+                                name="complement"
+                                className={`
                                   form-control
                                   ${errors &&
                                     errors.complement &&
@@ -4651,38 +4839,40 @@ export default function UserProfile({ match, className }) {
                                     touched.complement &&
                                     'is-invalid'}
                                 `}
-                          />
-                          {errors &&
-                          errors.complement &&
-                          touched &&
-                          touched.complement ? (
-                            <div className="invalid-feedback">
-                              {errors.complement}
+                              />
+                              {errors &&
+                              errors.complement &&
+                              touched &&
+                              touched.complement ? (
+                                <div className="invalid-feedback">
+                                  {errors.complement}
+                                </div>
+                              ) : null}
+                              <div className="form-control-position">
+                                <Edit size={14} color="#212529" />
+                              </div>
                             </div>
-                          ) : null}
-                          <div className="form-control-position">
-                            <Edit size={14} color="#212529" />
-                          </div>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                    <Col sm="12" md="6" lg="6" xl="6">
-                      <FormGroup>
-                        <Label for="receiver">Recebedor</Label>
-                        <div className="position-relative has-icon-left">
-                          <Field
-                            type="text"
-                            id="receiver"
-                            name="receiver"
-                            className="form-control"
-                          />
-                          <div className="form-control-position">
-                            <Edit size={14} color="#212529" />
-                          </div>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                  </Row>
+                          </FormGroup>
+                        </Col>
+                        <Col sm="12" md="6" lg="6" xl="6">
+                          <FormGroup>
+                            <Label for="receiver">Recebedor</Label>
+                            <div className="position-relative has-icon-left">
+                              <Field
+                                type="text"
+                                id="receiver"
+                                name="receiver"
+                                className="form-control"
+                              />
+                              <div className="form-control-position">
+                                <Edit size={14} color="#212529" />
+                              </div>
+                            </div>
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                    </>
+                  )}
                 </ModalBody>
                 <ModalFooter>
                   <Button
@@ -4692,15 +4882,11 @@ export default function UserProfile({ match, className }) {
                   >
                     Voltar
                   </Button>
-                  {/* {loading ? (
-                    <Button disabled className="btn-secondary">
-                      Criando pedido, aguarde...
-                    </Button>
-                  ) : ( */}
                   <Button type="submit" className="btn-success">
-                    Cadastrar endereço
+                    {profileAddresses[0].id !== null
+                      ? 'Confirmar endereço'
+                      : 'Cadastrar endereço'}
                   </Button>
-                  {/* )} */}
                 </ModalFooter>
               </Form>
             )}
