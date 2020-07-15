@@ -1266,14 +1266,20 @@ function* setQuitterParticipant(action) {
 
 function* editEventParticipant(action) {
   try {
-    const { participants_id, event_id } = action.payload;
+    const { organizators_id, participants_id, event_id } = action.payload;
 
     yield call(api.put, `/participant_print_date`, {
       participants_id,
       event_id,
     });
 
+    yield call(api.put, `/organizator_print_date`, {
+      organizators_id,
+      event_id,
+    });
+
     yield put(ParticipantActions.editPrintDateSuccess());
+
     window.location.reload();
   } catch (err) {
     if (err.message === 'Network Error') {
