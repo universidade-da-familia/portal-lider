@@ -309,9 +309,10 @@ export const Creators = {
   }),
 
   // SET PARTICIPANTE DESISTENTE/NAO DESISTENTE
-  editPrintDateRequest: (participants_id, event_id) => ({
+  editPrintDateRequest: (organizators_id, participants_id, event_id) => ({
     type: Types.EDIT_PRINT_DATE_REQUEST,
     payload: {
+      organizators_id,
       participants_id,
       event_id,
     },

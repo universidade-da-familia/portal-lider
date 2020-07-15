@@ -317,6 +317,7 @@ export default function UserProfile({ match, className }) {
   const [pdfButton, setPdfButton] = useState(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [participantsIds, setParticipantsIds] = useState([]);
+  const [organizatorsIds, setOrganizatorsIds] = useState([]);
   const [modalChurch, setModalChurch] = useState(false);
   const [modalChurchData, setModalChurchData] = useState({
     uf: '',
@@ -600,6 +601,7 @@ export default function UserProfile({ match, className }) {
           name: formatName(participant.name),
           checked: participant.checked,
           participant_id: participant.participant_id,
+          organizator_id: participant.organizator_id,
           print_date: participant.print_date,
         };
       })
@@ -614,6 +616,7 @@ export default function UserProfile({ match, className }) {
       onOk: () => {
         dispatch(
           ParticipantActions.editPrintDateRequest(
+            organizatorsIds,
             participantsIds,
             event_data.id
           )
@@ -941,6 +944,7 @@ export default function UserProfile({ match, className }) {
           name: participant.name,
           checked: true,
           participant_id: participant.participant_id,
+          organizator_id: participant.organizator_id,
           print_date: participant.print_date,
         });
 
@@ -956,6 +960,7 @@ export default function UserProfile({ match, className }) {
           name: participant.name,
           checked: false,
           participant_id: participant.participant_id,
+          organizator_id: participant.organizator_id,
           print_date: participant.print_date,
         });
 
@@ -1000,16 +1005,22 @@ export default function UserProfile({ match, className }) {
 
     const participants = [];
     const participantsId = [];
+    const organizatorsId = [];
+
     certificateParticipantsAux.map(participant => {
       if (participant.checked === true && !!participant.name) {
         participants.push(participant.name);
         if (participant.participant_id && participant.print_date === null) {
           participantsId.push(participant.participant_id);
         }
+        if (participant.organizator_id && participant.print_date === null) {
+          organizatorsId.push(participant.organizator_id);
+        }
       }
     });
 
     setParticipantsIds(participantsId);
+    setOrganizatorsIds(organizatorsId);
 
     if (participants.length === 0) {
       toastr.warning('Aviso!', 'Mínimo de um nome para impressão');
@@ -1095,7 +1106,7 @@ export default function UserProfile({ match, className }) {
 
     toastr.confirm(
       <>
-        <h5>Tem certeza que deseja finalizar as incrições?</h5>
+        <h5>Tem certeza que deseja finalizar as inscrições?</h5>
         <br />
         <div>
           Os certificados impressos serão enviados e eventuais participantes
@@ -1435,6 +1446,17 @@ export default function UserProfile({ match, className }) {
         //   });
         // });
 
+        event_data.organizators.map(organizator => {
+          participants.push({
+            id: organizator.id,
+            name: organizator.name,
+            checked: false,
+            participant_id: null,
+            organizator_id: organizator.pivot.entity_id,
+            print_date: organizator.pivot.print_date,
+          });
+        });
+
         event_data.participants.map(participant => {
           if (participant.pivot.is_quitter === false) {
             if (participant.pivot.assistant) {
@@ -1444,6 +1466,7 @@ export default function UserProfile({ match, className }) {
                 name: participant.name,
                 checked: false,
                 participant_id: participant.pivot.id,
+                organizator_id: null,
                 print_date: participant.pivot.print_date,
               });
             } else {
@@ -1452,6 +1475,7 @@ export default function UserProfile({ match, className }) {
                 name: participant.name,
                 checked: false,
                 participant_id: participant.pivot.id,
+                organizator_id: null,
                 print_date: participant.pivot.print_date,
               });
             }
@@ -1460,6 +1484,7 @@ export default function UserProfile({ match, className }) {
 
         setCertificateParticipants(participants);
         setCertificateParticipantsAux(participants);
+
         setAssistants(assistantsData);
       }
 
@@ -1556,7 +1581,8 @@ export default function UserProfile({ match, className }) {
                             toastr.confirm(
                               <>
                                 <h5>
-                                  Tem certeza que deseja finalizar as incrições?
+                                  Tem certeza que deseja finalizar as
+                                  inscrições?
                                 </h5>
                                 <br />
                                 <div>
@@ -1693,7 +1719,7 @@ export default function UserProfile({ match, className }) {
                                 //       <>
                                 //         <h5>
                                 //           Tem certeza que deseja finalizar as
-                                //           incrições?
+                                //           inscrições?
                                 //         </h5>
                                 //         <br />
                                 //         <div>
