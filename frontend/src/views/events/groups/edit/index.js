@@ -81,7 +81,6 @@ import CepFormat from '~/components/fields/CepFormat';
 import CPFFormat from '~/components/fields/CPFFormat';
 import PhoneFormat from '~/components/fields/PhoneFormat';
 import QuantityFormat from '~/components/fields/QuantityFormat';
-import CustomModal from '~/components/modal';
 import { validateCPF } from '~/services/validateCPF';
 import { Creators as AddressActions } from '~/store/ducks/address';
 import { Creators as CepActions } from '~/store/ducks/cep';
@@ -757,6 +756,7 @@ export default function UserProfile({ match, className }) {
   }
 
   function confirmModalAddTrainingLeader(values) {
+    console.log(values);
     const { name, cpf, email, sex } = values;
     const password = randomstring.generate(6);
 
@@ -2827,14 +2827,12 @@ export default function UserProfile({ match, className }) {
             </Row>
           </TabPane>
 
-          <CustomModal
-            isOpen={modalViewLeader}
-            toggle={toggleCloseModalViewLeader}
-            header="Visualizar dados do líder"
-            body={
-              <Formik enableReinitialize initialValues={leaderViewData}>
-                {() => (
-                  <Form>
+          <Modal isOpen={modalViewLeader} toggle={toggleCloseModalViewLeader}>
+            <ModalHeader>Visualizar dados do líder</ModalHeader>
+            <Formik enableReinitialize initialValues={leaderViewData}>
+              {() => (
+                <Form>
+                  <ModalBody>
                     <FormGroup>
                       <Row className="mb-2 px-2">
                         <Col sm="6" md="6" lg="6">
@@ -2915,11 +2913,11 @@ export default function UserProfile({ match, className }) {
                         />
                       </Col>
                     </FormGroup>
-                  </Form>
-                )}
-              </Formik>
-            }
-          />
+                  </ModalBody>
+                </Form>
+              )}
+            </Formik>
+          </Modal>
 
           {/* Participantes */}
           <TabPane tabId="3">
@@ -3080,309 +3078,298 @@ export default function UserProfile({ match, className }) {
           </TabPane>
         </TabContent>
 
-        <CustomModal
-          isOpen={modalOrganizator}
-          toggle={toggleModalOrganizator}
-          header="Pesquisar líder/líder em treinamento"
-          body={
-            <>
-              <Formik
-                initialValues={{
-                  organizator_type: '',
-                  country: event_data.country || 'BRASIL',
-                  cpf: '',
-                  email: '',
-                }}
-                validationSchema={formOrganizator}
-              >
-                {({ errors, touched, values, setFieldValue }) => (
-                  <Form>
-                    <div className="form-body">
-                      <Row className="d-flex flex-row">
-                        <Col sm="12" md="12" lg="5" className="mb-2">
-                          <Field
-                            type="select"
-                            component="select"
-                            id="organizator_type"
-                            name="organizator_type"
-                            className={`
+        <Modal isOpen={modalOrganizator} toggle={toggleModalOrganizator}>
+          <ModalHeader>Pequisar líder/líder em treinamento</ModalHeader>
+          <Formik
+            initialValues={{
+              organizator_type: '',
+              country: event_data.country || 'BRASIL',
+              cpf: '',
+              email: '',
+            }}
+            validationSchema={formOrganizator}
+          >
+            {({ errors, touched, values, setFieldValue }) => (
+              <Form>
+                <ModalBody>
+                  <div className="form-body">
+                    <Row className="d-flex flex-row">
+                      <Col sm="12" md="12" lg="5" className="mb-2">
+                        <Field
+                          type="select"
+                          component="select"
+                          id="organizator_type"
+                          name="organizator_type"
+                          className={`
                           form-control
                           ${errors.organizator_type &&
                             touched.organizator_type &&
                             'is-invalid'}
                         `}
-                            onChange={event =>
-                              handleOrganizatorType(event, setFieldValue)
-                            }
-                          >
-                            <option value="" disabled="">
-                              Selecione uma opção
+                          onChange={event =>
+                            handleOrganizatorType(event, setFieldValue)
+                          }
+                        >
+                          <option value="" disabled="">
+                            Selecione uma opção
+                          </option>
+                          {event_data.defaultEvent.max_organizators >
+                            event_data.organizators.length && (
+                            <option value={options[0].value}>
+                              {options[0].label}
                             </option>
-                            {event_data.defaultEvent.max_organizators >
-                              event_data.organizators.length && (
-                              <option value={options[0].value}>
-                                {options[0].label}
-                              </option>
-                            )}
+                          )}
 
-                            {event_data.defaultEvent.max_assistants >
-                              assistants.length && (
-                              <option value={options[1].value}>
-                                {options[1].label}
-                              </option>
-                            )}
-                          </Field>
-                          {errors.organizator_type &&
-                          touched.organizator_type ? (
-                            <div className="invalid-feedback">
-                              {errors.organizator_type}
-                            </div>
-                          ) : null}
-                        </Col>
-                        {(() => {
-                          if (values.organizator_type !== '') {
-                            if (event_data.country === 'BRASIL') {
-                              return (
-                                <Col lg="7" md="12" sm="12">
-                                  <FormGroup>
-                                    <div className="position-relative has-icon-right">
-                                      <Field
-                                        name="cpf"
-                                        id="cpf"
-                                        className={`
-                              form-control
-                              ${errors.cpf && touched.cpf && 'is-invalid'}
-                            `}
-                                        validate={validateCPF}
-                                        render={({ field }) => (
-                                          <CPFFormat
-                                            {...field}
-                                            id="cpf"
-                                            name="cpf"
-                                            placeholder="digite aqui o CPF"
-                                            className={`
-                                    form-control
-                                    ${errors.cpf && touched.cpf && 'is-invalid'}
-                                  `}
-                                            value={values.cpf}
-                                            onValueChange={val =>
-                                              handleSearchOrganizator(
-                                                val.value,
-                                                null,
-                                                setFieldValue,
-                                                values
-                                              )
-                                            }
-                                          />
-                                        )}
-                                      />
-                                      {errors.cpf && touched.cpf ? (
-                                        <div className="invalid-feedback">
-                                          {errors.cpf}
-                                        </div>
-                                      ) : null}
-                                      {loadingOrganizator && (
-                                        <div className="form-control-position">
-                                          <RefreshCw
-                                            size={16}
-                                            className="spinner"
-                                          />
-                                        </div>
-                                      )}
-                                    </div>
-                                  </FormGroup>
-                                </Col>
-                              );
-                            }
+                          {event_data.defaultEvent.max_assistants >
+                            assistants.length && (
+                            <option value={options[1].value}>
+                              {options[1].label}
+                            </option>
+                          )}
+                        </Field>
+                        {errors.organizator_type && touched.organizator_type ? (
+                          <div className="invalid-feedback">
+                            {errors.organizator_type}
+                          </div>
+                        ) : null}
+                      </Col>
+                      {(() => {
+                        if (values.organizator_type !== '') {
+                          if (event_data.country === 'BRASIL') {
                             return (
                               <Col lg="7" md="12" sm="12">
                                 <FormGroup>
                                   <div className="position-relative has-icon-right">
-                                    <InputGroup>
-                                      <Field
-                                        type="text"
-                                        name="email"
-                                        id="email"
-                                        placeholder="digite aqui o email"
-                                        className={`
-                                form-control
-                                ${errors.email && touched.email && 'is-invalid'}
-                              `}
-                                      />
-                                      {loadingOrganizator && (
-                                        <div className="form-control-position">
-                                          <RefreshCw
-                                            size={16}
-                                            className="spinner"
-                                          />
-                                        </div>
-                                      )}
-                                      <InputGroupAddon addonType="append">
-                                        <NavLink
-                                          className="btn bg-info"
-                                          disabled={!values.email}
-                                          onClick={e => {
-                                            e.preventDefault();
+                                    <Field
+                                      name="cpf"
+                                      id="cpf"
+                                      className={`
+                              form-control
+                              ${errors.cpf && touched.cpf && 'is-invalid'}
+                            `}
+                                      validate={validateCPF}
+                                      render={({ field }) => (
+                                        <CPFFormat
+                                          {...field}
+                                          id="cpf"
+                                          name="cpf"
+                                          placeholder="digite aqui o CPF"
+                                          className={`
+                                    form-control
+                                    ${errors.cpf && touched.cpf && 'is-invalid'}
+                                  `}
+                                          value={values.cpf}
+                                          onValueChange={val =>
                                             handleSearchOrganizator(
+                                              val.value,
                                               null,
-                                              values.email,
                                               setFieldValue,
                                               values
-                                            );
-                                          }}
-                                        >
-                                          <Search size={18} color="#fff" />
-                                        </NavLink>
-                                      </InputGroupAddon>
-                                      {errors.email && touched.email ? (
-                                        <div className="invalid-feedback">
-                                          {errors.email}
-                                        </div>
-                                      ) : null}
-                                    </InputGroup>
+                                            )
+                                          }
+                                        />
+                                      )}
+                                    />
+                                    {errors.cpf && touched.cpf ? (
+                                      <div className="invalid-feedback">
+                                        {errors.cpf}
+                                      </div>
+                                    ) : null}
+                                    {loadingOrganizator && (
+                                      <div className="form-control-position">
+                                        <RefreshCw
+                                          size={16}
+                                          className="spinner"
+                                        />
+                                      </div>
+                                    )}
                                   </div>
                                 </FormGroup>
                               </Col>
                             );
                           }
-                        })()}
-                      </Row>
-                    </div>
+                          return (
+                            <Col lg="7" md="12" sm="12">
+                              <FormGroup>
+                                <div className="position-relative has-icon-right">
+                                  <InputGroup>
+                                    <Field
+                                      type="text"
+                                      name="email"
+                                      id="email"
+                                      placeholder="digite aqui o email"
+                                      className={`
+                                form-control
+                                ${errors.email && touched.email && 'is-invalid'}
+                              `}
+                                    />
+                                    {loadingOrganizator && (
+                                      <div className="form-control-position">
+                                        <RefreshCw
+                                          size={16}
+                                          className="spinner"
+                                        />
+                                      </div>
+                                    )}
+                                    <InputGroupAddon addonType="append">
+                                      <NavLink
+                                        className="btn bg-info"
+                                        disabled={!values.email}
+                                        onClick={e => {
+                                          e.preventDefault();
+                                          handleSearchOrganizator(
+                                            null,
+                                            values.email,
+                                            setFieldValue,
+                                            values
+                                          );
+                                        }}
+                                      >
+                                        <Search size={18} color="#fff" />
+                                      </NavLink>
+                                    </InputGroupAddon>
+                                    {errors.email && touched.email ? (
+                                      <div className="invalid-feedback">
+                                        {errors.email}
+                                      </div>
+                                    ) : null}
+                                  </InputGroup>
+                                </div>
+                              </FormGroup>
+                            </Col>
+                          );
+                        }
+                      })()}
+                    </Row>
+                  </div>
 
-                    <div>
-                      {leaderData !== null && leaderData.id && (
-                        <Col>
-                          <Card>
-                            <CardHeader className="text-center">
-                              <img
-                                src={
-                                  leaderData.file
-                                    ? leaderData.file.url
-                                    : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
-                                }
-                                alt={leaderData.name}
-                                width="150"
-                                height="150"
-                                className="rounded-circle gradient-mint"
-                              />
-                            </CardHeader>
-                            <CardBody>
-                              <h4 className="card-title text-center">
-                                {leaderData.name}
-                              </h4>
-                              <p className="category text-gray text-center font-small-4">
-                                {leaderData.cpf}
-                              </p>
-                              <hr className="grey" />
-                              <Row className="mb-1">
-                                <Col
-                                  xs="6"
-                                  className="text-center text-truncate"
-                                >
-                                  <Phone size={18} color="#212529" />
-                                  {leaderData.phone ? (
-                                    <span className="ml-2">
-                                      {leaderData.phone}
-                                    </span>
-                                  ) : (
-                                    <span className="ml-2">Sem telefone</span>
-                                  )}
-                                </Col>
-                                <Col
-                                  xs="6"
-                                  className="text-center text-truncate"
-                                >
-                                  <Mail size={18} color="#212529" />
-                                  {leaderData.email ? (
-                                    <span className="ml-2">
-                                      {leaderData.email}
-                                    </span>
-                                  ) : (
-                                    <span className="ml-2">Sem email</span>
-                                  )}
-                                </Col>
-                              </Row>
-                            </CardBody>
-                          </Card>
-                        </Col>
+                  <div>
+                    {leaderData !== null && leaderData.id && (
+                      <Col>
+                        <Card>
+                          <CardHeader className="text-center">
+                            <img
+                              src={
+                                leaderData.file
+                                  ? leaderData.file.url
+                                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+                              }
+                              alt={leaderData.name}
+                              width="150"
+                              height="150"
+                              className="rounded-circle gradient-mint"
+                            />
+                          </CardHeader>
+                          <CardBody>
+                            <h4 className="card-title text-center">
+                              {leaderData.name}
+                            </h4>
+                            <p className="category text-gray text-center font-small-4">
+                              {leaderData.cpf}
+                            </p>
+                            <hr className="grey" />
+                            <Row className="mb-1">
+                              <Col xs="6" className="text-center text-truncate">
+                                <Phone size={18} color="#212529" />
+                                {leaderData.phone ? (
+                                  <span className="ml-2">
+                                    {leaderData.phone}
+                                  </span>
+                                ) : (
+                                  <span className="ml-2">Sem telefone</span>
+                                )}
+                              </Col>
+                              <Col xs="6" className="text-center text-truncate">
+                                <Mail size={18} color="#212529" />
+                                {leaderData.email ? (
+                                  <span className="ml-2">
+                                    {leaderData.email}
+                                  </span>
+                                ) : (
+                                  <span className="ml-2">Sem email</span>
+                                )}
+                              </Col>
+                            </Row>
+                          </CardBody>
+                        </Card>
+                      </Col>
+                    )}
+                  </div>
+                  <div>
+                    {trainingLeaderError &&
+                      organizatorType === 'training_leader' &&
+                      event_data.defaultEvent.assistant_hierarchy_id === 0 && (
+                        <>
+                          <p className="text-danger p-3">
+                            {organizator_data !== null &&
+                            !!organizator_data?.error
+                              ? organizator_data.error.message
+                              : ''}
+                          </p>
+                          <Row className="justify-content-between p-3">
+                            <Button
+                              color="success"
+                              onClick={toggleModalAddTrainingLeader}
+                            >
+                              <i className="fa fa-plus" /> Cadastrar novo líder
+                              em treinamento
+                            </Button>
+                          </Row>
+                        </>
                       )}
-                    </div>
-                  </Form>
-                )}
-              </Formik>
-              <div>
-                {trainingLeaderError &&
-                  organizatorType === 'training_leader' &&
-                  event_data.defaultEvent.assistant_hierarchy_id === 0 && (
-                    <>
-                      <p className="text-danger p-3">
-                        {organizator_data !== null && !!organizator_data?.error
-                          ? organizator_data.error.message
-                          : ''}
-                      </p>
-                      <Row className="justify-content-between p-3">
-                        <Button
-                          color="success"
-                          onClick={toggleModalAddTrainingLeader}
-                        >
-                          <i className="fa fa-plus" /> Cadastrar novo líder em
-                          treinamento
-                        </Button>
-                      </Row>
-                    </>
-                  )}
-              </div>
-            </>
-          }
-          footer={
-            <>
-              <Button
-                className="ml-1 my-1"
-                color="danger"
-                onClick={toggleModalOrganizator}
-              >
-                Cancelar
-              </Button>{' '}
-              <Button
-                className={`${
-                  leaderData !== null
-                    ? 'ml-1 my-1 btn-success'
-                    : 'ml-1 my-1 btn-secondary'
-                }`}
-                onClick={confirmModalOrganizator}
-                disabled={leaderData === null}
-              >
-                {loading ? (
-                  <BounceLoader
-                    size={23}
-                    color="#fff"
-                    css={css`
-                      display: block;
-                      margin: 0 auto;
-                    `}
-                  />
-                ) : (
-                  'Adicionar organizador'
-                )}
-              </Button>
-            </>
-          }
-        />
+                  </div>
+                </ModalBody>
+                <ModalFooter>
+                  <Button
+                    className="ml-1 my-1"
+                    color="danger"
+                    onClick={toggleModalOrganizator}
+                  >
+                    Cancelar
+                  </Button>{' '}
+                  <Button
+                    className={`${
+                      leaderData !== null
+                        ? 'ml-1 my-1 btn-success'
+                        : 'ml-1 my-1 btn-secondary'
+                    }`}
+                    onClick={confirmModalOrganizator}
+                    disabled={leaderData === null}
+                  >
+                    {loading ? (
+                      <BounceLoader
+                        size={23}
+                        color="#fff"
+                        css={css`
+                          display: block;
+                          margin: 0 auto;
+                        `}
+                      />
+                    ) : (
+                      'Adicionar organizador'
+                    )}
+                  </Button>
+                </ModalFooter>
+              </Form>
+            )}
+          </Formik>
+        </Modal>
 
-        <CustomModal
+        <Modal
           isOpen={modalChangeOrganizator}
           toggle={toggleModalChangeOrganizator}
-          header="Pesquisar líder para substitui-lo"
-          body={
-            <Formik
-              initialValues={{
-                organizator_type: 'leader',
-                cpf: '',
-              }}
-              validationSchema={formOrganizator}
-            >
-              {({ values, setFieldValue, errors, touched }) => (
-                <Form>
+        >
+          <ModalHeader>Pesquisar líder para substitui-lo</ModalHeader>
+          <Formik
+            initialValues={{
+              organizator_type: 'leader',
+              cpf: '',
+            }}
+            validationSchema={formOrganizator}
+          >
+            {({ values, setFieldValue, errors, touched }) => (
+              <Form>
+                <ModalBody>
                   <div className="form-body">
                     <Row className="d-flex flex-row">
                       <Col sm="12" md="12" lg="12" className="mb-2">
@@ -3477,51 +3464,47 @@ export default function UserProfile({ match, className }) {
                       </Col>
                     )}
                   </div>
-                </Form>
-              )}
-            </Formik>
-          }
-          footer={
-            <>
-              <Button
-                className="ml-1 my-1"
-                color="danger"
-                onClick={toggleModalChangeOrganizator}
-              >
-                Cancelar
-              </Button>
-              <Button
-                className={`${
-                  leaderData !== null
-                    ? 'ml-1 my-1 btn-success'
-                    : 'btn-secundary ml-1 my-1'
-                }`}
-                // color="success"
-                onClick={confirmModalChangeOrganizator}
-                disabled={leaderData === null}
-              >
-                {loading ? (
-                  <BounceLoader
-                    size={23}
-                    color="#fff"
-                    css={css`
-                      display: block;
-                      margin: 0 auto;
-                    `}
-                  />
-                ) : (
-                  'Trocar líder principal'
-                )}
-              </Button>
-            </>
-          }
-        />
+                </ModalBody>
+                <ModalFooter>
+                  <Button
+                    className="ml-1 my-1"
+                    color="danger"
+                    onClick={toggleModalChangeOrganizator}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    className={`${
+                      leaderData !== null
+                        ? 'ml-1 my-1 btn-success'
+                        : 'btn-secundary ml-1 my-1'
+                    }`}
+                    // color="success"
+                    onClick={confirmModalChangeOrganizator}
+                    disabled={leaderData === null}
+                  >
+                    {loading ? (
+                      <BounceLoader
+                        size={23}
+                        color="#fff"
+                        css={css`
+                          display: block;
+                          margin: 0 auto;
+                        `}
+                      />
+                    ) : (
+                      'Trocar líder principal'
+                    )}
+                  </Button>
+                </ModalFooter>
+              </Form>
+            )}
+          </Formik>
+        </Modal>
 
-        <CustomModal
-          isOpen={modalParticipant}
-          toggle={toggleModalParticipant}
-          header="Inserir participante"
-          body={
+        <Modal isOpen={modalParticipant} toggle={toggleModalParticipant}>
+          <ModalHeader>Inserir participante</ModalHeader>
+          <ModalBody>
             <CardBody className="d-flex flex-column justify-content-center">
               <Button
                 outline
@@ -3579,272 +3562,263 @@ export default function UserProfile({ match, className }) {
                 </div>
               </Button>
             </CardBody>
-          }
-        />
+          </ModalBody>
+        </Modal>
 
-        <CustomModal
+        <Modal
           isOpen={modalSearchParticipant}
           toggle={toggleModalSearchParticipant}
-          header={
-            event_data.country === 'BRASIL'
+        >
+          <ModalHeader>
+            {event_data.country === 'BRASIL'
               ? 'Pesquisar participante por CPF'
-              : 'Pesquisar participante por email'
-          }
-          body={
-            <>
-              <Formik
-                initialValues={{
-                  country: event_data.country || 'BRASIL',
-                  cpf: '',
-                  email: '',
-                }}
-                validationSchema={formParticipant}
-              >
-                {({ errors, touched, values }) => (
-                  <Form>
-                    <div className="form-body">
-                      <Row className="d-flex flex-row">
-                        <Col lg="12" md="12" sm="12">
-                          <FormGroup>
-                            {event_data.country === 'BRASIL' ? (
-                              <div className="position-relative has-icon-right">
-                                <Field
-                                  name="cpf"
-                                  id="cpf"
-                                  className={`
+              : 'Pesquisar participante por email'}
+          </ModalHeader>
+          <Formik
+            initialValues={{
+              country: event_data.country || 'BRASIL',
+              cpf: '',
+              email: '',
+            }}
+            validationSchema={formParticipant}
+          >
+            {({ errors, touched, values }) => (
+              <Form>
+                <ModalBody>
+                  <div className="form-body">
+                    <Row className="d-flex flex-row">
+                      <Col lg="12" md="12" sm="12">
+                        <FormGroup>
+                          {event_data.country === 'BRASIL' ? (
+                            <div className="position-relative has-icon-right">
+                              <Field
+                                name="cpf"
+                                id="cpf"
+                                className={`
                                 form-control
                                 ${errors.cpf && touched.cpf && 'is-invalid'}
                               `}
-                                  validate={validateCPF}
-                                  render={({ field }) => (
-                                    <CPFFormat
-                                      {...field}
-                                      id="cpf"
-                                      name="cpf"
-                                      placeholder="digite aqui o CPF"
-                                      className={`
+                                validate={validateCPF}
+                                render={({ field }) => (
+                                  <CPFFormat
+                                    {...field}
+                                    id="cpf"
+                                    name="cpf"
+                                    placeholder="digite aqui o CPF"
+                                    className={`
                                       form-control
                                       ${errors.cpf &&
                                         touched.cpf &&
                                         'is-invalid'}
                                     `}
-                                      value={values.cpf}
-                                      onValueChange={val =>
-                                        handleSearchParticipant(val.value, null)
-                                      }
-                                    />
-                                  )}
-                                />
-                                {errors.cpf && touched.cpf ? (
-                                  <div className="invalid-feedback">
-                                    {errors.cpf}
-                                  </div>
-                                ) : null}
-                                {loadingOrganizator && (
-                                  <div className="form-control-position">
-                                    <RefreshCw size={16} className="spinner" />
-                                  </div>
+                                    value={values.cpf}
+                                    onValueChange={val =>
+                                      handleSearchParticipant(val.value, null)
+                                    }
+                                  />
                                 )}
-                              </div>
-                            ) : (
-                              <div className="position-relative has-icon-right">
-                                <InputGroup>
-                                  <Field
-                                    type="text"
-                                    name="email"
-                                    id="email"
-                                    placeholder="digite aqui o email"
-                                    className={`
+                              />
+                              {errors.cpf && touched.cpf ? (
+                                <div className="invalid-feedback">
+                                  {errors.cpf}
+                                </div>
+                              ) : null}
+                              {loadingOrganizator && (
+                                <div className="form-control-position">
+                                  <RefreshCw size={16} className="spinner" />
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="position-relative has-icon-right">
+                              <InputGroup>
+                                <Field
+                                  type="text"
+                                  name="email"
+                                  id="email"
+                                  placeholder="digite aqui o email"
+                                  className={`
                                   form-control
                                   ${errors.email &&
                                     touched.email &&
                                     'is-invalid'}
                                 `}
-                                  />
-                                  {loadingOrganizator && (
-                                    <div className="form-control-position">
-                                      <RefreshCw
-                                        size={16}
-                                        className="spinner"
-                                      />
-                                    </div>
-                                  )}
-                                  <InputGroupAddon addonType="append">
-                                    <NavLink
-                                      className="btn bg-info"
-                                      onClick={e => {
-                                        e.preventDefault();
-                                        handleSearchParticipant(
-                                          null,
-                                          values.email
-                                        );
-                                      }}
-                                    >
-                                      <Search size={18} color="#fff" />
-                                    </NavLink>
-                                  </InputGroupAddon>
-                                  {errors.email && touched.email ? (
-                                    <div className="invalid-feedback">
-                                      {errors.email}
-                                    </div>
-                                  ) : null}
-                                </InputGroup>
-                              </div>
-                            )}
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    </div>
-
-                    <div>
-                      {participantData !== null && participant_data.id && (
-                        <Col>
-                          <Card>
-                            <CardHeader className="text-center">
-                              <img
-                                src={
-                                  participantData.file
-                                    ? participantData.file.url
-                                    : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
-                                }
-                                alt={participantData.name}
-                                width="150"
-                                height="150"
-                                className="rounded-circle gradient-mint"
-                              />
-                            </CardHeader>
-                            <CardBody>
-                              <h4 className="card-title text-center">
-                                {participantData.name}
-                              </h4>
-                              <p className="category text-gray text-center font-small-4">
-                                {participantData.cpf}
-                              </p>
-                              <hr className="grey" />
-                              <Row className="mb-1">
-                                <Col
-                                  xs="6"
-                                  className="text-center text-truncate"
-                                >
-                                  <Phone size={18} color="#212529" />
-                                  {participantData.phone ? (
-                                    <span className="ml-2">
-                                      {participantData.phone}
-                                    </span>
-                                  ) : (
-                                    <span className="ml-2">Sem telefone</span>
-                                  )}
-                                </Col>
-                                <Col
-                                  xs="6"
-                                  className="text-center text-truncate"
-                                >
-                                  <Mail size={18} color="#212529" />
-                                  {participantData.email ? (
-                                    <span className="ml-2">
-                                      {participantData.email}
-                                    </span>
-                                  ) : (
-                                    <span className="ml-2">Sem email</span>
-                                  )}
-                                </Col>
-                              </Row>
-                            </CardBody>
-                          </Card>
-                        </Col>
-                      )}
-                    </div>
-                  </Form>
-                )}
-              </Formik>
-              <div>
-                {participantError && (
-                  <>
-                    <p className="text-danger p-3">
-                      {participant_data !== null && !!participant_data.error
-                        ? participant_data.error.message
-                        : ''}
-                    </p>
-                    <Row className="justify-content-between p-3">
-                      <Button
-                        color="success"
-                        onClick={toggleModalAddParticipant}
-                      >
-                        <i className="fa fa-plus" /> Cadastrar novo participante
-                      </Button>
-                      <Button
-                        color="warning"
-                        className="text-white"
-                        onClick={toggleModalInvite}
-                      >
-                        <i className="fa fa-paper-plane fa-xs" /> Convidar por
-                        email
-                      </Button>
+                                />
+                                {loadingOrganizator && (
+                                  <div className="form-control-position">
+                                    <RefreshCw size={16} className="spinner" />
+                                  </div>
+                                )}
+                                <InputGroupAddon addonType="append">
+                                  <NavLink
+                                    className="btn bg-info"
+                                    onClick={e => {
+                                      e.preventDefault();
+                                      handleSearchParticipant(
+                                        null,
+                                        values.email
+                                      );
+                                    }}
+                                  >
+                                    <Search size={18} color="#fff" />
+                                  </NavLink>
+                                </InputGroupAddon>
+                                {errors.email && touched.email ? (
+                                  <div className="invalid-feedback">
+                                    {errors.email}
+                                  </div>
+                                ) : null}
+                              </InputGroup>
+                            </div>
+                          )}
+                        </FormGroup>
+                      </Col>
                     </Row>
-                  </>
-                )}
-              </div>
-            </>
-          }
-          footer={
-            <>
-              <Button
-                className="ml-1 my-1"
-                color="danger"
-                onClick={toggleModalSearchParticipant}
-              >
-                Cancelar
-              </Button>{' '}
-              <Button
-                className={`${
-                  participantData !== null
-                    ? 'ml-1 my-1 btn-success'
-                    : 'btn-secundary ml-1 my-1'
-                }`}
-                onClick={confirmModalSearchParticipant}
-                disabled={participantData === null}
-              >
-                {participant_loading_search ? (
-                  <BounceLoader
-                    size={23}
-                    color="#fff"
-                    css={css`
-                      display: block;
-                      margin: 0 auto;
-                    `}
-                  />
-                ) : (
-                  'Adicionar participante'
-                )}
-              </Button>
-            </>
-          }
-        />
+                  </div>
 
-        <CustomModal
+                  <div>
+                    {participantData !== null && participant_data.id && (
+                      <Col>
+                        <Card>
+                          <CardHeader className="text-center">
+                            <img
+                              src={
+                                participantData.file
+                                  ? participantData.file.url
+                                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+                              }
+                              alt={participantData.name}
+                              width="150"
+                              height="150"
+                              className="rounded-circle gradient-mint"
+                            />
+                          </CardHeader>
+                          <CardBody>
+                            <h4 className="card-title text-center">
+                              {participantData.name}
+                            </h4>
+                            <p className="category text-gray text-center font-small-4">
+                              {participantData.cpf}
+                            </p>
+                            <hr className="grey" />
+                            <Row className="mb-1">
+                              <Col xs="6" className="text-center text-truncate">
+                                <Phone size={18} color="#212529" />
+                                {participantData.phone ? (
+                                  <span className="ml-2">
+                                    {participantData.phone}
+                                  </span>
+                                ) : (
+                                  <span className="ml-2">Sem telefone</span>
+                                )}
+                              </Col>
+                              <Col xs="6" className="text-center text-truncate">
+                                <Mail size={18} color="#212529" />
+                                {participantData.email ? (
+                                  <span className="ml-2">
+                                    {participantData.email}
+                                  </span>
+                                ) : (
+                                  <span className="ml-2">Sem email</span>
+                                )}
+                              </Col>
+                            </Row>
+                          </CardBody>
+                        </Card>
+                      </Col>
+                    )}
+                  </div>
+                  <div>
+                    {participantError && (
+                      <>
+                        <p className="text-danger p-3">
+                          {participant_data !== null && !!participant_data.error
+                            ? participant_data.error.message
+                            : ''}
+                        </p>
+                        <Row className="justify-content-between p-3">
+                          <Button
+                            color="success"
+                            onClick={toggleModalAddParticipant}
+                          >
+                            <i className="fa fa-plus" /> Cadastrar novo
+                            participante
+                          </Button>
+                          <Button
+                            color="warning"
+                            className="text-white"
+                            onClick={toggleModalInvite}
+                          >
+                            <i className="fa fa-paper-plane fa-xs" /> Convidar
+                            por email
+                          </Button>
+                        </Row>
+                      </>
+                    )}
+                  </div>
+                </ModalBody>
+                <ModalFooter>
+                  <Button
+                    className="ml-1 my-1"
+                    color="danger"
+                    onClick={toggleModalSearchParticipant}
+                  >
+                    Cancelar
+                  </Button>{' '}
+                  <Button
+                    className={`${
+                      participantData !== null
+                        ? 'ml-1 my-1 btn-success'
+                        : 'btn-secundary ml-1 my-1'
+                    }`}
+                    onClick={confirmModalSearchParticipant}
+                    disabled={participantData === null}
+                  >
+                    {participant_loading_search ? (
+                      <BounceLoader
+                        size={23}
+                        color="#fff"
+                        css={css`
+                          display: block;
+                          margin: 0 auto;
+                        `}
+                      />
+                    ) : (
+                      'Adicionar participante'
+                    )}
+                  </Button>
+                </ModalFooter>
+              </Form>
+            )}
+          </Formik>
+        </Modal>
+
+        <Modal
           isOpen={modalAddTrainingLeader}
           toggle={toggleModalAddTrainingLeader}
-          header="Cadastrar líder em treinamento"
-          body={
-            <Formik
-              initialValues={{
-                admin: profile_data.admin || false,
-                name: '',
-                email: '',
-                cpf: cpfNotFound || '',
-                sex: '',
-                country: event_data.country || '30',
-              }}
-              enableReinitialize
-              validationSchema={formAddParticipant}
-              onSubmit={values => confirmModalAddTrainingLeader(values)}
-            >
-              {({ errors, touched, values }) => (
-                <Form>
+        >
+          <ModalHeader>Cadastrar líder em treinamento2</ModalHeader>
+          <Formik
+            initialValues={{
+              admin: profile_data.admin || false,
+              name: '',
+              email: '',
+              cpf: cpfNotFound || '',
+              sex: '',
+              country: event_data.country || '30',
+            }}
+            enableReinitialize
+            validationSchema={formAddParticipant}
+            onSubmit={values => confirmModalAddTrainingLeader(values)}
+          >
+            {({ errors, touched, values }) => (
+              <Form>
+                <ModalBody>
                   <div className="form-body">
                     <Row className="d-flex flex-row">
                       <Col sm="12" md="12" lg="12">
                         <FormGroup>
+                          {console.log(values)}
                           <Field
                             type="text"
                             placeholder="Digite o nome do líder em treinamento"
@@ -3980,37 +3954,35 @@ export default function UserProfile({ match, className }) {
                         ) : null}
                       </Col>
                     </Row>
+                    <Row>
+                      <Button
+                        className="ml-1 my-1"
+                        color="danger"
+                        onClick={toggleModalAddTrainingLeader}
+                      >
+                        Cancelar
+                      </Button>{' '}
+                      <Button className="ml-1 my-1 btn-success" type="submit">
+                        {loading ? (
+                          <BounceLoader
+                            size={23}
+                            color="#fff"
+                            css={css`
+                              display: block;
+                              margin: 0 auto;
+                            `}
+                          />
+                        ) : (
+                          'Cadastrar líder em treinamento'
+                        )}
+                      </Button>
+                    </Row>
                   </div>
-                </Form>
-              )}
-            </Formik>
-          }
-          footer={
-            <>
-              <Button
-                className="ml-1 my-1"
-                color="danger"
-                onClick={toggleModalAddTrainingLeader}
-              >
-                Cancelar
-              </Button>{' '}
-              <Button className="ml-1 my-1 btn-success" type="submit">
-                {loading ? (
-                  <BounceLoader
-                    size={23}
-                    color="#fff"
-                    css={css`
-                      display: block;
-                      margin: 0 auto;
-                    `}
-                  />
-                ) : (
-                  'Cadastrar líder em treinamento'
-                )}
-              </Button>
-            </>
-          }
-        />
+                </ModalBody>
+              </Form>
+            )}
+          </Formik>
+        </Modal>
 
         {/* MODAL PARA CADASTRAR PARTICIPANTE MANUALMENTE */}
         <Modal
@@ -4323,138 +4295,135 @@ export default function UserProfile({ match, className }) {
           </Formik>
         </Modal>
 
-        <CustomModal
+        <Modal
           isOpen={modalCertificate}
           toggle={toggleModalCertificate}
           size="lg"
-          header="Emissão de certificados"
-          body={
-            <>
-              <ReactForm>
-                <Row className="mb-2 px-2">
-                  <Col sm="12" md="6" lg="4">
-                    <Label>Data da formatura</Label>
-                    <div className="position-relative has-icon-left">
-                      <DatePicker
-                        locale={pt}
-                        dateFormat="dd/MM/yyyy"
-                        selected={certificateDate}
-                        onChange={date => {
-                          setCertificateDate(date);
-                          setPdfButton(null);
-                        }}
-                        minDate={subMonths(new Date(), 12)}
-                        withPortal
-                        fixedHeight
-                        showMonthDropdown
-                        showYearDropdown
-                        dropdownMode="select"
-                        className="form-control"
-                      />
-                      <div className="form-control-position">
-                        <Calendar size={14} color="#212529" />
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
-                <Row className="mt-2 px-2">
-                  <Col>
-                    <Input
-                      id="checkBackground"
-                      name="checkBackground"
-                      onChange={e => {
-                        setCheckBackground(e.target.checked);
+        >
+          <ModalHeader>Emissão de certificados</ModalHeader>
+          <ModalBody>
+            <ReactForm>
+              <Row className="mb-2 px-2">
+                <Col sm="12" md="6" lg="4">
+                  <Label>Data da formatura</Label>
+                  <div className="position-relative has-icon-left">
+                    <DatePicker
+                      locale={pt}
+                      dateFormat="dd/MM/yyyy"
+                      selected={certificateDate}
+                      onChange={date => {
+                        setCertificateDate(date);
                         setPdfButton(null);
                       }}
-                      type="checkbox"
-                      className="ml-0"
+                      minDate={subMonths(new Date(), 12)}
+                      withPortal
+                      fixedHeight
+                      showMonthDropdown
+                      showYearDropdown
+                      dropdownMode="select"
+                      className="form-control"
                     />
-                    <Label for="checkBackground" className="pl-3">
-                      Certificado com imagem de fundo
-                    </Label>
-                  </Col>
-                </Row>
-                <Row className="px-2">
-                  <Col>
-                    <Input
-                      type="checkbox"
-                      className="ml-0"
-                      id="checkAll"
-                      name="checkAll"
-                      defaultChecked={checkAll}
-                      onChange={e => handleCheckAll(e)}
-                    />
-                    <Label for="checkAll" className="pl-3">
-                      Selecionar todos nomes
-                    </Label>
-                  </Col>
-                </Row>
-              </ReactForm>
-              <Table responsive>
-                <thead>
-                  <tr>
-                    <th />
-                    <th>Nome para impressão</th>
-                    <th>Primeira impressão</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {certificateParticipantsAux.map((selected, index) => {
-                    return (
-                      <tr key={selected.id}>
-                        <td>
-                          <Input
-                            type="checkbox"
-                            className="ml-0 childCheck"
-                            defaultChecked={
-                              certificateParticipantsAux[index].checked
+                    <div className="form-control-position">
+                      <Calendar size={14} color="#212529" />
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+              <Row className="mt-2 px-2">
+                <Col>
+                  <Input
+                    id="checkBackground"
+                    name="checkBackground"
+                    onChange={e => {
+                      setCheckBackground(e.target.checked);
+                      setPdfButton(null);
+                    }}
+                    type="checkbox"
+                    className="ml-0"
+                  />
+                  <Label for="checkBackground" className="pl-3">
+                    Certificado com imagem de fundo
+                  </Label>
+                </Col>
+              </Row>
+              <Row className="px-2">
+                <Col>
+                  <Input
+                    type="checkbox"
+                    className="ml-0"
+                    id="checkAll"
+                    name="checkAll"
+                    defaultChecked={checkAll}
+                    onChange={e => handleCheckAll(e)}
+                  />
+                  <Label for="checkAll" className="pl-3">
+                    Selecionar todos nomes
+                  </Label>
+                </Col>
+              </Row>
+            </ReactForm>
+            <Table responsive>
+              <thead>
+                <tr>
+                  <th />
+                  <th>Nome para impressão</th>
+                  <th>Primeira impressão</th>
+                </tr>
+              </thead>
+              <tbody>
+                {certificateParticipantsAux.map((selected, index) => {
+                  return (
+                    <tr key={selected.id}>
+                      <td>
+                        <Input
+                          type="checkbox"
+                          className="ml-0 childCheck"
+                          defaultChecked={
+                            certificateParticipantsAux[index].checked
+                          }
+                          id={`selected.${index}.checked`}
+                          name={`selected.${index}.checked`}
+                          onChange={e => handleChangeChild(e, index)}
+                        />
+                      </td>
+                      <td width="70%">
+                        <Input
+                          type="text"
+                          disabled={!profile_data.admin}
+                          id={`selected.${index}.name`}
+                          name={`selected.${index}.name`}
+                          defaultValue={selected.name}
+                          className="form-control"
+                          onChange={e => handleChangeParticipantName(e, index)}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          readOnly
+                          type="text"
+                          id={`selected.${index}.name`}
+                          name={`selected.${index}.name`}
+                          value={(() => {
+                            if (selected.participant_id === undefined) {
+                              return 'Líder';
                             }
-                            id={`selected.${index}.checked`}
-                            name={`selected.${index}.checked`}
-                            onChange={e => handleChangeChild(e, index)}
-                          />
-                        </td>
-                        <td width="70%">
-                          <Input
-                            type="text"
-                            disabled={!profile_data.admin}
-                            id={`selected.${index}.name`}
-                            name={`selected.${index}.name`}
-                            defaultValue={selected.name}
-                            className="form-control"
-                            onChange={e =>
-                              handleChangeParticipantName(e, index)
+                            if (selected.print_date) {
+                              return moment(selected.print_date).format(
+                                'DD/MM/YYYY'
+                              );
                             }
-                          />
-                        </td>
-                        <td>
-                          <Input
-                            readOnly
-                            type="text"
-                            id={`selected.${index}.name`}
-                            name={`selected.${index}.name`}
-                            value={(() => {
-                              if (selected.participant_id === undefined) {
-                                return 'Líder';
-                              }
-                              if (selected.print_date) {
-                                return moment(selected.print_date).format(
-                                  'DD/MM/YYYY'
-                                );
-                              }
-                              return 'Não impresso';
-                            })()}
-                            className="form-control"
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </Table>
-            </>
-          }
-          footer={
+                            return 'Não impresso';
+                          })()}
+                          className="form-control"
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          </ModalBody>
+          <ModalFooter>
             <Button
               color="primary"
               onClick={handleCreateDownloadLink}
@@ -4473,8 +4442,8 @@ export default function UserProfile({ match, className }) {
                 'Gerar certificados'
               )}
             </Button>
-          }
-        />
+          </ModalFooter>
+        </Modal>
 
         <Modal
           isOpen={modalCertificatePrint}
