@@ -750,7 +750,8 @@ function* exportExcel(action) {
     const { lastPage, filterData } = action.payload;
 
     const response = yield call(api.post, '/event_export_excel', {
-      timeout: 999999,
+      withCredentials: true,
+      timeout: 1000 * 1000,
       lastPage,
       filterData,
     });
@@ -772,7 +773,8 @@ function* entityExportExcel(action) {
     const { lastPage, filterData } = action.payload;
 
     const response = yield call(api.post, '/entity_export_excel', {
-      timeout: 999999,
+      withCredentials: true,
+      timeout: 1000 * 1000,
       lastPage,
       filterData,
     });
@@ -794,7 +796,8 @@ function* organizationExportExcel(action) {
     const { lastPage, filterData } = action.payload;
 
     const response = yield call(api.post, '/organization_export_excel', {
-      timeout: 999999,
+      withCredentials: true,
+      timeout: 1000 * 1000,
       lastPage,
       filterData,
     });
