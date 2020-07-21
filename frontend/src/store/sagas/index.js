@@ -749,12 +749,24 @@ function* exportExcel(action) {
   try {
     const { lastPage, filterData } = action.payload;
 
-    const response = yield call(api.post, '/event_export_excel', {
-      withCredentials: true,
-      timeout: 1000 * 1000,
-      lastPage,
-      filterData,
-    });
+    const headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Accept',
+    };
+
+    const response = yield call(
+      api.post,
+      '/event_export_excel',
+      {
+        withCredentials: true,
+        timeout: 1000 * 1000,
+        lastPage,
+        filterData,
+      },
+      {
+        headers,
+      }
+    );
 
     yield put(ExportExcelActions.exportExcelSuccess(response.data));
   } catch (err) {
@@ -772,12 +784,24 @@ function* entityExportExcel(action) {
   try {
     const { lastPage, filterData } = action.payload;
 
-    const response = yield call(api.post, '/entity_export_excel', {
-      withCredentials: true,
-      timeout: 1000 * 1000,
-      lastPage,
-      filterData,
-    });
+    const headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Accept',
+    };
+
+    const response = yield call(
+      api.post,
+      '/entity_export_excel',
+      {
+        withCredentials: true,
+        timeout: 1000 * 1000,
+        lastPage,
+        filterData,
+      },
+      {
+        headers,
+      }
+    );
 
     yield put(ExportExcelActions.exportExcelEntitySuccess(response.data));
   } catch (err) {
@@ -795,12 +819,24 @@ function* organizationExportExcel(action) {
   try {
     const { lastPage, filterData } = action.payload;
 
-    const response = yield call(api.post, '/organization_export_excel', {
-      withCredentials: true,
-      timeout: 1000 * 1000,
-      lastPage,
-      filterData,
-    });
+    const headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Accept',
+    };
+
+    const response = yield call(
+      api.post,
+      '/organization_export_excel',
+      {
+        withCredentials: true,
+        timeout: 1000 * 1000,
+        lastPage,
+        filterData,
+      },
+      {
+        headers,
+      }
+    );
 
     yield put(ExportExcelActions.exportExcelOrganizationSuccess(response.data));
   } catch (err) {
