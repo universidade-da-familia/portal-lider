@@ -1902,10 +1902,7 @@ function* addOrder(action) {
             type: 'AUTHORIZATION_AND_CAPTURE',
             paymentMethod: 'BOLETO_BANCARIO',
             paymentCountry: 'BR',
-            expirationDate:
-              data.order_details.order_type === 'Curso'
-                ? addDays(endOfCurrentDay, 30)
-                : addDays(endOfCurrentDay, 60),
+            expirationDate: addDays(endOfCurrentDay, 30),
             ipAddress: '127.0.0.1',
           },
           test: false,
