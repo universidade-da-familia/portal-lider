@@ -1447,9 +1447,7 @@ export default function OrderCreate() {
                                   paymentSelected === 2 && (
                                     <Check size={24} color="#0cc27e" />
                                   )}
-                                {orderType === 'Curso'
-                                  ? 'Boleto para 30 dias'
-                                  : 'Boleto para 60 dias'}
+                                Boleto para 30 dias
                                 <FileText
                                   size={24}
                                   color="#000"

@@ -756,7 +756,6 @@ export default function UserProfile({ match, className }) {
   }
 
   function confirmModalAddTrainingLeader(values) {
-    console.log(values);
     const { name, cpf, email, sex } = values;
     const password = randomstring.generate(6);
 
@@ -3818,7 +3817,6 @@ export default function UserProfile({ match, className }) {
                     <Row className="d-flex flex-row">
                       <Col sm="12" md="12" lg="12">
                         <FormGroup>
-                          {console.log(values)}
                           <Field
                             type="text"
                             placeholder="Digite o nome do líder em treinamento"
