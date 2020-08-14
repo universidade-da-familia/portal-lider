@@ -101,6 +101,9 @@ const LazyCheckoutPayment = lazy(() =>
 const LazyInviteConfirmation = lazy(() =>
   import('~/views/pages/inviteConfirmation')
 );
+const LazyInviteConfirmationBuyer = lazy(() =>
+  import('~/views/pages/inviteConfirmationBuyer/index')
+);
 const LazyInviteConfirmed = lazy(() => import('~/views/pages/inviteConfirmed'));
 
 const LazyInviteExpired = lazy(() => import('~/views/pages/inviteExpired'));
@@ -543,6 +546,16 @@ export default function Router() {
           render={matchprops => (
             <Suspense fallback={<Spinner />}>
               <LazyInviteConfirmation {...matchprops} />
+            </Suspense>
+          )}
+        />
+
+        <FullPageLayout
+          exact
+          path="/evento/:event_id/convite/:id/confirmacao-comprador"
+          render={matchprops => (
+            <Suspense fallback={<Spinner />}>
+              <LazyInviteConfirmationBuyer {...matchprops} />
             </Suspense>
           )}
         />
