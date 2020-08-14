@@ -17,6 +17,10 @@ export const Types = {
   CREATE_BY_INVITE_REQUEST: 'CREATE_BY_INVITE_PARTICIPANT_REQUEST',
   CREATE_BY_INVITE_SUCCESS: 'CREATE_BY_INVITE_PARTICIPANT_SUCCESS',
   CREATE_BY_INVITE_FAILURE: 'CREATE_BY_INVITE_PARTICIPANT_FAILURE',
+
+  CREATE_BY_INVITE_ORDER_REQUEST: 'CREATE_BY_INVITE_ORDER_PARTICIPANT_REQUEST',
+  CREATE_BY_INVITE_ORDER_SUCCESS: 'CREATE_BY_INVITE_ORDER_PARTICIPANT_SUCCESS',
+  CREATE_BY_INVITE_ORDER_FAILURE: 'CREATE_BY_INVITE_ORDER_PARTICIPANT_FAILURE',
 };
 
 /**
@@ -93,6 +97,22 @@ export default function invite(state = INITIAL_STATE, action) {
         loading: false,
       };
 
+    // CRIAR PARTICIPANTE NOVO POR INVITE
+    case Types.CREATE_BY_INVITE_ORDER_REQUEST:
+      return { ...state, loading: true };
+    case Types.CREATE_BY_INVITE_ORDER_SUCCESS:
+      return {
+        ...state,
+        error: false,
+        loading: false,
+      };
+    case Types.CREATE_BY_INVITE_ORDER_FAILURE:
+      return {
+        ...state,
+        error: true,
+        loading: false,
+      };
+
     default:
       return state;
   }
@@ -102,7 +122,7 @@ export default function invite(state = INITIAL_STATE, action) {
  * Actions Creators
  */
 export const Creators = {
-  //CREATE PARTICIPANT BY INVITE
+  // CREATE PARTICIPANT BY INVITE
   createByInviteRequest: (
     invite_id,
     name,
@@ -132,14 +152,31 @@ export const Creators = {
     type: Types.CREATE_BY_INVITE_FAILURE,
   }),
 
+  // CREATE BY INVITE AND CREATE ORDER
+  createByInviteOrderRequest: data => ({
+    type: Types.CREATE_BY_INVITE_ORDER_REQUEST,
+    payload: {
+      data,
+    },
+  }),
+
+  createByInviteOrderSuccess: () => ({
+    type: Types.CREATE_BY_INVITE_ORDER_SUCCESS,
+  }),
+
+  createByInviteOrderFailure: () => ({
+    type: Types.CREATE_BY_INVITE_ORDER_FAILURE,
+  }),
+
   // INVITE REQUEST
-  inviteRequest: (event_id, event_type, name, email) => ({
+  inviteRequest: (event_id, event_type, name, email, is_buyer) => ({
     type: Types.ADD_REQUEST,
     payload: {
       event_id,
       event_type,
       name,
       email,
+      is_buyer,
     },
   }),
   inviteSuccess: () => ({
