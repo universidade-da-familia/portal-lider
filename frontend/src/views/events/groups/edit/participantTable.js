@@ -30,6 +30,7 @@ import 'react-table/react-table.css';
 import CpfFormat from '~/components/fields/CPFFormat';
 import PhoneFormat from '~/components/fields/PhoneFormat';
 // import { validateCPF } from '~/services/validateCPF';
+import { Creators as InviteActions } from '~/store/ducks/invite';
 import { Creators as ParticipantActions } from '~/store/ducks/participant';
 
 const formEditParticipant = Yup.object().shape({
@@ -163,6 +164,25 @@ function ParticipantTable({
     dispatch(ParticipantActions.editParticipantRequest(data));
   }
 
+  function resendInvite(values) {
+    dispatch(
+      ParticipantActions.deleteParticipantRequest(
+        values.entity_id,
+        values.participant_id
+      )
+    );
+
+    dispatch(
+      InviteActions.inviteRequest(
+        values.event_id,
+        'Grupo',
+        values.name,
+        values.email,
+        true
+      )
+    );
+  }
+
   return (
     <>
       <ReactTable
@@ -276,6 +296,36 @@ function ParticipantTable({
                         Remover participante
                       </DropdownItem>
                     )}
+
+                    {eventData.participants.map(entity => {
+                      if (
+                        entity.id === instance.original.id &&
+                        entity.participant_order
+                      ) {
+                        if (
+                          entity.participant_order.order.status_id !== 1 &&
+                          entity.participant_order.order.status_id !== 2
+                        ) {
+                          return (
+                            <DropdownItem
+                              onClick={() =>
+                                resendInvite({
+                                  event_id: eventData.id,
+                                  name: entity.name,
+                                  email: entity.email,
+                                  entity_id: entity.id,
+                                  participant_id: entity.pivot.id,
+                                })
+                              }
+                            >
+                              Reenviar pedido de inscrição e compra
+                            </DropdownItem>
+                          );
+                        }
+                        return null;
+                      }
+                      return null;
+                    })}
                   </DropdownMenu>
                 </UncontrolledDropdown>
               );

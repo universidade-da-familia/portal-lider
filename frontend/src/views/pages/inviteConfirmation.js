@@ -252,7 +252,7 @@ export default function InviteConfirmation({ match }) {
               <u>
                 {format(
                   new Date(event.start_date),
-                  "d 'de' MMMM 'de' y',' iiii 'às' p BBBB",
+                  "d 'de' MMMM 'de' y',' iiii",
                   {
                     locale: ptBR,
                   }
