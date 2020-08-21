@@ -348,21 +348,24 @@ export default function InviteConfirmation({ match }) {
 
   function handleSubmit(values) {
     const dataProducts = [];
-    const auxKitProducts = kitProducts;
 
-    auxKitProducts.forEach(product => {
+    kitProducts.forEach(product => {
       if (product.isSelected === true) {
-        delete product.isSelected;
-        dataProducts.push(product);
+        dataProducts.push({
+          id: product.id,
+          netsuite_id: product.netsuite_id,
+          name: product.name,
+          cost_of_goods: product.group_price,
+          quantity: product.quantity,
+          weight: product.weight,
+          width: product.width,
+          height: product.height,
+          length: product.length,
+          sku_id: product.sku_id,
+          product_category: product.product_category,
+        });
       }
     });
-
-    // const data = {
-    //   invite_id: parseInt(match.params.id, 10),
-    //   entity_id: participant.id,
-    //   event_id: parseInt(match.params.event_id, 10),
-    //   assistant: false,
-    // };
 
     if (notFoundParticipant === true) {
       const password = randomstring.generate(6);
