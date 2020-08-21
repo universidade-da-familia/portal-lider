@@ -21,6 +21,10 @@ export const Types = {
   CREATE_BY_INVITE_ORDER_REQUEST: 'CREATE_BY_INVITE_ORDER_PARTICIPANT_REQUEST',
   CREATE_BY_INVITE_ORDER_SUCCESS: 'CREATE_BY_INVITE_ORDER_PARTICIPANT_SUCCESS',
   CREATE_BY_INVITE_ORDER_FAILURE: 'CREATE_BY_INVITE_ORDER_PARTICIPANT_FAILURE',
+
+  CONFIRM_INVITE_ORDER_REQUEST: 'CONFIRM_INVITE_ORDER_PARTICIPANT_REQUEST',
+  CONFIRM_INVITE_ORDER_SUCCESS: 'CONFIRM_INVITE_ORDER_PARTICIPANT_SUCCESS',
+  CONFIRM_INVITE_ORDER_FAILURE: 'CONFIRM_INVITE_ORDER_PARTICIPANT_FAILURE',
 };
 
 /**
@@ -113,6 +117,22 @@ export default function invite(state = INITIAL_STATE, action) {
         loading: false,
       };
 
+    // CRIAR PARTICIPANTE NOVO POR INVITE
+    case Types.CONFIRM_INVITE_ORDER_REQUEST:
+      return { ...state, loading: true };
+    case Types.CONFIRM_INVITE_ORDER_SUCCESS:
+      return {
+        ...state,
+        error: false,
+        loading: false,
+      };
+    case Types.CONFIRM_INVITE_ORDER_FAILURE:
+      return {
+        ...state,
+        error: true,
+        loading: false,
+      };
+
     default:
       return state;
   }
@@ -150,6 +170,22 @@ export const Creators = {
 
   createByInviteFailure: () => ({
     type: Types.CREATE_BY_INVITE_FAILURE,
+  }),
+
+  // CONFIRM INVITE AND CREATE ORDER
+  confirmInviteOrderRequest: data => ({
+    type: Types.CONFIRM_INVITE_ORDER_REQUEST,
+    payload: {
+      data,
+    },
+  }),
+
+  confirmInviteOrderSuccess: () => ({
+    type: Types.CONFIRM_INVITE_ORDER_SUCCESS,
+  }),
+
+  confirmInviteOrderFailure: () => ({
+    type: Types.CONFIRM_INVITE_ORDER_FAILURE,
   }),
 
   // CREATE BY INVITE AND CREATE ORDER

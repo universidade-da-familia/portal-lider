@@ -902,6 +902,7 @@ function* confirmInvite(action) {
       entity_id,
       event_id,
       assistant,
+      order_id: null,
     });
 
     if (response.data.error) {
@@ -918,9 +919,9 @@ function* confirmInvite(action) {
 
       yield put(EventActions.eventSuccess(null));
 
-      // yield put(
-      //   push(`/evento/${event_id}/convite/${entity_id}/confirmacao/sucesso`)
-      // );
+      yield put(
+        push(`/evento/${event_id}/convite/${entity_id}/confirmacao/sucesso`)
+      );
     }
   } catch (err) {
     if (err.message === 'Network Error') {
@@ -952,6 +953,272 @@ function* deleteInvite(action) {
   }
 }
 
+function* confirmParticipantInviteOrder(action) {
+  // checkpoint
+  try {
+    const { data } = action.payload;
+    const { user, event_id, assistant, card, shipping_address } = data;
+
+    const endOfCurrentDay = endOfDay(new Date());
+
+    const response = yield call(api.post, '/event_participant', {
+      entity_id: user.id,
+      event_id,
+      assistant,
+      order_id: null,
+    });
+
+    if (response.data.error) {
+      yield put(ParticipantActions.addParticipantFailure());
+      yield put(InviteActions.confirmInviteFailure());
+      toastr.error(response.data.error.title, response.data.error.message);
+    } else {
+      yield put(ParticipantActions.addParticipantSuccess());
+
+      const formattedPhone = data.shipping_address.phone
+        .replace('(', '')
+        .replace(')', '')
+        .replace('-', '');
+
+      const user_type = data.invite
+        ? 'entity'
+        : localStorage.getItem('@dashboard/user_type');
+
+      const response_user = yield call(
+        api.put,
+        `${
+          user_type === 'entity'
+            ? `/entity/${user.id}`
+            : `/organization/${user.id}`
+        }`,
+        { phone: formattedPhone }
+      );
+
+      const referenceCode = `udf_user_${user.id}_code_${(
+        Math.random() * 100
+      ).toString(32)}`;
+
+      const signature = `${apiKey}~${merchantId}~${referenceCode}~${data.order_details.amount}~BRL`;
+      const signatureHash = md5(signature);
+
+      if (response_user.data.id) {
+        delete data.shipping_address.phone;
+
+        if (card === null) {
+          data.payu = {
+            language: 'pt',
+            command: 'SUBMIT_TRANSACTION',
+            merchant: {
+              apiKey,
+              apiLogin,
+            },
+            transaction: {
+              order: {
+                accountId,
+                referenceCode,
+                description: 'Solicitação de material - boleto',
+                language: 'pt',
+                signature: signatureHash,
+                notifyUrl: 'http://apieventos.udf.org.br/payment_confirmation',
+                additionalValues: {
+                  TX_VALUE: {
+                    value: data.order_details.amount,
+                    currency: 'BRL',
+                  },
+                },
+                buyer: {
+                  fullName: user.name,
+                  emailAddress: user.email,
+                  dniNumber: user.cpf,
+                  cnpj: user.cpf,
+                  shippingAddress: {
+                    street1: shipping_address.street,
+                    street2: shipping_address.street_number,
+                    city: shipping_address.city,
+                    state: shipping_address.uf,
+                    country: 'BR',
+                    postalCode: shipping_address.cep,
+                  },
+                },
+                shippingAddress: {
+                  street1: shipping_address.street,
+                  street2: shipping_address.street_number,
+                  city: shipping_address.city,
+                  state: shipping_address.uf,
+                  country: 'BR',
+                  postalCode: shipping_address.cep,
+                  phone: user.phone,
+                },
+              },
+              payer: {
+                merchantPayerId: user.id.toString(),
+                fullName: user.name,
+                emailAddress: user.email,
+                contactPhone: user.phone,
+                dniNumber: user.cpf,
+                cnpj: user.cpf,
+                billingAddress: {
+                  street1: shipping_address.street,
+                  street2: shipping_address.street_number,
+                  city: shipping_address.city,
+                  state: shipping_address.uf,
+                  country: 'BR',
+                  postalCode: shipping_address.cep,
+                  phone: user.phone,
+                },
+              },
+              type: 'AUTHORIZATION_AND_CAPTURE',
+              paymentMethod: 'BOLETO_BANCARIO',
+              paymentCountry: 'BR',
+              expirationDate: addDays(endOfCurrentDay, 30),
+              ipAddress: '127.0.0.1',
+            },
+            test: false,
+          };
+        } else {
+          const formattedCardNumber = card.number.replace(/ /g, '');
+          const [month, year] = card.expiry.split('/');
+          const formattedCardExpiry = `20${year}/${month}`;
+
+          data.payu = {
+            language: 'pt',
+            command: 'SUBMIT_TRANSACTION',
+            merchant: {
+              apiKey,
+              apiLogin,
+            },
+            transaction: {
+              order: {
+                accountId,
+                referenceCode,
+                description: 'Solicitação de material - cartão',
+                language: 'pt',
+                signature: signatureHash,
+                notifyUrl: 'http://apieventos.udf.org.br/payment_confirmation',
+                additionalValues: {
+                  TX_VALUE: {
+                    value: data.order_details.amount,
+                    currency: 'BRL',
+                  },
+                },
+                buyer: {
+                  merchantBuyerId: user.id.toString(),
+                  fullName: user.name,
+                  emailAddress: user.email,
+                  contactPhone: user.phone,
+                  dniNumber: user.cpf,
+                  cnpj: user.cpf,
+                  shippingAddress: {
+                    street1: shipping_address.street,
+                    street2: shipping_address.street_number,
+                    city: shipping_address.city,
+                    state: shipping_address.uf,
+                    country: 'BR',
+                    postalCode: shipping_address.cep,
+                    phone: user.phone,
+                  },
+                },
+                shippingAddress: {
+                  street1: shipping_address.street,
+                  street2: shipping_address.street_number,
+                  city: shipping_address.city,
+                  state: shipping_address.uf,
+                  country: 'BR',
+                  postalCode: shipping_address.cep,
+                  phone: user.phone,
+                },
+              },
+              payer: {
+                merchantPayerId: user.id.toString(),
+                fullName: user.name,
+                emailAddress: user.email,
+                contactPhone: user.phone,
+                dniNumber: user.cpf,
+                cnpj: user.cpf,
+                billingAddress: {
+                  street1: shipping_address.street,
+                  street2: shipping_address.street_number,
+                  city: shipping_address.city,
+                  state: shipping_address.uf,
+                  country: 'BR',
+                  postalCode: shipping_address.cep,
+                  phone: user.phone,
+                },
+              },
+              creditCard: {
+                number: formattedCardNumber,
+                securityCode: card.cvc,
+                expirationDate: formattedCardExpiry,
+                name: card.name_card,
+              },
+              extraParameters: {
+                INSTALLMENTS_NUMBER: data.order_details.installments,
+              },
+              type: 'AUTHORIZATION_AND_CAPTURE',
+              paymentMethod: card.issuer,
+              paymentCountry: 'BR',
+              ipAddress: '127.0.0.1',
+            },
+            test: false,
+          };
+        }
+      }
+
+      const toSendOrder = {
+        user,
+        card,
+        products: data.products,
+        shipping_address,
+        shipping_option: data.shipping_option,
+        order_details: data.order_details,
+        payu: data.payu,
+        invite: true,
+      };
+
+      const response_order = yield call(api.post, '/order', toSendOrder);
+      yield put(OrderActions.addOrderSuccess());
+
+      if (response_order.data.id) {
+        if (response_order.data.transaction.boleto_url) {
+          window.open(response_order.data.transaction.boleto_url);
+        }
+
+        toastr.success('Sucesso!', 'Solicitação criada com sucesso.');
+
+        yield call(api.delete, `/invite/${data.invite_id}`);
+        yield put(InviteActions.deleteInviteSuccess());
+
+        yield call(api.put, `/event_participant/${response.data.id}`, {
+          order_id: response_order.data.id,
+        });
+
+        yield put(EventActions.eventSuccess(null));
+
+        yield put(
+          push(
+            `/evento/${data.event_id}/convite/${user.id}/confirmacao/sucesso`
+          )
+        );
+      } else {
+        yield call(
+          api.delete,
+          `/event_participant/${user.id}/${response.data.id}`
+        );
+
+        yield put(OrderActions.addOrderFailure());
+      }
+    }
+  } catch (err) {
+    if (err.message === 'Network Error') {
+      toastr.error('Falha!', 'Tente acessar novamente mais tarde.');
+      yield put(InviteActions.confirmInviteFailure());
+    } else {
+      toastr.error('Falha!', 'Houve um erro ao confirmar o convite.');
+      yield put(InviteActions.confirmInviteFailure());
+    }
+  }
+}
+
 function* createByInviteParticipant(action) {
   try {
     const {
@@ -979,6 +1246,7 @@ function* createByInviteParticipant(action) {
       entity_id,
       event_id,
       assistant: false,
+      order_id: null,
     });
 
     yield put(ParticipantActions.addParticipantSuccess());
@@ -1037,19 +1305,6 @@ function* createByInviteOrderParticipant(action) {
 
     const signature = `${apiKey}~${merchantId}~${referenceCode}~${data.order_details.amount}~BRL`;
     const signatureHash = md5(signature);
-
-    yield call(api.post, '/event_participant', {
-      entity_id: created_user.id,
-      event_id: data.event_id,
-      assistant: false,
-    });
-
-    yield put(ParticipantActions.addParticipantSuccess());
-
-    yield call(api.delete, `/invite/${data.invite_id}`);
-    yield put(InviteActions.deleteInviteSuccess());
-
-    yield put(EventActions.eventSuccess(null));
 
     // criacao pedido
     if (response.data.id) {
@@ -1220,16 +1475,33 @@ function* createByInviteOrderParticipant(action) {
         shipping_option: data.shipping_option,
         order_details: data.order_details,
         payu: data.payu,
+        invite: true,
       };
 
       const response_order = yield call(api.post, '/order', toSendOrder);
       yield put(OrderActions.addOrderSuccess());
 
-      yield put(
-        push(
-          `/evento/${data.event_id}/convite/${created_user.id}/confirmacao/sucesso`
-        )
-      );
+      if (response_order.data.id) {
+        yield call(api.post, '/event_participant', {
+          entity_id: created_user.id,
+          event_id: data.event_id,
+          assistant: false,
+          order_id: response_order.data.id,
+        });
+
+        yield put(ParticipantActions.addParticipantSuccess());
+
+        yield call(api.delete, `/invite/${data.invite_id}`);
+        yield put(InviteActions.deleteInviteSuccess());
+
+        yield put(EventActions.eventSuccess(null));
+
+        yield put(
+          push(
+            `/evento/${data.event_id}/convite/${created_user.id}/confirmacao/sucesso`
+          )
+        );
+      }
 
       if (response_order.data.transaction.boleto_url) {
         window.open(response_order.data.transaction.boleto_url);
@@ -1487,6 +1759,7 @@ function* createParticipant(action) {
         entity_id,
         event_id,
         assistant,
+        order_id: null,
       });
 
       yield put(ParticipantActions.addParticipantSuccess());
@@ -1581,6 +1854,7 @@ function* addParticipant(action) {
       entity_id,
       event_id,
       assistant,
+      order_id: null,
     });
 
     if (response.data.error) {
@@ -2051,12 +2325,8 @@ function* addOrder(action) {
     const signature = `${apiKey}~${merchantId}~${referenceCode}~${data.order_details.amount}~BRL`;
     const signatureHash = md5(signature);
 
-    const user_type = data.invite
-      ? 'entity'
-      : localStorage.getItem('@dashboard/user_type');
-    const user_id = data.invite
-      ? String(data.user.id)
-      : localStorage.getItem('@dashboard/user');
+    const user_type = localStorage.getItem('@dashboard/user_type');
+    const user_id = localStorage.getItem('@dashboard/user');
 
     const formattedPhone = data.shipping_address.phone
       .replace('(', '')
@@ -2072,10 +2342,6 @@ function* addOrder(action) {
       }`,
       { phone: formattedPhone }
     );
-
-    // const response_user = yield call(
-    //   api.put,`/user/${user_id}`, { phone: formattedPhone }
-    // );
 
     if (response_user.data.id) {
       delete data.shipping_address.phone;
@@ -2123,7 +2389,7 @@ function* addOrder(action) {
                 state: shipping_address.uf,
                 country: 'BR',
                 postalCode: shipping_address.cep,
-                phone: user.phone,
+                phone: formattedPhone,
               },
             },
             payer: {
@@ -2140,7 +2406,7 @@ function* addOrder(action) {
                 state: shipping_address.uf,
                 country: 'BR',
                 postalCode: shipping_address.cep,
-                phone: user.phone,
+                phone: formattedPhone,
               },
             },
             type: 'AUTHORIZATION_AND_CAPTURE',
@@ -2191,7 +2457,7 @@ function* addOrder(action) {
                   state: shipping_address.uf,
                   country: 'BR',
                   postalCode: shipping_address.cep,
-                  phone: user.phone,
+                  phone: formattedPhone,
                 },
               },
               shippingAddress: {
@@ -2201,7 +2467,7 @@ function* addOrder(action) {
                 state: shipping_address.uf,
                 country: 'BR',
                 postalCode: shipping_address.cep,
-                phone: user.phone,
+                phone: formattedPhone,
               },
             },
             payer: {
@@ -2218,7 +2484,7 @@ function* addOrder(action) {
                 state: shipping_address.uf,
                 country: 'BR',
                 postalCode: shipping_address.cep,
-                phone: user.phone,
+                phone: formattedPhone,
               },
             },
             creditCard: {
@@ -2243,15 +2509,7 @@ function* addOrder(action) {
 
       yield put(OrderActions.addOrderSuccess());
 
-      if (data.invite) {
-        yield put(
-          push(
-            `/evento/${data.event_id}/convite/${user.id}/confirmacao/sucesso`
-          )
-        );
-      } else {
-        yield put(push(`/pedido/${response.data.id}/visualizar`));
-      }
+      yield put(push(`/pedido/${response.data.id}/visualizar`));
 
       if (response.data.transaction.boleto_url) {
         window.open(response.data.transaction.boleto_url);
@@ -2877,6 +3135,10 @@ export default function* rootSaga() {
     takeLatest(InviteTypes.CONFIRM_REQUEST, confirmInvite),
     takeLatest(InviteTypes.DELETE_REQUEST, deleteInvite),
     takeLatest(InviteTypes.CREATE_BY_INVITE_REQUEST, createByInviteParticipant),
+    takeLatest(
+      InviteTypes.CONFIRM_INVITE_ORDER_REQUEST,
+      confirmParticipantInviteOrder
+    ),
     takeLatest(
       InviteTypes.CREATE_BY_INVITE_ORDER_REQUEST,
       createByInviteOrderParticipant

@@ -58,7 +58,6 @@ import { validateCPF } from '~/services/validateCPF';
 import { Creators as CepActions } from '~/store/ducks/cep';
 import { Creators as EventActions } from '~/store/ducks/event';
 import { Creators as InviteActions } from '~/store/ducks/invite';
-import { Creators as OrderActions } from '~/store/ducks/order';
 import { Creators as ParticipantActions } from '~/store/ducks/participant';
 import { Creators as ShippingActions } from '~/store/ducks/shipping';
 
@@ -174,7 +173,6 @@ export default function InviteConfirmation({ match }) {
   const [errorSex, setErrorSex] = useState(false);
   const [notFoundParticipant, setNotFoundParticipant] = useState(false);
   const [kitProducts, setKitProducts] = useState([]);
-  const [subTotalPriceError, setSubTotalPriceError] = useState(0);
   const [shippingSelected, setShippingSelected] = useState(null);
   const [paymentSelected, setPaymentSelected] = useState(null);
   const [shippingOptions, setShippingOptions] = useState(null);
@@ -227,7 +225,7 @@ export default function InviteConfirmation({ match }) {
 
   const event = useSelector(state => state.event.data);
   const participantData = useSelector(state => state.participant.data);
-  const loading = useSelector(state => state.participant.loading);
+  const loading = useSelector(state => state.invite.loading);
   const cepData = useSelector(state => state.cep.data);
   const cepLoading = useSelector(state => state.cep.loading);
   const shippingOptionsData = useSelector(state => state.shipping.data);
@@ -348,10 +346,6 @@ export default function InviteConfirmation({ match }) {
     return total;
   }, [subTotalPrice, shippingSelected]);
 
-  useEffect(() => {
-    setSubTotalPriceError(subTotalPrice);
-  }, [subTotalPrice]);
-
   function handleSubmit(values) {
     const dataProducts = [];
     const auxKitProducts = kitProducts;
@@ -363,12 +357,12 @@ export default function InviteConfirmation({ match }) {
       }
     });
 
-    const data = {
-      invite_id: parseInt(match.params.id, 10),
-      entity_id: participant.id,
-      event_id: parseInt(match.params.event_id, 10),
-      assistant: false,
-    };
+    // const data = {
+    //   invite_id: parseInt(match.params.id, 10),
+    //   entity_id: participant.id,
+    //   event_id: parseInt(match.params.event_id, 10),
+    //   assistant: false,
+    // };
 
     if (notFoundParticipant === true) {
       const password = randomstring.generate(6);
@@ -405,9 +399,11 @@ export default function InviteConfirmation({ match }) {
 
       dispatch(InviteActions.createByInviteOrderRequest(createData));
     } else {
-      dispatch(InviteActions.confirmInviteRequest(data));
       const toSend = {
-        user: participantData,
+        invite_id: parseInt(match.params.id, 10),
+        event_id: parseInt(match.params.event_id, 10),
+        assistant: false,
+        user: participant,
         card: paymentSelected === 1 ? card : null,
         products: dataProducts,
         shipping_address: values,
@@ -422,10 +418,9 @@ export default function InviteConfirmation({ match }) {
           installments: parseInt(values.installments, 10),
         },
         invite: true,
-        event_id: parseInt(match.params.event_id, 10),
       };
 
-      dispatch(OrderActions.addOrderRequest(toSend));
+      dispatch(InviteActions.confirmInviteOrderRequest(toSend));
     }
   }
 
@@ -708,7 +703,7 @@ export default function InviteConfirmation({ match }) {
               <u>
                 {format(
                   new Date(event.start_date),
-                  "d 'de' MMMM 'de' y',' iiii 'às' p BBBB",
+                  "d 'de' MMMM 'de' y',' iiii",
                   {
                     locale: ptBR,
                   }
@@ -967,7 +962,15 @@ export default function InviteConfirmation({ match }) {
                                           }
                                         />
                                         <Label for={`product-${product.id}`}>
-                                          <h5>{`1 X ${product.name}`}</h5>
+                                          <h6>{`1 X ${
+                                            product.name
+                                          } - ${product.group_price.toLocaleString(
+                                            'pt-BR',
+                                            {
+                                              style: 'currency',
+                                              currency: 'BRL',
+                                            }
+                                          )}`}</h6>
                                         </Label>
                                       </Row>
                                     );
@@ -1711,15 +1714,6 @@ export default function InviteConfirmation({ match }) {
                                           currency: 'BRL',
                                         })}
                                       </Label>
-
-                                      {subTotalPriceError < 11 && (
-                                        <p>
-                                          <span className="red font-weight-bold">
-                                            Valor total do pedido precisa ser
-                                            maior que 11 reais
-                                          </span>
-                                        </p>
-                                      )}
 
                                       <h4 className="form-section mt-3">
                                         <DollarSign size={20} color="#212529" />{' '}
