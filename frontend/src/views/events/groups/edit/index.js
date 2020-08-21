@@ -327,6 +327,7 @@ export default function UserProfile({ match, className }) {
     id: null,
     corporate_name: '',
   });
+  const [isBuyer, setIsBuyer] = useState(false);
 
   // eslint-disable-next-line no-unused-vars
   const [sendCertificateAdmin, setSendCertificateAdmin] = useState(null);
@@ -919,7 +920,8 @@ export default function UserProfile({ match, className }) {
         match.params.event_id,
         'Grupo',
         invite_name,
-        invite_email
+        invite_email,
+        isBuyer
       )
     );
 
@@ -3550,12 +3552,36 @@ export default function UserProfile({ match, className }) {
                 type="submit"
                 color="default"
                 className="btn-default height-100 icon-light-hover font-medium-2"
-                onClick={toggleModalInvite}
+                onClick={() => {
+                  toggleModalInvite();
+                  setIsBuyer(false);
+                }}
               >
                 <div className="d-flex justify-content-around align-items-center">
                   <Mail size={24} color="#000" className="mr-2" />
                   <div>
                     <h5 className="mb-0">Convidar participante por email</h5>
+                  </div>
+                  <ArrowRightCircle size={24} color="#000" className="mr-2" />
+                </div>
+              </Button>
+
+              <Button
+                outline
+                type="submit"
+                color="default"
+                className="btn-default height-100 icon-light-hover font-medium-2"
+                onClick={() => {
+                  toggleModalInvite();
+                  setIsBuyer(true);
+                }}
+              >
+                <div className="d-flex justify-content-around align-items-center">
+                  <Mail size={24} color="#000" className="mr-2" />
+                  <div>
+                    <h5 className="mb-0">
+                      Convidar participante para se inscrever e comprar
+                    </h5>
                   </div>
                   <ArrowRightCircle size={24} color="#000" className="mr-2" />
                 </div>

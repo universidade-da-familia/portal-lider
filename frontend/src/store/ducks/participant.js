@@ -47,6 +47,7 @@ const INITIAL_STATE = {
   loadingSearch: false,
   error: false,
   data: null,
+  createdParticipant: null,
 };
 
 export default function participant(state = INITIAL_STATE, action) {
@@ -59,6 +60,7 @@ export default function participant(state = INITIAL_STATE, action) {
         ...state,
         error: false,
         loading: false,
+        createdParticipant: action.payload.data,
       };
     case Types.CREATE_FAILURE:
       return {
@@ -224,8 +226,11 @@ export const Creators = {
     },
   }),
 
-  createParticipantSuccess: () => ({
+  createParticipantSuccess: data => ({
     type: Types.CREATE_SUCCESS,
+    payload: {
+      data,
+    },
   }),
 
   createParticipantFailure: () => ({
