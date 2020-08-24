@@ -48,6 +48,7 @@ import { ptBR } from 'date-fns/locale';
 import { Formik, Field, Form } from 'formik';
 import randomstring from 'randomstring';
 import { Line } from 'rc-progress';
+import { useDebounce } from 'use-debounce';
 import * as Yup from 'yup';
 
 import history from '~/app/history';
@@ -72,6 +73,13 @@ import {
 
 const formSchema = Yup.object().shape({
   cpf: Yup.string().required('O CPF é obrigatório'),
+  name: Yup.string().required('O nome é obrigatório'),
+  email: Yup.string()
+    .matches(
+      /^[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}$/i,
+      'Digite um email válido'
+    )
+    .required('O email é obrigatório'),
   type: Yup.string().required('O tipo é obrigatório'),
   address_type: Yup.string().required('O tipo é obrigatório'),
   address_other_type_name: Yup.string().when('address_type', {
@@ -168,6 +176,8 @@ class CpfFormat extends Component {
 }
 
 export default function InviteConfirmation({ match }) {
+  const [searchEmail, setSearchEmail] = useState('');
+  const [emailDebounce] = useDebounce(searchEmail, 800);
   const [invite, setInvite] = useState(null);
   const [participant, setParticipant] = useState(null);
   const [errorSex, setErrorSex] = useState(false);
@@ -229,6 +239,7 @@ export default function InviteConfirmation({ match }) {
   const cepData = useSelector(state => state.cep.data);
   const cepLoading = useSelector(state => state.cep.loading);
   const shippingOptionsData = useSelector(state => state.shipping.data);
+  const isValidEmail = useSelector(state => state.participant.isValidEmail);
 
   const dispatch = useDispatch();
 
@@ -262,6 +273,7 @@ export default function InviteConfirmation({ match }) {
 
   function handleSearchCpf(cpf) {
     setParticipant(null);
+    dispatch(ParticipantActions.searchParticipantByEmailFailure(false));
 
     const formattedCpf = cpf
       .replace('.', '')
@@ -276,6 +288,16 @@ export default function InviteConfirmation({ match }) {
         )
       );
     }
+  }
+
+  function handleSearchEmail(event, setFieldValue) {
+    const email = event.target.value;
+
+    dispatch(ParticipantActions.searchParticipantByEmailFailure(false));
+
+    setFieldValue('email', email);
+
+    setSearchEmail(email);
   }
 
   function handleManyOrganizators() {
@@ -486,8 +508,6 @@ export default function InviteConfirmation({ match }) {
     setCepState(formattedCep);
     setFieldValue('cep', formattedCep);
 
-    // checkpoint
-
     if (values.type === 'other') {
       if (cep.length === 8) {
         setInitialState({
@@ -629,6 +649,15 @@ export default function InviteConfirmation({ match }) {
       setShippingOptions(shippingsLowestToBiggestPrice);
     }
   }, [shippingOptionsData]);
+
+  useEffect(() => {
+    dispatch(
+      ParticipantActions.searchParticipantByEmailRequest(
+        emailDebounce,
+        participant ? participant.email : 'null'
+      )
+    );
+  }, [emailDebounce]);
 
   useEffect(() => {
     dispatch(EventActions.eventRequest(match.params.event_id));
@@ -780,12 +809,12 @@ export default function InviteConfirmation({ match }) {
                                             name="cpf"
                                             id="cpf"
                                             className={`
-                                          new-form-padding
-                                          form-control
-                                          ${errors.cpf &&
-                                            touched.cpf &&
-                                            'is-invalid'}
-                                        `}
+                                              new-form-padding
+                                              form-control
+                                              ${errors.cpf &&
+                                                touched.cpf &&
+                                                'is-invalid'}
+                                            `}
                                             validate={validateCPF}
                                             render={({ field }) => (
                                               <CpfFormat
@@ -794,12 +823,12 @@ export default function InviteConfirmation({ match }) {
                                                 name="cpf"
                                                 placeholder="Ex: 423.123.321-12"
                                                 className={`
-                                              new-form-padding
-                                              form-control
-                                              ${errors.cpf &&
-                                                touched.cpf &&
-                                                'is-invalid'}
-                                            `}
+                                                  new-form-padding
+                                                  form-control
+                                                  ${errors.cpf &&
+                                                    touched.cpf &&
+                                                    'is-invalid'}
+                                                `}
                                                 value={values.cpf}
                                                 onValueChange={val =>
                                                   handleSearchCpf(val.value)
@@ -827,26 +856,73 @@ export default function InviteConfirmation({ match }) {
                                         participant !== null &&
                                         participant.error === undefined &&
                                         typeof participant === 'object' && (
-                                          <Col sm="12" className="mt-2">
-                                            <Label>Nome</Label>
-                                            <div className="position-relative has-icon-left">
-                                              <Field
-                                                readOnly
-                                                type="text"
-                                                name="name"
-                                                id="name"
-                                                value={participant.name}
-                                                className="new-form-padding form-control"
-                                                autoComplete="off"
-                                              />
-                                              <div className="new-form-control-position">
-                                                <User
-                                                  size={14}
-                                                  color="#212529"
+                                          <>
+                                            <Col sm="12" className="mt-2">
+                                              <Label>Nome</Label>
+                                              <div className="position-relative has-icon-left">
+                                                <Field
+                                                  type="text"
+                                                  name="name"
+                                                  id="name"
+                                                  className={`
+                                                  new-form-padding
+                                                  form-control
+                                                  ${errors.name &&
+                                                    touched.name &&
+                                                    'is-invalid'}
+                                                `}
+                                                  autoComplete="off"
                                                 />
+                                                {errors.name && touched.name ? (
+                                                  <div className="invalid-feedback">
+                                                    {errors.name}
+                                                  </div>
+                                                ) : null}
+                                                <div className="new-form-control-position">
+                                                  <User
+                                                    size={14}
+                                                    color="#212529"
+                                                  />
+                                                </div>
                                               </div>
-                                            </div>
-                                          </Col>
+                                            </Col>
+                                            <Col sm="12" className="mt-2">
+                                              <Label>Email</Label>
+                                              <div className="position-relative has-icon-left">
+                                                <Field
+                                                  type="email"
+                                                  name="email"
+                                                  id="email"
+                                                  onChange={event =>
+                                                    handleSearchEmail(
+                                                      event,
+                                                      setFieldValue
+                                                    )
+                                                  }
+                                                  className={`
+                                                  new-form-padding
+                                                  form-control
+                                                  ${errors.email &&
+                                                    touched.email &&
+                                                    'is-invalid'}
+                                                `}
+                                                  autoComplete="off"
+                                                />
+                                                {errors.email &&
+                                                touched.email ? (
+                                                  <div className="invalid-feedback">
+                                                    {errors.email}
+                                                  </div>
+                                                ) : null}
+                                                <div className="new-form-control-position">
+                                                  <User
+                                                    size={14}
+                                                    color="#212529"
+                                                  />
+                                                </div>
+                                              </div>
+                                            </Col>
+                                          </>
                                         )}
 
                                       {notFoundParticipant === true && (
@@ -861,9 +937,20 @@ export default function InviteConfirmation({ match }) {
                                                 type="text"
                                                 name="name"
                                                 id="name"
-                                                className="new-form-padding form-control"
+                                                className={`
+                                                  new-form-padding
+                                                  form-control
+                                                  ${errors.name &&
+                                                    touched.name &&
+                                                    'is-invalid'}
+                                                `}
                                                 autoComplete="off"
                                               />
+                                              {errors.name && touched.name ? (
+                                                <div className="invalid-feedback">
+                                                  {errors.name}
+                                                </div>
+                                              ) : null}
                                               <div className="new-form-control-position">
                                                 <User
                                                   size={14}
@@ -879,9 +966,26 @@ export default function InviteConfirmation({ match }) {
                                                 type="email"
                                                 name="email"
                                                 id="email"
-                                                className="new-form-padding form-control"
+                                                className={`
+                                                  new-form-padding
+                                                  form-control
+                                                  ${errors.email &&
+                                                    touched.email &&
+                                                    'is-invalid'}
+                                                `}
+                                                onChange={event =>
+                                                  handleSearchEmail(
+                                                    event,
+                                                    setFieldValue
+                                                  )
+                                                }
                                                 autoComplete="off"
                                               />
+                                              {errors.email && touched.email ? (
+                                                <div className="invalid-feedback">
+                                                  {errors.email}
+                                                </div>
+                                              ) : null}
                                               <div className="new-form-control-position">
                                                 <User
                                                   size={14}
@@ -2068,6 +2172,10 @@ export default function InviteConfirmation({ match }) {
                                       error = false;
                                     }
                                   } else if (values.cpf === '' || errors.cpf) {
+                                    error = true;
+                                  } else if (!isValidEmail) {
+                                    error = true;
+                                  } else if (errors.email || errors.name) {
                                     error = true;
                                   } else {
                                     error = false;

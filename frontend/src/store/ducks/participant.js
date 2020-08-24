@@ -18,6 +18,10 @@ export const Types = {
   SEARCH_SUCCESS: 'SEARCH_PARTICIPANT_SUCCESS',
   SEARCH_FAILURE: 'SEARCH_PARTICIPANT_FAILURE',
 
+  SEARCH_BY_EMAIL_REQUEST: 'SEARCH_PARTICIPANT_BY_EMAIL_REQUEST',
+  SEARCH_BY_EMAIL_SUCCESS: 'SEARCH_PARTICIPANT_BY_EMAIL_SUCCESS',
+  SEARCH_BY_EMAIL_FAILURE: 'SEARCH_PARTICIPANT_BY_EMAIL_FAILURE',
+
   EDIT_PRINT_DATE_REQUEST: 'EDIT_PRINT_DATE_REQUEST',
   EDIT_PRINT_DATE_SUCCESS: 'EDIT_PRINT_DATE_SUCCESS',
   EDIT_PRINT_DATE_FAILURE: 'EDIT_PRINT_DATE_FAILURE',
@@ -48,6 +52,7 @@ const INITIAL_STATE = {
   error: false,
   data: null,
   createdParticipant: null,
+  isValidEmail: false,
 };
 
 export default function participant(state = INITIAL_STATE, action) {
@@ -110,6 +115,7 @@ export default function participant(state = INITIAL_STATE, action) {
         error: false,
         loadingSearch: false,
         data: action.payload.data,
+        isValidEmail: true,
       };
     case Types.SEARCH_FAILURE:
       return {
@@ -117,6 +123,24 @@ export default function participant(state = INITIAL_STATE, action) {
         error: true,
         loadingSearch: false,
         data: action.payload.data,
+      };
+
+    // SEARCH BY EMAIL PARTICIPANT
+    case Types.SEARCH_BY_EMAIL_REQUEST:
+      return { ...state, loadingSearch: true, error: false };
+    case Types.SEARCH_BY_EMAIL_SUCCESS:
+      return {
+        ...state,
+        error: false,
+        loadingSearch: false,
+        isValidEmail: action.payload.data,
+      };
+    case Types.SEARCH_BY_EMAIL_FAILURE:
+      return {
+        ...state,
+        error: true,
+        loadingSearch: false,
+        isValidEmail: action.payload.data,
       };
 
     // SEARCH PARTICIPANT
@@ -272,7 +296,7 @@ export const Creators = {
     type: Types.DELETE_FAILURE,
   }),
 
-  // Search organizator
+  // Search participant cpf
   searchParticipantRequest: (cpf_email, default_event_id) => ({
     type: Types.SEARCH_REQUEST,
     payload: {
@@ -290,6 +314,29 @@ export const Creators = {
 
   searchParticipantFailure: data => ({
     type: Types.SEARCH_FAILURE,
+    payload: {
+      data,
+    },
+  }),
+
+  // Search participant by email
+  searchParticipantByEmailRequest: (email, current_email) => ({
+    type: Types.SEARCH_BY_EMAIL_REQUEST,
+    payload: {
+      email,
+      current_email,
+    },
+  }),
+
+  searchParticipantByEmailSuccess: data => ({
+    type: Types.SEARCH_BY_EMAIL_SUCCESS,
+    payload: {
+      data,
+    },
+  }),
+
+  searchParticipantByEmailFailure: data => ({
+    type: Types.SEARCH_BY_EMAIL_FAILURE,
     payload: {
       data,
     },
