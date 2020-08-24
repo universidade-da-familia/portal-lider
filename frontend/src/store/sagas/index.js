@@ -1293,6 +1293,7 @@ function* createByInviteOrderParticipant(action) {
       sex: user.sex,
       phone: user.phone,
       password: user.password,
+      invite: true,
     });
 
     const created_user = response.data;
@@ -1955,6 +1956,28 @@ function* searchParticipant(action) {
         err.response.data.error.message
       );
       yield put(ParticipantActions.searchParticipantFailure(err.response.data));
+    }
+  }
+}
+
+function* searchParticipantByEmail(action) {
+  try {
+    const { email, current_email } = action.payload;
+
+    const response = yield call(
+      api.get,
+      `/entity/email/${email}/${current_email}`
+    );
+
+    yield put(
+      ParticipantActions.searchParticipantByEmailSuccess(response.data)
+    );
+  } catch (err) {
+    if (err.message === 'Network Error') {
+      toastr.error('Falha!', 'Tente acessar novamente mais tarde.');
+      yield put(ParticipantActions.searchParticipantByEmailFailure(false));
+    } else {
+      yield put(ParticipantActions.searchParticipantByEmailFailure(false));
     }
   }
 }
@@ -3152,6 +3175,10 @@ export default function* rootSaga() {
     takeLatest(ParticipantTypes.ADD_REQUEST, addParticipant),
     takeLatest(ParticipantTypes.DELETE_REQUEST, deleteParticipant),
     takeLatest(ParticipantTypes.SEARCH_REQUEST, searchParticipant),
+    takeLatest(
+      ParticipantTypes.SEARCH_BY_EMAIL_REQUEST,
+      searchParticipantByEmail
+    ),
     takeLatest(ParticipantTypes.CREATE_REQUEST, createParticipant),
     takeLatest(ParticipantTypes.EDIT_REQUEST, editParticipant),
     takeLatest(ParticipantTypes.SET_QUITTER_REQUEST, setQuitterParticipant),
