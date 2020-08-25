@@ -1883,7 +1883,7 @@ export default function InviteConfirmation({ match }) {
                                                     color="#0cc27e"
                                                   />
                                                 )}
-                                              Boleto para 30 dias
+                                              Boleto à vista
                                               <FileText
                                                 size={24}
                                                 color="#000"
