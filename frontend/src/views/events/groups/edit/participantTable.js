@@ -235,15 +235,12 @@ function ParticipantTable({
             id: 'email',
             accessor: d => d.email,
           },
-          // {
-          //   Header: 'Autorização pastoral',
-          //   id: 'pivot.event_authorization',
-          //   accessor: d => d.pivot.event_authorization,
-          //   Cell: instance => {
-          //     return <p>{instance.value ? 'Autorizado' : 'Não Autorizado'}</p>;
-          //   },
-          //   maxWidth: 150,
-          // },
+          {
+            Header: 'Pedido',
+            id: 'order',
+            width: 110,
+            accessor: d => d.pivot.order_id,
+          },
           {
             Header: 'Ações',
             accessor: 'actions',

@@ -1070,7 +1070,7 @@ function* confirmParticipantInviteOrder(action) {
               type: 'AUTHORIZATION_AND_CAPTURE',
               paymentMethod: 'BOLETO_BANCARIO',
               paymentCountry: 'BR',
-              expirationDate: addDays(endOfCurrentDay, 30),
+              expirationDate: addDays(endOfCurrentDay, 3),
               ipAddress: '127.0.0.1',
             },
             test: false,
@@ -1375,7 +1375,7 @@ function* createByInviteOrderParticipant(action) {
             type: 'AUTHORIZATION_AND_CAPTURE',
             paymentMethod: 'BOLETO_BANCARIO',
             paymentCountry: 'BR',
-            expirationDate: addDays(endOfCurrentDay, 30),
+            expirationDate: addDays(endOfCurrentDay, 3),
             ipAddress: '127.0.0.1',
           },
           test: false,
@@ -1968,6 +1968,10 @@ function* searchParticipantByEmail(action) {
       api.get,
       `/entity/email/${email}/${current_email}`
     );
+
+    if (!response.data) {
+      toastr.warning('Aviso!', 'Esse email já existe');
+    }
 
     yield put(
       ParticipantActions.searchParticipantByEmailSuccess(response.data)
