@@ -881,7 +881,11 @@ function* addInvite(action) {
     });
 
     yield put(InviteActions.inviteSuccess());
-    toastr.success('Sucesso!', 'Convite enviado com sucesso.');
+
+    toastr.confirm('Convite enviado com sucesso', {
+      onOk: () => window.location.reload(),
+      disableCancel: true,
+    });
   } catch (err) {
     if (err.message === 'Network Error') {
       toastr.error('Falha!', 'Tente acessar novamente mais tarde.');
