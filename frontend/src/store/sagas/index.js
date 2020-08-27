@@ -1825,7 +1825,12 @@ function* setQuitterParticipant(action) {
 
 function* editEventParticipant(action) {
   try {
-    const { organizators_id, participants_id, event_id } = action.payload;
+    const {
+      organizators_id,
+      participants_id,
+      event_id,
+      reload = true,
+    } = action.payload;
 
     yield call(api.put, `/participant_print_date`, {
       participants_id,
@@ -1839,7 +1844,9 @@ function* editEventParticipant(action) {
 
     yield put(ParticipantActions.editPrintDateSuccess());
 
-    window.location.reload();
+    if (reload) {
+      window.location.reload();
+    }
   } catch (err) {
     if (err.message === 'Network Error') {
       toastr.error('Falha!', 'Tente acessar novamente mais tarde.');
