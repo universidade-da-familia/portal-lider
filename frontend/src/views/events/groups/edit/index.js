@@ -1220,7 +1220,8 @@ export default function UserProfile({ match, className }) {
     if (event_data !== null) {
       const amountOrganizators = event_data.organizators.length;
       const amountTrainingOrganizators = assistants.length;
-      const amountParticipants = event_data.noQuitterParticipants.length;
+      const amountParticipants =
+        event_data.noQuitterParticipants.length + event_data.invites.length;
 
       const amount =
         amountOrganizators + amountTrainingOrganizators + amountParticipants;
@@ -1237,7 +1238,7 @@ export default function UserProfile({ match, className }) {
       if (
         event_data.defaultEvent.max_participants +
           event_data.extra_participants <=
-          event_data.noQuitterParticipants.length ||
+          event_data.noQuitterParticipants.length + event_data.invites.length ||
         event_data.defaultEvent.max_global_inscriptions +
           event_data.extra_participants <=
           maxGlobalInscriptions
@@ -1902,7 +1903,8 @@ export default function UserProfile({ match, className }) {
 
         {event_data.defaultEvent.max_participants +
           event_data.extra_participants <=
-          event_data.noQuitterParticipants.length && (
+          event_data.noQuitterParticipants.length +
+            event_data.invites.length && (
           <Badge color="warning" className="text-wrap mr-2 mb-2">
             Quantidade máxima de participantes atingida
           </Badge>
