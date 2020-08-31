@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable array-callback-return */
 /* eslint-disable consistent-return */
 /* eslint-disable jsx-a11y/control-has-associated-label */
@@ -1044,6 +1045,28 @@ export default function UserProfile({ match, className }) {
     dispatch(EventActions.eventEditRequest(match.params.event_id, eventData));
   }
 
+  function sendDigitalCertificates() {
+    const all_organizators = event_data.organizators.map(
+      organizator => organizator.pivot.entity_id
+    );
+    const all_participants = event_data.participants.map(
+      participant => participant.pivot.id
+    );
+
+    const reload = false;
+
+    dispatch(
+      ParticipantActions.editPrintDateRequest(
+        all_organizators,
+        all_participants,
+        event_data.id,
+        reload
+      )
+    );
+
+    finishInscriptions();
+  }
+
   function reopenInscriptions() {
     const eventData = {
       is_inscription_finished: false,
@@ -1631,7 +1654,8 @@ export default function UserProfile({ match, className }) {
                       </DropdownItem> */}
 
                       {/* {(event_data.is_finished || profile_data.admin) && ( */}
-                      {profile_data.admin && (
+                      {(profile_data.admin ||
+                        event_data.is_inscription_finished) && (
                         <DropdownItem onClick={toggleModalCertificate}>
                           <i className="fa fa-graduation-cap mr-2" /> Emitir
                           certificados
@@ -1708,7 +1732,48 @@ export default function UserProfile({ match, className }) {
                                 color="success"
                                 className="btn-raised mr-3"
                                 onClick={() => {
-                                  toggleModalRegisterNewAddress();
+                                  toastr.confirm(
+                                    <>
+                                      <h5>
+                                        Tem certeza que deseja finalizar as
+                                        inscrições?
+                                      </h5>
+                                      <br />
+                                      <div>
+                                        De qual forma você prefere receber os
+                                        certificados?
+                                      </div>
+                                      <br />
+                                      <div>
+                                        <b>Impresso:</b> enviaremos os
+                                        certificados para o endereço que você
+                                        informar no próximo passo.
+                                      </div>
+                                      <br />
+
+                                      <div>
+                                        <b>Digital:</b> Você poderá "Emitir
+                                        certificados" no próximo passo, clicando
+                                        no botão "Emitir certificados" abaixo do
+                                        botão "finalizar inscrições"
+                                      </div>
+                                    </>,
+                                    {
+                                      onOk: () => sendDigitalCertificates(),
+                                      okText: 'Digital',
+                                      onCancel: () => {},
+                                      buttons: [
+                                        {
+                                          text: 'Impresso',
+                                          handler: () =>
+                                            toggleModalRegisterNewAddress(),
+                                        },
+                                        {
+                                          cancel: true,
+                                        },
+                                      ],
+                                    }
+                                  );
                                 }}
                                 // onClick={() => {
                                 //   if (
@@ -1795,7 +1860,8 @@ export default function UserProfile({ match, className }) {
                             })()}
 
                             {/* {(event_data.is_finished || profile_data.admin) && ( */}
-                            {profile_data.admin && (
+                            {(profile_data.admin ||
+                              event_data.is_inscription_finished) && (
                               <Button
                                 color="success"
                                 className="btn-raised mr-3"

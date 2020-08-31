@@ -2,7 +2,17 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Card, CardBody, Row, Col, Button, Badge } from 'reactstrap';
+import {
+  Card,
+  CardBody,
+  Row,
+  Col,
+  Button,
+  Badge,
+  Modal,
+  ModalBody,
+  ModalFooter,
+} from 'reactstrap';
 
 import ContentHeader from '../../../components/contentHead/contentHeader';
 import ContentSubHeader from '../../../components/contentHead/contentSubHeader';
@@ -15,7 +25,18 @@ import LeaderTable from './leaderTable';
 
 // Table example pages
 export default function Groups() {
+  const [modalCaminhosLegados, setModalCaminhosLegados] = useState(false);
   const [allEvents, setAllEvents] = useState([]);
+  const [
+    canOpenedModalCaminhosLegados,
+    setCanOpenedModalCaminhosLegados,
+  ] = useState(() => {
+    const caminhoslegados = sessionStorage.getItem(
+      '@dashboard/caminhoslegados'
+    );
+
+    return caminhoslegados ? false : true;
+  });
 
   const profile = useSelector(state => state.profile.data);
   const allData = useSelector(state => state.event.allData);
@@ -26,10 +47,10 @@ export default function Groups() {
 
   useEffect(() => {
     if (allData.id) {
-      const auxAllEvents = []
+      const auxAllEvents = [];
       allData.organizators.filter(event => {
         if (event.defaultEvent.event_type === 'Curso') {
-          return auxAllEvents.push(event)
+          return auxAllEvents.push(event);
         }
       });
       allData.participants.map(participant => {
@@ -56,12 +77,18 @@ export default function Groups() {
     dispatch(EventActions.allEventRequest());
   }, [profile]);
 
+  useEffect(() => {
+    if (canOpenedModalCaminhosLegados) {
+    setModalCaminhosLegados(true);
+    }
+
+    sessionStorage.setItem('@dashboard/caminhoslegados', true);
+  }, []);
+
   return (
     <>
       <ContentHeader>Grupos</ContentHeader>
-      <ContentSubHeader>
-        Visualize os grupos que lidera.
-      </ContentSubHeader>
+      <ContentSubHeader>Visualize os grupos que lidera.</ContentSubHeader>
       <Row className="row-eq-height">
         <Col sm="12">
           <Card>
@@ -132,6 +159,37 @@ export default function Groups() {
           </Card> */}
         </Col>
       </Row>
+      <Modal
+        isOpen={modalCaminhosLegados}
+        toggle={() => setModalCaminhosLegados(false)}
+      >
+        <ModalBody>
+          <a href="https://www.lojadafamilia.org.br/serie-familias/caminhos-e-legados/caminhos-e-legados" target="_blank">
+          <img
+            src="https://i.imgur.com/mqwYjbT.png"
+            alt="Caminhos e Legados"
+            width="100%"
+            height="auto"
+          />
+          </a>
+        </ModalBody>
+        <ModalFooter>
+        <Button
+            className="ml-1 my-1 btn-default"
+            color="primary"
+            onClick={() => window.open('https://sites.google.com/view/campanhaseriefamlias/nossa-causa?authuser=0')}
+          >
+            Quero saber mais!
+          </Button>
+          <Button
+            className="ml-1 my-1"
+            color="success"
+            onClick={() => window.open('https://www.lojadafamilia.org.br/serie-familias/caminhos-e-legados/caminhos-e-legados')}
+          >
+            Garantir o meu!
+          </Button>
+        </ModalFooter>
+      </Modal>
     </>
   );
 }
