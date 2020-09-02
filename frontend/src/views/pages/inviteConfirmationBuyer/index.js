@@ -38,6 +38,9 @@ import {
   CustomInput,
   UncontrolledTooltip,
   ButtonGroup,
+  Modal,
+  ModalBody,
+  ModalFooter,
 } from 'reactstrap';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -176,6 +179,18 @@ class CpfFormat extends Component {
 }
 
 export default function InviteConfirmation({ match }) {
+  const [modalCaminhosLegadosInvite, setModalCaminhosLegadosInvite] = useState(
+    false
+  );
+  const [canOpenedModalCaminhosLegadosInvite] = useState(() => {
+    const caminhoslegados = sessionStorage.getItem(
+      '@dashboard/caminhoslegados_invite'
+    );
+
+    // eslint-disable-next-line no-unneeded-ternary
+    return caminhoslegados ? false : true;
+  });
+
   const [searchEmail, setSearchEmail] = useState('');
   const [emailDebounce] = useDebounce(searchEmail, 800);
   const [invite, setInvite] = useState(null);
@@ -681,6 +696,12 @@ export default function InviteConfirmation({ match }) {
       phone: '',
       installments: '1',
     });
+
+    if (canOpenedModalCaminhosLegadosInvite) {
+      setModalCaminhosLegadosInvite(true);
+    }
+
+    sessionStorage.setItem('@dashboard/caminhoslegados_invite', true);
 
     return () => {
       // setKitProducts(null);
@@ -2219,6 +2240,37 @@ export default function InviteConfirmation({ match }) {
               </Card>
             )}
           </Motion>
+
+          <Modal
+            size="lg"
+            isOpen={modalCaminhosLegadosInvite}
+            toggle={() => setModalCaminhosLegadosInvite(false)}
+          >
+            <ModalBody>
+              <img
+                src="https://i.imgur.com/ikG4bGz.jpg"
+                alt="Caminhos e Legados"
+                width="100%"
+                height="auto"
+              />
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                className="ml-1 my-1 btn-default"
+                color="primary"
+                onClick={() => window.open('https://seriefamilias.udf.org.br/')}
+              >
+                Quero saber mais!
+              </Button>
+              <Button
+                className="ml-1 my-1"
+                color="success"
+                onClick={() => setModalCaminhosLegadosInvite(false)}
+              >
+                Entendi
+              </Button>
+            </ModalFooter>
+          </Modal>
         </>
       )}
     </div>
