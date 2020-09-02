@@ -174,10 +174,10 @@ export default function Groups() {
           </a>
         </ModalBody>
         <ModalFooter>
-        <Button
+          <Button
             className="ml-1 my-1 btn-default"
             color="primary"
-            onClick={() => window.open('https://sites.google.com/view/campanhaseriefamlias/nossa-causa?authuser=0')}
+            onClick={() => window.open('https://seriefamilias.udf.org.br/')}
           >
             Quero saber mais!
           </Button>

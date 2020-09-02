@@ -86,6 +86,18 @@ const formOrder = Yup.object().shape({
 });
 
 export default function OrderCreate() {
+  const [modalCaminhosLegadosOrder, setModalCaminhosLegadosOrder] = useState(
+    false
+  );
+  const [canOpenedModalCaminhosLegadosOrder] = useState(() => {
+    const caminhoslegados = sessionStorage.getItem(
+      '@dashboard/caminhoslegados_order'
+    );
+
+    // eslint-disable-next-line no-unneeded-ternary
+    return caminhoslegados ? false : true;
+  });
+
   const userId = localStorage.getItem('@dashboard/user');
 
   const [orderTypeOptions, setOrderTypeOptions] = useState([]);
@@ -588,6 +600,12 @@ export default function OrderCreate() {
       phone: '',
       installments: '1',
     });
+
+    if (canOpenedModalCaminhosLegadosOrder) {
+      setModalCaminhosLegadosOrder(true);
+    }
+
+    sessionStorage.setItem('@dashboard/caminhoslegados_order', true);
 
     return () => {
       setDataProducts(null);
@@ -1207,7 +1225,7 @@ export default function OrderCreate() {
                                             shippingOption.delivery_method_id && (
                                             <Check size={24} color="#0cc27e" />
                                           )}
-                                        {shippingOption.description}
+                                        {shippingOption.delivery_method_name}
                                         {shippingOption.free_shipping && (
                                           <>
                                             <Star
@@ -1888,6 +1906,37 @@ export default function OrderCreate() {
             Ligar para UDF
           </Button>
         </ModalBody>
+      </Modal>
+
+      <Modal
+        size="lg"
+        isOpen={modalCaminhosLegadosOrder}
+        toggle={() => setModalCaminhosLegadosOrder(false)}
+      >
+        <ModalBody>
+          <img
+            src="https://i.imgur.com/ikG4bGz.jpg"
+            alt="Caminhos e Legados"
+            width="100%"
+            height="auto"
+          />
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            className="ml-1 my-1 btn-default"
+            color="primary"
+            onClick={() => window.open('https://seriefamilias.udf.org.br/')}
+          >
+            Quero saber mais!
+          </Button>
+          <Button
+            className="ml-1 my-1"
+            color="success"
+            onClick={() => setModalCaminhosLegadosOrder(false)}
+          >
+            Entendi
+          </Button>
+        </ModalFooter>
       </Modal>
     </>
   );
