@@ -40,6 +40,7 @@ const formDetails = Yup.object().shape({
   initial_date: Yup.string().required('A data inicial é obrigatória'),
   default_event_id: Yup.string().required('Tipo do grupo é obrigatório'),
   ministery: Yup.string().required('Ministério é obrigatório'),
+  modality: Yup.string().required('A modalidade é obrigatória'),
   country: Yup.string(),
   cep: Yup.string().when('country', {
     is: '30',
@@ -80,6 +81,7 @@ export default function GroupCreate({ className }) {
     end_date: '',
     default_event_id: '',
     ministery: '',
+    modality: '',
     address: '',
     cep: '',
     country: '30',
@@ -131,6 +133,7 @@ export default function GroupCreate({ className }) {
       is_public: values.is_public === 'true',
       is_online_payment: values.is_online_payment === 'true',
       default_event_id: parseInt(values.default_event_id, 10),
+      modality: values.modality,
       responsible_organization_id: values.organization_id,
       organizator_id: values.organizator_id,
       start_date: values.initial_date,
@@ -185,6 +188,7 @@ export default function GroupCreate({ className }) {
         initial_date: values.initial_date,
         end_date: values.end_date,
         ministery: values.ministery,
+        modality: values.modality,
         default_event_id: values.default_event_id,
       });
       dispatch(CepActions.cepRequest(cep, 0));
@@ -577,6 +581,47 @@ export default function GroupCreate({ className }) {
                           touched.default_event_id ? (
                             <div className="invalid-feedback">
                               {errors.default_event_id}
+                            </div>
+                          ) : null}
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col lg="4" md="12" sm="12">
+                        <FormGroup>
+                          <Label for="modality">Modalidade</Label>
+                          <Field
+                            type="select"
+                            component="select"
+                            id="modality"
+                            name="modality"
+                            className={`
+                                  form-control
+                                  ${errors.modality &&
+                                    touched.modality &&
+                                    'is-invalid'}
+                                `}
+                          >
+                            <option value="" disabled="">
+                              Selecione uma opção
+                            </option>
+
+                            <option key="presencial" value="Presencial">
+                              Presencial
+                            </option>
+
+                            <option key="online" value="Online">
+                              Online
+                            </option>
+
+                            <option key="misto" value="Misto">
+                              Misto
+                            </option>
+                          </Field>
+                          {errors.modality && touched.modality ? (
+                            <div className="invalid-feedback">
+                              {errors.modality}
                             </div>
                           ) : null}
                         </FormGroup>

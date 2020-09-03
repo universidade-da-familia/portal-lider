@@ -291,6 +291,7 @@ export default function UserProfile({ match, className }) {
     city: '',
     initialDate: '',
     endDate: '',
+    modality: '',
     isAdminPrinted: false,
   });
   const [loadCep, setLoadCep] = useState(false);
@@ -536,6 +537,7 @@ export default function UserProfile({ match, className }) {
         apiCity: event_data.city || '',
         initialDate: event_data.start_date,
         endDate: event_data.end_date,
+        modality: event_data.modality,
         isAdminPrinted: event_data.is_admin_printed,
       });
     }
@@ -1224,6 +1226,7 @@ export default function UserProfile({ match, className }) {
       city: values.city,
       start_date: values.initialDate,
       end_date: values.endDate,
+      modality: values.modality,
       is_admin_printed: values.isAdminPrinted,
       admin_print_date:
         values.isAdminPrinted && profile_data.admin ? new Date() : null,
@@ -1357,6 +1360,12 @@ export default function UserProfile({ match, className }) {
 
       dispatch(CepActions.cepRequest(cep, 0));
     }
+  }
+
+  function handleModalityChange(event, setFieldValue) {
+    const modality = event.target.value;
+
+    setFieldValue('modality', modality);
   }
 
   function handleCountryChange(event, setFieldValue) {
@@ -2483,6 +2492,48 @@ export default function UserProfile({ match, className }) {
                                     <Calendar size={14} color="#212529" />
                                   </div>
                                 </div>
+                              </FormGroup>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col sm="4">
+                              <FormGroup>
+                                <Label>Modalidade</Label>
+                                <Input
+                                  type="select"
+                                  id="modality"
+                                  name="modality"
+                                  onChange={e => {
+                                    handleModalityChange(e, setFieldValue);
+                                  }}
+                                >
+                                  <option
+                                    key="presencial"
+                                    value="Presencial"
+                                    selected={
+                                      eventDetails.modality === 'Presencial'
+                                    }
+                                  >
+                                    Presencial
+                                  </option>
+                                  <option
+                                    key="online"
+                                    value="Online"
+                                    selected={
+                                      eventDetails.modality === 'Online'
+                                    }
+                                  >
+                                    Online
+                                  </option>
+                                  <option
+                                    key="misto"
+                                    value="Misto"
+                                    selected={eventDetails.modality === 'Misto'}
+                                  >
+                                    Misto
+                                  </option>
+                                </Input>
                               </FormGroup>
                             </Col>
                           </Row>
