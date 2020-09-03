@@ -1079,6 +1079,36 @@ export default function InviteConfirmation({ match }) {
                                     Selecione os produtos
                                   </Label>
                                   {kitProducts.map((product, index) => {
+                                    if (product.id === 345) {
+                                      return (
+                                        <Row className="ml-2 mt-2">
+                                          <CustomInput
+                                            type="checkbox"
+                                            id={`product-${product.id}`}
+                                            defaultChecked={product.isSelected}
+                                            onChange={e =>
+                                              handleChangeChild(e, index)
+                                            }
+                                          />
+                                          <Label for={`product-${product.id}`}>
+                                            <h6>
+                                              <b className="font-medium-2 text-dark text-bold-600">
+                                                (OPCIONAL)
+                                              </b>{' '}
+                                              {`1 X ${
+                                                product.name
+                                              } - ${product.group_price.toLocaleString(
+                                                'pt-BR',
+                                                {
+                                                  style: 'currency',
+                                                  currency: 'BRL',
+                                                }
+                                              )}`}
+                                            </h6>
+                                          </Label>
+                                        </Row>
+                                      );
+                                    }
                                     return (
                                       <Row className="ml-2 mt-2">
                                         <CustomInput
