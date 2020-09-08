@@ -31,7 +31,7 @@ import { Creators as LessonReportActions } from '../../../../../store/ducks/less
 import { Creators as ParticipantActions } from '../../../../../store/ducks/participant';
 
 const formLessonReport = Yup.object().shape({
-  prayRequest: Yup.string().max(400, 'Limite máximo de caracteres'),
+  prayRequest: Yup.string().max(700, 'Limite máximo de caracteres'),
 });
 
 class CurrencyFormat extends Component {
@@ -337,7 +337,8 @@ export default function Lesson({ match }) {
                         <h6 className="red">
                           <em>*Ao menos um participante deve estar presente</em>
                         </h6>
-                        {profileData.admin && lastLesson &&
+                        {profileData.admin &&
+                          lastLesson &&
                           parseInt(lastLesson.id, 10) ===
                             parseInt(match.params.lesson_id, 10) && (
                             <h6 className="red font-weight-bold">
@@ -421,7 +422,7 @@ export default function Lesson({ match }) {
                           style={{ cursor: 'pointer' }}
                           onClick={event => prayRequest(event)}
                         >
-                          Pedido de oração{' '}
+                          Comentários e pedidos de oração{' '}
                           {openPrayRequest === true ? (
                             <ChevronUp size={30} color="#212529" />
                           ) : (
