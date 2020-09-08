@@ -422,7 +422,7 @@ export default function Lesson({ match }) {
                           style={{ cursor: 'pointer' }}
                           onClick={event => prayRequest(event)}
                         >
-                          Comentários e pedido de oração{' '}
+                          Comentários e pedidos de oração{' '}
                           {openPrayRequest === true ? (
                             <ChevronUp size={30} color="#212529" />
                           ) : (
