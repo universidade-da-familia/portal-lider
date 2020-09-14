@@ -1066,6 +1066,12 @@ export default function UserProfile({ match, className }) {
       )
     );
 
+    const eventData = {
+      digital_certificate: true,
+    };
+
+    dispatch(EventActions.eventEditRequest(event_data.id, eventData));
+
     finishInscriptions();
   }
 
