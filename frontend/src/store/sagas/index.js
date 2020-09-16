@@ -663,6 +663,24 @@ function* allEvents() {
   }
 }
 
+// function* defaultEventSchedule(action) {
+//   try {
+//     const { id } = action.payload;
+
+//     const response = yield call(api.get, `/default_event_schedules/${id}`);
+
+//     yield put(EventActions.allEventSuccess(response.data));
+//   } catch (err) {
+//     if (err.message === 'Network Error') {
+//       toastr.error('Falha!', 'Tente acessar novamente mais tarde.');
+//       yield put(EventActions.allEventFailure());
+//     } else {
+//       toastr.error('Falha!', 'Houve um erro ao carregar os eventos.');
+//       yield put(EventActions.allEventFailure());
+//     }
+//   }
+// }
+
 function* consultEntity(action) {
   try {
     const { id } = action.payload;

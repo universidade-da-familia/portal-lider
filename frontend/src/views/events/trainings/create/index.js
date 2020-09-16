@@ -12,6 +12,7 @@ import {
   MapPin,
   HelpCircle,
   Plus,
+  Edit,
 } from 'react-feather';
 import { Datepicker } from 'react-formik-ui';
 import NumberFormat from 'react-number-format';
@@ -34,6 +35,8 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  ButtonGroup,
+  Table,
 } from 'reactstrap';
 
 // import { css } from '@emotion/core';
@@ -53,6 +56,7 @@ import { validateCPF } from '~/services/validateCPF';
 import { Creators as BankActions } from '~/store/ducks/bank';
 import { Creators as CepActions } from '~/store/ducks/cep';
 import { Creators as DefaultEventActions } from '~/store/ducks/defaultEvent';
+// import { Creators as DefaultEventScheduleActions } from '~/store/ducks/defaultEventSchedule';
 import { Creators as EventActions } from '~/store/ducks/event';
 
 const formDetails = Yup.object().shape({
@@ -184,6 +188,7 @@ export default function TrainingCreate({ className }) {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
   const [paymentPlans, setPaymentPlans] = useState([]);
+  const [modalEditSchedule, setModalEditSchedule] = useState(false);
   const [modalPaymentPlan, setModalPaymentPlan] = useState(false);
   const [modalEditPaymentPlan, setModalEditPaymentPlan] = useState(false);
   const [editPaymentPlan, setEditPaymentPlan] = useState(null);
@@ -222,6 +227,10 @@ export default function TrainingCreate({ className }) {
     values.index = index;
     setEditPaymentPlan(values);
     setModalEditPaymentPlan(true);
+  }
+
+  function toggleModalEditSchedule() {
+    setModalEditSchedule(!modalEditSchedule);
   }
 
   function toggleModalEditPaymentPlan() {
@@ -1210,29 +1219,19 @@ export default function TrainingCreate({ className }) {
                     <Row className="align-items-center">
                       <Col sm="12" md="6" lg="6" className="mb-2">
                         <FormGroup>
-                          <Label className="ml-2" for="church">
-                            Nome da Igreja
-                          </Label>
-                          <Field
-                            readOnly
-                            type="text"
-                            placeholder="Pesquise a igreja"
-                            name="organization_name"
-                            id="organization_name"
-                            // onClick={toggleModalChurch}
-                            className={`
-                              form-control
-                              ${errors.organization_name &&
-                                touched.organization_name &&
-                                'is-invalid'}
-                            `}
-                          />
-                          {errors.organization_name &&
-                          touched.organization_name ? (
-                            <div className="invalid-feedback">
-                              {errors.organization_name}
-                            </div>
-                          ) : null}
+                          <Row className="ml-1">
+                            <Button
+                              outline
+                              color="success"
+                              onClick={e => {
+                                e.preventDefault();
+                                toggleModalEditSchedule();
+                              }}
+                            >
+                              <Edit size={16} color="#0cc27e" /> Editar
+                              cronograma gabi
+                            </Button>
+                          </Row>
                         </FormGroup>
                       </Col>
                     </Row>
@@ -2104,6 +2103,36 @@ export default function TrainingCreate({ className }) {
               </Form>
             )}
           </Formik>
+        </Modal>
+
+        {/* MODAL EDITAR PLANO DE PAGAMENTO */}
+        <Modal
+          isOpen={modalEditSchedule}
+          toggle={toggleModalEditSchedule}
+          className={className}
+          size="lg"
+        >
+          <ModalHeader toggle={toggleModalEditSchedule}>
+            Editar cronograma
+          </ModalHeader>
+
+          <ButtonGroup className="mx-4">
+            <Button color="success" active>
+              One
+            </Button>
+            <Button color="success">Two</Button>
+            <Button color="success">Three</Button>
+          </ButtonGroup>
+
+          <Table bordered responsive hover>
+            <thead>
+              <tr>
+                <th>Horário</th>
+                <th>Nome</th>
+              </tr>
+            </thead>
+            <tbody>{console.tron.log(defaultData)}</tbody>
+          </Table>
         </Modal>
 
         {/* MODAL EDITAR PLANO DE PAGAMENTO */}
