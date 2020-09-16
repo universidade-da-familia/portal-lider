@@ -1039,9 +1039,10 @@ export default function UserProfile({ match, className }) {
     }
   }
 
-  function finishInscriptions() {
+  function finishInscriptions(digital_certificate = false) {
     const eventData = {
       is_inscription_finished: true,
+      digital_certificate,
     };
 
     dispatch(EventActions.eventEditRequest(match.params.event_id, eventData));
@@ -1066,7 +1067,9 @@ export default function UserProfile({ match, className }) {
       )
     );
 
-    finishInscriptions();
+    const digital_certificate = true;
+
+    finishInscriptions(digital_certificate);
   }
 
   function reopenInscriptions() {
