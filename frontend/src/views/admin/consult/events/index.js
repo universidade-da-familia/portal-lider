@@ -70,6 +70,7 @@ export default function AdminEvents() {
       ministery: filterStorage ? filterStorage.ministery : '',
       status: filterStorage ? filterStorage.status : '',
       is_printed: filterStorage ? filterStorage.is_printed : '',
+      modality: filterStorage ? filterStorage.modality : '',
       country: filterStorage ? filterStorage.country : '',
       cep: filterStorage ? filterStorage.cep : '',
       uf: filterStorage ? filterStorage.uf : '',
@@ -207,6 +208,7 @@ export default function AdminEvents() {
     setFieldValue('ministery', '');
     setFieldValue('status', '');
     setFieldValue('is_printed', '');
+    setFieldValue('modality', '');
     setFieldValue('cep', '');
     setFieldValue('uf', '');
     setFieldValue('city', '');
@@ -228,6 +230,7 @@ export default function AdminEvents() {
         ministery: '',
         status: '',
         is_printed: '',
+        modality: '',
         country: '',
         cep: '',
         uf: '',
@@ -442,6 +445,21 @@ export default function AdminEvents() {
                             <option value="">Sem filtro</option>
                             <option value>Sim</option>
                             <option value={false}>Não</option>
+                          </Field>
+                        </Col>
+                        <Col lg="3" md="3" sm="12">
+                          <Label>Modalidade</Label>
+                          <Field
+                            type="select"
+                            component="select"
+                            name="modality"
+                            id="modality"
+                            className="form-control"
+                          >
+                            <option value="">Sem filtro</option>
+                            <option value="Online">Online</option>
+                            <option value="Presencial">Presencial</option>
+                            <option value="Misto">Misto</option>
                           </Field>
                         </Col>
                       </Row>
