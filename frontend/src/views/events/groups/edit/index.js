@@ -2002,15 +2002,18 @@ export default function UserProfile({ match, className }) {
         )}
 
         {event_data.is_inscription_finished &&
-        event_data.digital_certificate ? (
-          <Badge color="warning" className="text-wrap mr-2 mb-2">
-            Certificado digital
-          </Badge>
-        ) : (
-          <Badge color="warning" className="text-wrap mr-2 mb-2">
-            Certificado impresso
-          </Badge>
-        )}
+          event_data.digital_certificate === true && (
+            <Badge color="warning" className="text-wrap mr-2 mb-2">
+              Certificado digital
+            </Badge>
+          )}
+
+        {event_data.is_inscription_finished &&
+          event_data.digital_certificate === false && (
+            <Badge color="warning" className="text-wrap mr-2 mb-2">
+              Certificado impresso
+            </Badge>
+          )}
 
         <TabContent className="px-0" activeTab={activeTab}>
           {/* Dados do Grupo */}
