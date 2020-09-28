@@ -56,7 +56,7 @@ import { validateCPF } from '~/services/validateCPF';
 import { Creators as BankActions } from '~/store/ducks/bank';
 import { Creators as CepActions } from '~/store/ducks/cep';
 import { Creators as DefaultEventActions } from '~/store/ducks/defaultEvent';
-// import { Creators as DefaultEventScheduleActions } from '~/store/ducks/defaultEventSchedule';
+import { Creators as DefaultEventScheduleActions } from '~/store/ducks/defaultEventSchedule';
 import { Creators as EventActions } from '~/store/ducks/event';
 
 const formDetails = Yup.object().shape({
@@ -192,6 +192,7 @@ export default function TrainingCreate({ className }) {
   const [modalPaymentPlan, setModalPaymentPlan] = useState(false);
   const [modalEditPaymentPlan, setModalEditPaymentPlan] = useState(false);
   const [editPaymentPlan, setEditPaymentPlan] = useState(null);
+  const [modules, setModules] = useState(null);
 
   const userData = useSelector(state => state.profile.data);
   const bankData = useSelector(state => state.bank.allData);
@@ -199,6 +200,7 @@ export default function TrainingCreate({ className }) {
   const defaultData = useSelector(state => state.defaultEvent.data);
   const event_loading = useSelector(state => state.event.loading);
   const cep_loading = useSelector(state => state.cep.loading);
+  const scheduleData = useSelector(state => state.defaultEventSchedule.data);
 
   const dispatch = useDispatch();
   const store = useStore();
@@ -398,11 +400,7 @@ export default function TrainingCreate({ className }) {
     const { value } = event.target;
     setFieldValue('default_event_id', value);
 
-    // defaultData.map(default_event => {
-    //   if (default_event.id === parseInt(value)) {
-    //     setFieldValue('ministery', default_event.ministery.name);
-    //   }
-    // });
+    dispatch(DefaultEventScheduleActions.allDefaultEventScheduleRequest(value));
   }
 
   function handleMinistery(event, setFieldValue) {
@@ -545,6 +543,18 @@ export default function TrainingCreate({ className }) {
       setMinisteriesOrganizer(auxMinisteries);
     }
   }, [defaultData]);
+
+  useEffect(() => {
+    const modulesAux = [];
+
+    if (scheduleData !== null) {
+      for (let index = 1; index <= scheduleData.max_modules; index += 1) {
+        modulesAux.push(`Módulo ${index}`);
+      }
+    }
+
+    setModules(modulesAux);
+  }, [scheduleData]);
 
   useEffect(() => {
     setCountries(CountryStateCity.getAllCountries());
@@ -1222,6 +1232,7 @@ export default function TrainingCreate({ className }) {
                           <Row className="ml-1">
                             <Button
                               outline
+                              disabled={scheduleData === null}
                               color="success"
                               onClick={e => {
                                 e.preventDefault();
@@ -2117,11 +2128,39 @@ export default function TrainingCreate({ className }) {
           </ModalHeader>
 
           <ButtonGroup className="mx-4">
-            <Button color="success" active>
-              One
-            </Button>
-            <Button color="success">Two</Button>
-            <Button color="success">Three</Button>
+            {modules.map(module => {
+              return (
+                <Button color="success" active>
+                  {module}
+                </Button>
+              );
+            })}
+
+            {/* {(() => {
+              if (scheduleData) {
+                console.tron.log(scheduleData.max_modules);
+
+                const modules = [];
+
+                for (
+                  let index = 1;
+                  index <= scheduleData.max_modules;
+                  index += 1
+                ) {
+                  modules.push(`Módulo ${index}`);
+                }
+
+                console.tron.log(modules);
+
+                modules.map(module => {
+                  return (
+                    <Button color="success" active>
+                      {`teste`}
+                    </Button>
+                  );
+                });
+              }
+            })()} */}
           </ButtonGroup>
 
           <Table bordered responsive hover>
@@ -2131,7 +2170,6 @@ export default function TrainingCreate({ className }) {
                 <th>Nome</th>
               </tr>
             </thead>
-            <tbody>{console.tron.log(defaultData)}</tbody>
           </Table>
         </Modal>
 

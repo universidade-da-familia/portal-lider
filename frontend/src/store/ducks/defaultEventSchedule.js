@@ -45,8 +45,11 @@ export default function defaultEvent(state = INITIAL_STATE, action) {
  */
 export const Creators = {
   // CREATORS PARA TODOS OS EVENTOS
-  allDefaultEventScheduleRequest: () => ({
+  allDefaultEventScheduleRequest: id => ({
     type: Types.ALL_REQUEST,
+    payload: {
+      id,
+    },
   }),
   allDefaultEventScheduleSuccess: data => ({
     type: Types.ALL_SUCCESS,
