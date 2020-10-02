@@ -1623,15 +1623,38 @@ export default function UserProfile({ match, className }) {
                                 </h5>
                                 <br />
                                 <div>
-                                  Os certificados impressos serão enviados e
-                                  eventuais participantes adicionados após a
-                                  finalização das inscrições somente poderão
-                                  receber a via digital
+                                  De qual forma você prefere receber os
+                                  certificados?
+                                </div>
+                                <br />
+                                <div>
+                                  <b>Impresso:</b> enviaremos os certificados
+                                  para o endereço que você informar no próximo
+                                  passo.
+                                </div>
+                                <br />
+
+                                <div>
+                                  <b>Digital:</b> Você poderá "Emitir
+                                  certificados" no próximo passo, clicando no
+                                  botão "Emitir certificados" abaixo do botão
+                                  "finalizar inscrições"
                                 </div>
                               </>,
                               {
-                                onOk: () => finishInscriptions(),
+                                onOk: () => sendDigitalCertificates(),
+                                okText: 'Digital',
                                 onCancel: () => {},
+                                buttons: [
+                                  {
+                                    text: 'Impresso',
+                                    handler: () =>
+                                      toggleModalRegisterNewAddress(),
+                                  },
+                                  {
+                                    cancel: true,
+                                  },
+                                ],
                               }
                             );
                           }}
@@ -1640,32 +1663,43 @@ export default function UserProfile({ match, className }) {
                         </DropdownItem>
                       )}
 
-                      {/* BOTÃO MOSTRA QUANDO INSCRIÇÕES JÁ ESTÃO FINALIZADAS */}
-                      {// certificateParticipants.length >=
-                      // event_data.defaultEvent.min_participants &&
-                      event_data.is_inscription_finished && (
-                        <DropdownItem
-                          color="success"
-                          className="btn-raised mr-3"
-                          disabled
-                        >
-                          <CheckSquare size={15} /> Inscrições finalizadas
-                        </DropdownItem>
-                      )}
+                      {(() => {
+                        if (event_data.is_inscription_finished === true) {
+                          if (
+                            profile_data[
+                              event_data.defaultEvent.ministery.tag
+                            ] === 7
+                          ) {
+                            return (
+                              <DropdownItem
+                                color="success"
+                                className="btn-raised mr-3"
+                                onClick={() => {
+                                  toastr.confirm(
+                                    'Tem certeza de que deseja reabrir as inscrições?',
+                                    {
+                                      onOk: () => reopenInscriptions(),
+                                      onCancel: () => {},
+                                    }
+                                  );
+                                }}
+                              >
+                                <CheckSquare size={15} /> Reabrir inscrições
+                              </DropdownItem>
+                            );
+                          }
+                          return (
+                            <DropdownItem
+                              color="success"
+                              className="btn-raised mr-3"
+                              disabled
+                            >
+                              <CheckSquare size={15} /> Inscrições finalizadas
+                            </DropdownItem>
+                          );
+                        }
+                      })()}
 
-                      {/* <DropdownItem>
-                        <i className="fa fa-address-card mr-2" /> Emitir crachás
-                      </DropdownItem>
-                      <Link to="/evento?id=1" className="p-0">
-                        <DropdownItem>
-                          <i className="fa fa-globe mr-2" /> Site do evento
-                        </DropdownItem>
-                      </Link> */}
-                      {/* <DropdownItem>
-                        <i className="fa fa-user mr-2" /> Cartão de nomes
-                      </DropdownItem> */}
-
-                      {/* {(event_data.is_finished || profile_data.admin) && ( */}
                       {(profile_data.admin ||
                         event_data.is_inscription_finished) && (
                         <DropdownItem onClick={toggleModalCertificate}>
@@ -1700,30 +1734,6 @@ export default function UserProfile({ match, className }) {
                             >
                               <i className="fa fa-plus" /> Solicitar material
                             </Button>
-                            {/* <Button
-                              href={`/eventos/grupo/${match.params.event_id}/crachas`}
-                              color="info"
-                              className="btn-raised mr-3"
-                            >
-                              <i className="fa fa-address-card" /> Emitir
-                              crachás
-                            </Button>
-                            <Button
-                              href="http://localhost:3000/evento/1"
-                              target="_blank"
-                              color="info"
-                              className="btn-raised mr-3"
-                            >
-                              <i className="fa fa-globe" /> Site do evento
-                            </Button> */}
-                            {/* Esse botão aparece somente para eventos do FFI */}
-                            {/* <Button
-                              href={`/eventos/grupo/${match.params.event_id}/cartoes`}
-                              color="info"
-                              className="btn-raised mr-3"
-                            >
-                              <i className="fa fa-user" /> Cartão de nomes
-                            </Button> */}
 
                             {/* BOTAO QUE MOSTRA QUANDO QUANTIDADE MINIMA DE PARTICIPANTES NAO FOR ATINGIDA */}
                             {handleEnableNotFinishInscriptions() && (
@@ -1787,51 +1797,12 @@ export default function UserProfile({ match, className }) {
                                     }
                                   );
                                 }}
-                                // onClick={() => {
-                                //   if (
-                                //     profile_data.addresses &&
-                                //     profile_data.addresses.length === 0
-                                //   ) {
-                                //     toggleModalRegisterNewAddress();
-                                //   } else {
-                                //     toastr.confirm(
-                                //       <>
-                                //         <h5>
-                                //           Tem certeza que deseja finalizar as
-                                //           inscrições?
-                                //         </h5>
-                                //         <br />
-                                //         <div>
-                                //           Os certificados impressos serão
-                                //           enviados e eventuais participantes
-                                //           adicionados após a finalização das
-                                //           inscrições somente poderão receber a
-                                //           via digital
-                                //         </div>
-                                //       </>,
-                                //       {
-                                //         onOk: () => finishInscriptions(),
-                                //         onCancel: () => {},
-                                //       }
-                                //     );
-                                //   }
-                                // }}
                               >
                                 <CheckSquare size={15} /> Finalizar inscrições
                               </Button>
                             )}
 
                             {/* BOTÃO MOSTRA QUANDO INSCRIÇÕES JÁ ESTÃO FINALIZADAS */}
-                            {/* {event_data.is_inscription_finished && (
-                              <Button
-                                color="success"
-                                className="btn-raised mr-3"
-                                disabled
-                              >
-                                <CheckSquare size={15} /> Inscrições finalizadas
-                              </Button>
-                            )} */}
-
                             {(() => {
                               if (event_data.is_inscription_finished === true) {
                                 if (
