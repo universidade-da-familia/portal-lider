@@ -413,13 +413,18 @@ export default function EntityTabs({ match }) {
     }
 
     if (data.participants && data.participants.length > 0) {
-      const events = data.participants.map(event => {
+      const events = [];
+
+      data.participants.map(event => {
         if (event.pivot.assistant) {
           event.history_type = 'Assistente';
         } else {
           event.history_type = 'Participante';
         }
-        return event;
+
+        if (event.pivot.is_quitter === false) {
+          events.push(event);
+        }
       });
 
       setAllEvents(oldEvents => oldEvents.concat(events));
