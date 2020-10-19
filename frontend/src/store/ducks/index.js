@@ -18,6 +18,7 @@ import church from './church';
 import contacts from './contacts';
 import customizer from './customizer';
 import defaultEvent from './defaultEvent';
+import defaultEventSchedule from './defaultEventSchedule';
 import entity from './entity';
 import event from './event';
 import expired_titles from './expired_titles';
@@ -86,5 +87,6 @@ export default combineReducers({
   shippingTag,
   exportExcel,
   paymentPlan,
+  defaultEventSchedule,
   router: connectRouter(history),
 });

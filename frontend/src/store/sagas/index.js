@@ -45,6 +45,10 @@ import {
   Types as DefaultEventTypes,
 } from '~/store/ducks/defaultEvent';
 import {
+  Creators as DefaultEventScheduleActions,
+  Types as DefaultEventScheduleTypes,
+} from '~/store/ducks/defaultEventSchedule';
+import {
   Creators as EntityActions,
   Types as EntityTypes,
 } from '~/store/ducks/entity';
@@ -662,6 +666,24 @@ function* allEvents() {
     }
   }
 }
+
+// function* defaultEventSchedule(action) {
+//   try {
+//     const { id } = action.payload;
+
+//     const response = yield call(api.get, `/default_event_schedules/${id}`);
+
+//     yield put(EventActions.allEventSuccess(response.data));
+//   } catch (err) {
+//     if (err.message === 'Network Error') {
+//       toastr.error('Falha!', 'Tente acessar novamente mais tarde.');
+//       yield put(EventActions.allEventFailure());
+//     } else {
+//       toastr.error('Falha!', 'Houve um erro ao carregar os eventos.');
+//       yield put(EventActions.allEventFailure());
+//     }
+//   }
+// }
 
 function* consultEntity(action) {
   try {
@@ -2330,6 +2352,21 @@ function* allDefaultEvent() {
   }
 }
 
+function* defaultEventSchedules(action) {
+  try {
+    const { id } = action.payload;
+
+    const response = yield call(api.get, `/default_event_schedules/${id}`);
+
+    yield put(
+      DefaultEventScheduleActions.allDefaultEventScheduleSuccess(response.data)
+    );
+  } catch (err) {
+    toastr.error('Falha!', 'Tente novamente');
+    yield put(DefaultEventScheduleActions.allDefaultEventScheduleFailure());
+  }
+}
+
 function* order(action) {
   try {
     const { id } = action.payload;
@@ -3231,6 +3268,8 @@ export default function* rootSaga() {
 
     takeLatest(DefaultEventTypes.ORGANIZATOR_EVENT_REQUEST, organizatorEvent),
     takeLatest(DefaultEventTypes.ALL_REQUEST, allDefaultEvent),
+
+    takeLatest(DefaultEventScheduleTypes.ALL_REQUEST, defaultEventSchedules),
 
     takeLatest(ShippingTypes.SHIPPING_REQUEST, shippingOptions),
 
