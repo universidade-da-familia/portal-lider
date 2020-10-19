@@ -1240,7 +1240,7 @@ export default function TrainingCreate({ className }) {
                               }}
                             >
                               <Edit size={16} color="#0cc27e" /> Editar
-                              cronograma gabi
+                              cronograma
                             </Button>
                           </Row>
                         </FormGroup>
