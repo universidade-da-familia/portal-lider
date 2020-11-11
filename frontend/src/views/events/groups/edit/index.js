@@ -1048,29 +1048,29 @@ export default function UserProfile({ match, className }) {
     dispatch(EventActions.eventEditRequest(match.params.event_id, eventData));
   }
 
-  // function sendDigitalCertificates() {
-  //   const all_organizators = event_data.organizators.map(
-  //     organizator => organizator.pivot.entity_id
-  //   );
-  //   const all_participants = event_data.participants.map(
-  //     participant => participant.pivot.id
-  //   );
+  function sendDigitalCertificates() {
+    const all_organizators = event_data.organizators.map(
+      organizator => organizator.pivot.entity_id
+    );
+    const all_participants = event_data.participants.map(
+      participant => participant.pivot.id
+    );
 
-  //   const reload = false;
+    const reload = false;
 
-  //   dispatch(
-  //     ParticipantActions.editPrintDateRequest(
-  //       all_organizators,
-  //       all_participants,
-  //       event_data.id,
-  //       reload
-  //     )
-  //   );
+    dispatch(
+      ParticipantActions.editPrintDateRequest(
+        all_organizators,
+        all_participants,
+        event_data.id,
+        reload
+      )
+    );
 
-  //   const digital_certificate = true;
+    const digital_certificate = true;
 
-  //   finishInscriptions(digital_certificate);
-  // }
+    finishInscriptions(digital_certificate);
+  }
 
   function reopenInscriptions() {
     const eventData = {
@@ -1133,23 +1133,23 @@ export default function UserProfile({ match, className }) {
 
     setModalRegisterNewAddress(false);
 
-    // toastr.confirm(
-    //   <>
-    //     <h5>Tem certeza que deseja finalizar as inscrições?</h5>
-    //     <br />
-    //     <div>
-    //       Os certificados impressos serão enviados e eventuais participantes
-    //       adicionados após a finalização das inscrições somente poderão receber
-    //       a via digital
-    //     </div>
-    //   </>,
-    //   {
-    //     onOk: () => finishInscriptions(),
-    //     onCancel: () => {
-    //       window.location.reload();
-    //     },
-    //   }
-    // );
+    toastr.confirm(
+      <>
+        <h5>Tem certeza que deseja finalizar as inscrições?</h5>
+        <br />
+        <div>
+          Os certificados impressos serão enviados e eventuais participantes
+          adicionados após a finalização das inscrições somente poderão receber
+          a via digital
+        </div>
+      </>,
+      {
+        onOk: () => finishInscriptions(),
+        onCancel: () => {
+          window.location.reload();
+        },
+      }
+    );
 
     toastr.confirm(
       <>
@@ -1633,49 +1633,6 @@ export default function UserProfile({ match, className }) {
                           color="success"
                           className="btn-raised mr-3"
                           onClick={() => {
-                            // toastr.confirm(
-                            //   <>
-                            //     <h5>
-                            //       Tem certeza que deseja finalizar as
-                            //       inscrições?
-                            //     </h5>
-                            //     <br />
-                            //     <div>
-                            //       De qual forma você prefere receber os
-                            //       certificados?
-                            //     </div>
-                            //     <br />
-                            //     <div>
-                            //       <b>Impresso:</b> enviaremos os certificados
-                            //       para o endereço que você informar no próximo
-                            //       passo.
-                            //     </div>
-                            //     <br />
-
-                            //     <div>
-                            //       <b>Digital:</b> Você poderá "Emitir
-                            //       certificados" no próximo passo, clicando no
-                            //       botão "Emitir certificados" abaixo do botão
-                            //       "finalizar inscrições"
-                            //     </div>
-                            //   </>,
-                            //   {
-                            //     onOk: () => sendDigitalCertificates(),
-                            //     okText: 'Digital',
-                            //     onCancel: () => {},
-                            //     buttons: [
-                            //       {
-                            //         text: 'Impresso',
-                            //         handler: () =>
-                            //           toggleModalRegisterNewAddress(),
-                            //       },
-                            //       {
-                            //         cancel: true,
-                            //       },
-                            //     ],
-                            //   }
-                            // );
-
                             toastr.confirm(
                               <>
                                 <h5>
@@ -1684,17 +1641,60 @@ export default function UserProfile({ match, className }) {
                                 </h5>
                                 <br />
                                 <div>
-                                  Os certificados impressos serão enviados e
-                                  eventuais participantes adicionados após a
-                                  finalização das inscrições somente poderão
-                                  receber a via digital
+                                  De qual forma você prefere receber os
+                                  certificados?
+                                </div>
+                                <br />
+                                <div>
+                                  <b>Impresso:</b> enviaremos os certificados
+                                  para o endereço que você informar no próximo
+                                  passo.
+                                </div>
+                                <br />
+
+                                <div>
+                                  <b>Digital:</b> Você poderá "Emitir
+                                  certificados" no próximo passo, clicando no
+                                  botão "Emitir certificados" abaixo do botão
+                                  "finalizar inscrições"
                                 </div>
                               </>,
                               {
-                                onOk: () => finishInscriptions(),
+                                onOk: () => sendDigitalCertificates(),
+                                okText: 'Digital',
                                 onCancel: () => {},
+                                buttons: [
+                                  {
+                                    text: 'Impresso',
+                                    handler: () =>
+                                      toggleModalRegisterNewAddress(),
+                                  },
+                                  {
+                                    cancel: true,
+                                  },
+                                ],
                               }
                             );
+
+                            // toastr.confirm(
+                            //   <>
+                            //     <h5>
+                            //       Tem certeza que deseja finalizar as
+                            //       inscrições?
+                            //     </h5>
+                            //     <br />
+                            //     <div>
+                            //       Os certificados impressos serão enviados e
+                            //       eventuais participantes adicionados após a
+                            //       finalização das inscrições somente poderão
+                            //       receber a via digital
+                            //     </div>
+                            //   </>,
+                            //   {
+                            //     onOk: () => finishInscriptions(),
+                            //     onCancel: () => {},
+                            //   }
+                            // );
                           }}
                         >
                           <CheckSquare size={15} /> Finalizar inscrições
@@ -1792,49 +1792,6 @@ export default function UserProfile({ match, className }) {
                                 color="success"
                                 className="btn-raised mr-3"
                                 onClick={() => {
-                                  // toastr.confirm(
-                                  //   <>
-                                  //     <h5>
-                                  //       Tem certeza que deseja finalizar as
-                                  //       inscrições?
-                                  //     </h5>
-                                  //     <br />
-                                  //     <div>
-                                  //       De qual forma você prefere receber os
-                                  //       certificados?
-                                  //     </div>
-                                  //     <br />
-                                  //     <div>
-                                  //       <b>Impresso:</b> enviaremos os
-                                  //       certificados para o endereço que você
-                                  //       informar no próximo passo.
-                                  //     </div>
-                                  //     <br />
-
-                                  //     <div>
-                                  //       <b>Digital:</b> Você poderá "Emitir
-                                  //       certificados" no próximo passo, clicando
-                                  //       no botão "Emitir certificados" abaixo do
-                                  //       botão "finalizar inscrições"
-                                  //     </div>
-                                  //   </>,
-                                  //   {
-                                  //     onOk: () => sendDigitalCertificates(),
-                                  //     okText: 'Digital',
-                                  //     onCancel: () => {},
-                                  //     buttons: [
-                                  //       {
-                                  //         text: 'Impresso',
-                                  //         handler: () =>
-                                  //           toggleModalRegisterNewAddress(),
-                                  //       },
-                                  //       {
-                                  //         cancel: true,
-                                  //       },
-                                  //     ],
-                                  //   }
-                                  // );
-
                                   toastr.confirm(
                                     <>
                                       <h5>
@@ -1843,17 +1800,60 @@ export default function UserProfile({ match, className }) {
                                       </h5>
                                       <br />
                                       <div>
-                                        Os certificados impressos serão enviados
-                                        e eventuais participantes adicionados
-                                        após a finalização das inscrições
-                                        somente poderão receber a via digital
+                                        De qual forma você prefere receber os
+                                        certificados?
+                                      </div>
+                                      <br />
+                                      <div>
+                                        <b>Impresso:</b> enviaremos os
+                                        certificados para o endereço que você
+                                        informar no próximo passo.
+                                      </div>
+                                      <br />
+
+                                      <div>
+                                        <b>Digital:</b> Você poderá "Emitir
+                                        certificados" no próximo passo, clicando
+                                        no botão "Emitir certificados" abaixo do
+                                        botão "finalizar inscrições"
                                       </div>
                                     </>,
                                     {
-                                      onOk: () => finishInscriptions(),
+                                      onOk: () => sendDigitalCertificates(),
+                                      okText: 'Digital',
                                       onCancel: () => {},
+                                      buttons: [
+                                        {
+                                          text: 'Impresso',
+                                          handler: () =>
+                                            toggleModalRegisterNewAddress(),
+                                        },
+                                        {
+                                          cancel: true,
+                                        },
+                                      ],
                                     }
                                   );
+
+                                  // toastr.confirm(
+                                  //   <>
+                                  //     <h5>
+                                  //       Tem certeza que deseja finalizar as
+                                  //       inscrições?
+                                  //     </h5>
+                                  //     <br />
+                                  //     <div>
+                                  //       Os certificados impressos serão enviados
+                                  //       e eventuais participantes adicionados
+                                  //       após a finalização das inscrições
+                                  //       somente poderão receber a via digital
+                                  //     </div>
+                                  //   </>,
+                                  //   {
+                                  //     onOk: () => finishInscriptions(),
+                                  //     onCancel: () => {},
+                                  //   }
+                                  // );
                                 }}
                               >
                                 <CheckSquare size={15} /> Finalizar inscrições
