@@ -2397,6 +2397,8 @@ function* addOrder(action) {
       Math.random() * 100
     ).toString(32)}`;
 
+    data.order_details.amount = data.order_details.amount.toFixed(2);
+
     const signature = `${apiKey}~${merchantId}~${referenceCode}~${data.order_details.amount}~BRL`;
     const signatureHash = md5(signature);
 
