@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import styled, { keyframes } from 'styled-components';
-
 import { useSelector } from 'react-redux';
+
+import styled, { keyframes } from 'styled-components';
 
 // import globals from "../utils/globals";
 import theater from '../media/images/theater_apcd.jpg';
-import { Title, SubTitle } from './Title';
-
 import Button from './Button';
+import { Title, SubTitle } from './Title';
 
 const move = keyframes`
   from {
@@ -57,10 +56,10 @@ const Locale = styled.div`
 export default function TextVenue() {
   const [street, setStreet] = useState('');
 
-  const data = useSelector(state => state.siteEvent.data);
+  const data = useSelector(state => state.event.data);
 
   if (data !== null) {
-    const street_replaced = String(data.address.street).replace(/ /g, '+');
+    const street_replaced = String(data.street).replace(/ /g, '+');
 
     if (street === '') {
       setStreet(street_replaced);
@@ -69,22 +68,21 @@ export default function TextVenue() {
 
   return (
     data !== null && (
-      <Wrapper banner={data.files.address}>
+      <Wrapper banner="https://arcowebarquivos-us.s3.amazonaws.com/imagens/52/21/arq_85221.jpg">
         <Locale>
           <Title title="Local" light />
           <SubTitle
-            title={`${data.address.name}, ${data.address.city}, ${data.address.uf} - ${data.address.country}`}
+            title={`${data.address_name}, ${data.city}, ${data.uf} - ${data.country}`}
             light
             className="text-center"
           />
 
           <Button
-            href={`http://maps.google.com/?q=${street},+${data.address.street_number},+${data.address.city}+-+${data.address.uf},+${data.address.cep}`}
+            href={`http://maps.google.com/?q=${street},+${data.street_number},+${data.city}+-+${data.uf},+${data.cep}`}
             light
           >
-            "{data.address.street}, {data.address.street_number} -{' '}
-            {data.address.neighborhood}, {data.address.city} - {data.address.uf}
-            "
+            {data.street}, {data.street_number} - {data.neighborhood},{' '}
+            {data.city} - {data.uf}
           </Button>
         </Locale>
       </Wrapper>

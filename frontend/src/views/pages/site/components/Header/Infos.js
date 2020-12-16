@@ -1,10 +1,11 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { css } from 'glamor';
-
 import { useSelector } from 'react-redux';
 
-import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { css } from 'glamor';
+
+// import { format } from 'date-fns';
+// import { pt } from 'date-fns/locale';
 
 import globals from '../../utils/globals';
 
@@ -25,30 +26,36 @@ const styles = {
     },
   }),
   header: css({
-    fontSize: 30,
+    fontSize: 40,
     margin: '0 auto',
   }),
   text: css({
-    fontSize: 20,
-    margin: '0 auto 4em auto',
+    fontSize: 30,
+    margin: '0 auto 10em auto',
   }),
 };
 
 export default function Infos() {
-  const data = useSelector(state => state.siteEvent.data);
+  const data = useSelector(state => state.event.data);
 
   return (
     <div {...styles.container}>
       {data !== null && (
         <>
           <p {...styles.header} className="text-center line-height-1">
-            Inicia{' '}
-            {format(new Date(data.start_date), "dd 'de' MMMM 'de' yyyy", {
-              locale: pt,
-            })}
+            {data.defaultEvent.event_type}
+            {/* Inicia{' '}
+            {format(
+              new Date(data.schedules[0].date),
+              "dd 'de' MMMM 'de' yyyy",
+              {
+                locale: pt,
+              }
+            )} */}
           </p>
           <p {...styles.text}>
-            {data.address.city}, {data.address.uf} - {data.address.country}
+            {data.defaultEvent.ministery.name} - {data.defaultEvent.name}
+            {/* {data.city}, {data.uf} - {data.country} */}
           </p>
         </>
       )}

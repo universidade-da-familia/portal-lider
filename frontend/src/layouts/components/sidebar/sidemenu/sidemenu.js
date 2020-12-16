@@ -1,7 +1,15 @@
 /* eslint-disable */
 // import external modules
 import React from 'react';
-import { Home, Globe, Users, HelpCircle, Package, ChevronRight, Lock } from 'react-feather';
+import {
+  Home,
+  Globe,
+  Users,
+  HelpCircle,
+  Package,
+  ChevronRight,
+  Lock,
+} from 'react-feather';
 import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 

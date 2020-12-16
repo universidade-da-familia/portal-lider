@@ -71,6 +71,7 @@ export default function AdminEvents() {
       status: filterStorage ? filterStorage.status : '',
       is_printed: filterStorage ? filterStorage.is_printed : '',
       modality: filterStorage ? filterStorage.modality : '',
+      event_type: filterStorage ? filterStorage.event_type : '',
       country: filterStorage ? filterStorage.country : '',
       cep: filterStorage ? filterStorage.cep : '',
       uf: filterStorage ? filterStorage.uf : '',
@@ -209,6 +210,7 @@ export default function AdminEvents() {
     setFieldValue('status', '');
     setFieldValue('is_printed', '');
     setFieldValue('modality', '');
+    setFieldValue('event_type', '');
     setFieldValue('cep', '');
     setFieldValue('uf', '');
     setFieldValue('city', '');
@@ -231,6 +233,7 @@ export default function AdminEvents() {
         status: '',
         is_printed: '',
         modality: '',
+        event_type: '',
         country: '',
         cep: '',
         uf: '',
@@ -460,6 +463,26 @@ export default function AdminEvents() {
                             <option value="Online">Online</option>
                             <option value="Presencial">Presencial</option>
                             <option value="Misto">Misto</option>
+                          </Field>
+                        </Col>
+                        <Col lg="2" md="2" sm="12">
+                          <Label>Tipo evento</Label>
+                          <Field
+                            type="select"
+                            component="select"
+                            name="event_type"
+                            id="event_type"
+                            className="form-control"
+                          >
+                            <option value="">Sem filtro</option>
+                            <option value="Curso">Curso</option>
+                            <option value="Treinamento de treinadores">
+                              Treinamento de treinadores
+                            </option>
+                            <option value="Capacitação de líderes">
+                              Capacitação de líderes
+                            </option>
+                            {/* <option value="Seminário">Seminário</option> */}
                           </Field>
                         </Col>
                       </Row>

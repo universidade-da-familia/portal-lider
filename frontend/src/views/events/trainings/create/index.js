@@ -4,18 +4,19 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect, Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
-  Calendar,
   RefreshCw,
   MapPin,
   HelpCircle,
   Plus,
   Edit,
+  Navigation,
+  X,
 } from 'react-feather';
 import { Datepicker } from 'react-formik-ui';
-import NumberFormat from 'react-number-format';
+// import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import 'react-table/react-table.css';
 import { BounceLoader } from 'react-spinners';
@@ -31,19 +32,21 @@ import {
   UncontrolledPopover,
   PopoverHeader,
   PopoverBody,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ButtonGroup,
-  Table,
+  // Modal,
+  // ModalHeader,
+  // ModalBody,
+  // ModalFooter,
+  // ButtonGroup,
+  // Table,
 } from 'reactstrap';
 
 // import { css } from '@emotion/core';
+// import { TextField } from '@material-ui/core';
+// import { TimePicker } from '@material-ui/pickers';
 import CountryStateCity from 'country-state-city';
 import { subMonths, addDays } from 'date-fns';
 import pt from 'date-fns/locale/pt';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Field, Form, getIn, FieldArray } from 'formik';
 import * as Yup from 'yup';
 
 // import history from '~/app/history';
@@ -60,80 +63,96 @@ import { Creators as DefaultEventScheduleActions } from '~/store/ducks/defaultEv
 import { Creators as EventActions } from '~/store/ducks/event';
 
 const formDetails = Yup.object().shape({
+  modality: Yup.string().required('A modalidade é obrigatória'),
   organizator_name: Yup.string().required('O líder é obrigatório'),
-  organization_name: Yup.string().required('A Igreja é obrigatória'),
-  initial_date: Yup.string().required('A data inicial é obrigatória'),
-  end_date: Yup.string().required('A data final é obrigatória'),
   default_event_id: Yup.string().required('Tipo do grupo é obrigatório'),
   ministery: Yup.string().required('Ministério é obrigatório'),
-  country: Yup.string(),
-  cep: Yup.string().when('country', {
-    is: '30',
+  schedules: Yup.array().of(
+    Yup.object().shape({
+      date: Yup.string().required('A data é obrigatória.'),
+      start_time: Yup.string().required('Horario início é obrigatório.'),
+      end_time: Yup.string().required('Horario fim é obrigatório.'),
+    })
+  ),
+  cep: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country === '30' && modality === 'Presencial',
     then: Yup.string().required('O CEP é obrigatório'),
   }),
-  uf: Yup.string().when('country', {
-    is: '30',
+  uf: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country === '30' && modality === 'Presencial',
     then: Yup.string().required('O estado é obrigatório'),
   }),
-  city: Yup.string().when('country', {
-    is: '30',
+  city: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country === '30' && modality === 'Presencial',
     then: Yup.string().required('A cidade é obrigatória'),
   }),
-  apiUf: Yup.string().when('country', {
-    is: country => country !== '30',
-    then: Yup.string().required('O estado é obrigatório'),
+  // apiUf: Yup.string().when(['country', 'modality'], {
+  //   is: (country, modality) => country === '30' && modality === 'Presencial',
+  //   then: Yup.string().required('O estado é obrigatório'),
+  // }),
+  address_name: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country === '30' && modality === 'Presencial',
+    then: Yup.string().required('O local é obrigatório'),
+  }),
+  street: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country === '30' && modality === 'Presencial',
+    then: Yup.string().required('A rua é obrigatória'),
+  }),
+  street_number: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country === '30' && modality === 'Presencial',
+    then: Yup.string().required('O numero é obrigatório'),
+  }),
+  neighborhood: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country === '30' && modality === 'Presencial',
+    then: Yup.string().required('O bairro é obrigatório'),
   }),
   bank_account_id: Yup.string().required('Conta bancária é obrigatória'),
-  // apiCity: Yup.string().when('country', {
-  //   is: country => country !== '30',
-  //   then: Yup.string().required('A cidade é obrigatória'),
-  // }),
   bank_id: Yup.string().required('O banco é obrigatório.'),
   agency: Yup.string().required('A agência é obrigatório.'),
   account_number: Yup.string().required('Número da conta é obrigatório.'),
-  favored: Yup.string().required('Favorecido é obrigatória.'),
+  favored: Yup.string().required('Titular é obrigatório.'),
   account_type: Yup.string().required('Tipo de conta é obrigatório.'),
   favored_type: Yup.string().required('Tipo de pessoa é obrigatório.'),
   cpf_cnpj: Yup.string().required('Este campo é obrigatório.'),
 });
 
-const formAddPaymentPlan = Yup.object().shape({
-  title: Yup.string().required('O título é obrigatório'),
-  description: Yup.string().required('A descrição é obrigatória'),
-  plan_type: Yup.string().required('Escolha um tipo de plano de pagamento'),
-});
+// const formAddPaymentPlan = Yup.object().shape({
+//   title: Yup.string().required('O título é obrigatório'),
+//   description: Yup.string().required('A descrição é obrigatória'),
+//   plan_type: Yup.string().required('Escolha um tipo de plano de pagamento'),
+// });
 
-class CurrencyFormat extends Component {
-  constructor(props) {
-    super(props);
+// class CurrencyFormat extends Component {
+//   constructor(props) {
+//     super(props);
 
-    this.state = {
-      value: '',
-    };
-  }
+//     this.state = {
+//       value: '',
+//     };
+//   }
 
-  render() {
-    const { currencyValue } = this.state;
+//   render() {
+//     const { currencyValue } = this.state;
 
-    return (
-      <NumberFormat
-        inputMode="decimal"
-        prefix="R$ "
-        thousandSeparator="."
-        decimalSeparator=","
-        fixedDecimalScale
-        decimalScale={2}
-        allowNegative={false}
-        // defaultValue={0}
-        value={currencyValue}
-        onValueChange={vals => {
-          this.setState({ value: vals.formattedValue });
-        }}
-        {...this.props}
-      />
-    );
-  }
-}
+//     return (
+//       <NumberFormat
+//         inputMode="decimal"
+//         prefix="R$ "
+//         thousandSeparator="."
+//         decimalSeparator=","
+//         fixedDecimalScale
+//         decimalScale={2}
+//         allowNegative={false}
+//         // defaultValue={0}
+//         value={currencyValue}
+//         onValueChange={vals => {
+//           this.setState({ value: vals.formattedValue });
+//         }}
+//         {...this.props}
+//       />
+//     );
+//   }
+// }
 
 // eslint-disable-next-line no-unused-vars
 export default function TrainingCreate({ className }) {
@@ -141,24 +160,31 @@ export default function TrainingCreate({ className }) {
 
   const [initialState, setInitialState] = useState({
     is_public: 'true',
-    initial_date: '',
-    end_date: '',
+    modality: '',
     ministery: '',
     default_event_id: '',
     organizator_id: null,
     organizator_name: '',
-    organization_id: null,
-    organization_name: '',
     aux_organizator_id: '',
     aux_organizator_name: '',
+    schedules: [
+      {
+        date: '',
+        start_time: '',
+        end_time: '',
+      },
+    ],
     country: '30',
     cep: '',
     uf: '',
     city: '',
     apiUf: '',
     apiCity: '',
-    address: '',
-    is_online_payment: '',
+    address_name: '',
+    street: '',
+    street_number: '',
+    neighborhood: '',
+    complement: '',
     bank_account_id: '',
     bank_id: '',
     agency: '',
@@ -187,12 +213,6 @@ export default function TrainingCreate({ className }) {
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  const [paymentPlans, setPaymentPlans] = useState([]);
-  const [modalEditSchedule, setModalEditSchedule] = useState(false);
-  const [modalPaymentPlan, setModalPaymentPlan] = useState(false);
-  const [modalEditPaymentPlan, setModalEditPaymentPlan] = useState(false);
-  const [editPaymentPlan, setEditPaymentPlan] = useState(null);
-  const [modules, setModules] = useState(null);
 
   const userData = useSelector(state => state.profile.data);
   const bankData = useSelector(state => state.bank.allData);
@@ -200,7 +220,6 @@ export default function TrainingCreate({ className }) {
   const defaultData = useSelector(state => state.defaultEvent.data);
   const event_loading = useSelector(state => state.event.loading);
   const cep_loading = useSelector(state => state.cep.loading);
-  const scheduleData = useSelector(state => state.defaultEventSchedule.data);
 
   const dispatch = useDispatch();
   const store = useStore();
@@ -217,38 +236,21 @@ export default function TrainingCreate({ className }) {
     </Button>
   );
 
-  function toggleModalPaymentPlan() {
-    setModalPaymentPlan(!modalPaymentPlan);
-  }
+  // function toggleModalEditSchedule() {
+  //   setModalEditSchedule(!modalEditSchedule);
+  // }
 
-  function toggleCloseModalPaymentPlan() {
-    setModalPaymentPlan(false);
-  }
+  // function toggleModalEditPaymentPlan() {
+  //   setModalEditPaymentPlan(!modalEditPaymentPlan);
+  // }
 
-  function toggleSelectPaymentPlan(values, index) {
-    values.index = index;
-    setEditPaymentPlan(values);
-    setModalEditPaymentPlan(true);
-  }
+  // function handleAddPaymantPlan(values) {
+  //   const { title, description, plan_type, amount } = values;
 
-  function toggleModalEditSchedule() {
-    setModalEditSchedule(!modalEditSchedule);
-  }
-
-  function toggleModalEditPaymentPlan() {
-    setModalEditPaymentPlan(!modalEditPaymentPlan);
-  }
-
-  function handleAddPaymantPlan(values) {
-    const { title, description, plan_type, amount } = values;
-
-    setPaymentPlans([
-      ...paymentPlans,
-      { title, description, plan_type, amount },
-    ]);
-
-    toggleCloseModalPaymentPlan();
-  }
+  //   setPaymentPlans([
+  //     ...paymentPlans,
+  //     { title, description, plan_type, amount },
+  //   ]);
 
   function handleChangeBankAccount(event, setFieldValue) {
     const { name, value } = event.target;
@@ -287,73 +289,6 @@ export default function TrainingCreate({ className }) {
     }
   }
 
-  // function handleChangeAddressType(event, setFieldValue) {
-  //   const { name, value } = event.target;
-
-  //   setFieldValue(name, value);
-
-  // if (value !== 'other' && value !== '') {
-  //   const address = addresses.find(
-  //     addressFind => addressFind.id === parseInt(value, 10)
-  //   );
-
-  //   setCepState(address.cep);
-  //   setFieldValue('address_type', address.type);
-  //   setFieldValue('address_other_type_name', address.other_type_name);
-  //   setFieldValue('cep', address.cep);
-  //   setFieldValue('uf', address.uf);
-  //   setFieldValue('city', address.city);
-  //   setFieldValue('street', address.street);
-  //   setFieldValue('street_number', address.street_number);
-  //   setFieldValue('neighborhood', address.neighborhood);
-  //   setFieldValue('complement', address.complement);
-  //   setFieldValue('receiver', address.receiver);
-
-  //   if (dataProducts.length > 0) {
-  //     dispatch(
-  //       ShippingActions.shippingOptionsRequest(address.cep, dataProducts)
-  //     );
-  //   }
-  // } else if (value === '') {
-  //   setFieldValue('type', '');
-  //   setFieldValue('address_type', '');
-  //   setFieldValue('address_other_type_name', '');
-  //   setFieldValue('cep', '');
-  //   setFieldValue('uf', '');
-  //   setFieldValue('city', '');
-  //   setFieldValue('street', '');
-  //   setFieldValue('street_number', '');
-  //   setFieldValue('neighborhood', '');
-  //   setFieldValue('complement', '');
-  //   setFieldValue('receiver', '');
-  // } else {
-  //   setFieldValue('type', 'other');
-  //   setFieldValue('address_type', '');
-  //   setFieldValue('address_other_type_name', '');
-  //   setFieldValue('cep', '');
-  //   setFieldValue('uf', '');
-  //   setFieldValue('city', '');
-  //   setFieldValue('street', '');
-  //   setFieldValue('street_number', '');
-  //   setFieldValue('neighborhood', '');
-  //   setFieldValue('complement', '');
-  //   setFieldValue('receiver', '');
-  // }
-  // }
-
-  function handleEditPaymantPlan(values) {
-    const selectedPaymentPlan = paymentPlans;
-
-    selectedPaymentPlan[editPaymentPlan.index].title = values.title;
-    selectedPaymentPlan[editPaymentPlan.index].description = values.description;
-    selectedPaymentPlan[editPaymentPlan.index].plan_type = values.plan_type;
-    selectedPaymentPlan[editPaymentPlan.index].amount = values.amount;
-
-    setPaymentPlans(selectedPaymentPlan);
-
-    setModalEditPaymentPlan(!modalEditPaymentPlan);
-  }
-
   function handleSubmit(values) {
     if (values.country === '30') {
       values.cep = values.cep.replace('-', '');
@@ -366,13 +301,13 @@ export default function TrainingCreate({ className }) {
     }
 
     const data = {
-      is_public: values.is_public,
+      is_public: values.is_public === 'true',
+      start_date: values.schedules[0].date,
+      modality: values.modality,
       is_online_payment: values.is_online_payment === 'true',
       default_event_id: parseInt(values.default_event_id, 10),
-      responsible_organization_id: values.organization_id,
       organizator_id: values.organizator_id,
-      start_date: values.initial_date,
-      end_date: values.end_date,
+      schedules: values.schedules,
       img_address_url:
         'https://arcowebarquivos-us.s3.amazonaws.com/imagens/52/21/arq_85221.jpg',
       is_finished: false,
@@ -380,7 +315,11 @@ export default function TrainingCreate({ className }) {
       country: values.country,
       uf: values.uf,
       city: values.city,
-      paymentPlans,
+      address_name: values.address_name,
+      street: values.street,
+      street_number: values.street_number,
+      neighborhood: values.neighborhood,
+      complement: values.complement,
       bank_account: {
         bank_account_id: values.bank_account_id,
         bank_id: values.bank_id,
@@ -427,10 +366,19 @@ export default function TrainingCreate({ className }) {
     if (loadCep && cep.length === 8) {
       setInitialState({
         ...initialState,
-        initial_date: values.initial_date,
-        end_date: values.end_date,
+        is_public: values.is_public,
+        modality: values.modality,
         ministery: values.ministery,
         default_event_id: values.default_event_id,
+        schedules: values.schedules,
+        bank_account_id: values.bank_account_id,
+        bank_id: values.bank_id,
+        agency: values.agency,
+        account_number: values.account_number,
+        favored: values.favored,
+        account_type: values.account_type,
+        favored_type: values.favored_type,
+        cpf_cnpj: values.cpf_cnpj,
       });
       dispatch(CepActions.cepRequest(cep, 0));
     }
@@ -459,6 +407,24 @@ export default function TrainingCreate({ className }) {
     setFieldValue('apiCity', event.target.value);
   }
 
+  function handleChangeStartTime(event, index, setFieldValue) {
+    setFieldValue(`schedules[${index}].start_time`, event.target.value);
+  }
+
+  function handleChangeEndTime(event, index, setFieldValue) {
+    setFieldValue(`schedules[${index}].end_time`, event.target.value);
+  }
+
+  function minScheduleDate(schedules, scheduleLength, index) {
+    if (scheduleLength === 1) {
+      return subMonths(new Date(), 12);
+    }
+    if (scheduleLength > 1 && index !== 0) {
+      return addDays(schedules[index - 1].date, 1);
+    }
+    return subMonths(new Date(), 12);
+  }
+
   useEffect(() => {
     // if (userData.church === null) {
     //   setModalWithoutChurch(true);
@@ -467,11 +433,11 @@ export default function TrainingCreate({ className }) {
     if (userData.id) {
       setInitialState({
         ...initialState,
-        organization_id: userData.church !== null ? userData.church.id : '',
-        organization_name:
-          userData.church !== null
-            ? `${userData.church.corporate_name} (sua igreja)`
-            : 'Igreja não informada',
+        // organization_id: userData.church !== null ? userData.church.id : '',
+        // organization_name:
+        //   userData.church !== null
+        //     ? `${userData.church.corporate_name} (sua igreja)`
+        //     : 'Igreja não informada',
         organizator_id: userData.id,
         organizator_name: userData.name
           ? `${userData.name} (você)`
@@ -498,20 +464,6 @@ export default function TrainingCreate({ className }) {
     }
   }, [userData]);
 
-  // useEffect(() => {
-  //   if (cep_data.cep) {
-  //     setInitialState({
-  //       ...initialState,
-  //       cep: cep_data.cep.replace('-', ''),
-  //       uf: cep_data.uf,
-  //       city: cep_data.localidade,
-  //       street: cep_data.logradouro !== '' ? cep_data.logradouro : '',
-  //       neighborhood: cep_data.bairro !== '' ? cep_data.bairro : '',
-  //       complement: cep_data.complemento !== '' ? cep_data.complemento : '',
-  //     });
-  //   }
-  // }, [cep_data]);
-
   useEffect(() => {
     if (cep_data.cep) {
       setInitialState({
@@ -519,9 +471,23 @@ export default function TrainingCreate({ className }) {
         cep: cep_data.cep.replace('-', ''),
         uf: cep_data.uf,
         city: cep_data.localidade,
+        street: cep_data.logradouro !== '' ? cep_data.logradouro : '',
+        neighborhood: cep_data.bairro !== '' ? cep_data.bairro : '',
+        complement: cep_data.complemento !== '' ? cep_data.complemento : '',
       });
     }
   }, [cep_data]);
+
+  // useEffect(() => {
+  //   if (cep_data.cep) {
+  //     setInitialState({
+  //       ...initialState,
+  //       cep: cep_data.cep.replace('-', ''),
+  //       uf: cep_data.uf,
+  //       city: cep_data.localidade,
+  //     });
+  //   }
+  // }, [cep_data]);
 
   useEffect(() => {
     if (defaultData !== null) {
@@ -543,18 +509,6 @@ export default function TrainingCreate({ className }) {
       setMinisteriesOrganizer(auxMinisteries);
     }
   }, [defaultData]);
-
-  useEffect(() => {
-    const modulesAux = [];
-
-    if (scheduleData !== null) {
-      for (let index = 1; index <= scheduleData.max_modules; index += 1) {
-        modulesAux.push(`Módulo ${index}`);
-      }
-    }
-
-    setModules(modulesAux);
-  }, [scheduleData]);
 
   useEffect(() => {
     setCountries(CountryStateCity.getAllCountries());
@@ -636,6 +590,46 @@ export default function TrainingCreate({ className }) {
                           ) : null}
                         </FormGroup>
                       </Col>
+                      <Col lg="4" md="6" sm="12">
+                        <FormGroup>
+                          <FormGroup>
+                            <Label for="modality">Modalidade</Label>
+                            <Field
+                              type="select"
+                              component="select"
+                              id="modality"
+                              name="modality"
+                              className={`
+                                    form-control
+                                    ${errors.modality &&
+                                      touched.modality &&
+                                      'is-invalid'}
+                                  `}
+                            >
+                              <option value="" disabled="">
+                                Selecione uma opção
+                              </option>
+
+                              <option key="presencial" value="Presencial">
+                                Presencial
+                              </option>
+
+                              <option key="online" value="Online">
+                                Online
+                              </option>
+
+                              <option key="misto" value="Misto">
+                                Misto
+                              </option>
+                            </Field>
+                            {errors.modality && touched.modality ? (
+                              <div className="invalid-feedback">
+                                {errors.modality}
+                              </div>
+                            ) : null}
+                          </FormGroup>
+                        </FormGroup>
+                      </Col>
                       {/* <Col lg="5" md="6" sm="12">
                         <FormGroup>
                           <Label for="is_online_payment">
@@ -688,96 +682,7 @@ export default function TrainingCreate({ className }) {
                         </FormGroup>
                       </Col> */}
                     </Row>
-                    <Row>
-                      <Col xl="4" lg="5" md="5" sm="12">
-                        <FormGroup>
-                          <Label for="initial_date">Data Inicial</Label>
-                          <div className="position-relative has-icon-left">
-                            <Datepicker
-                              name="initial_date"
-                              id="initial_date"
-                              locale={pt}
-                              selected={values.initial_date}
-                              onChange={date =>
-                                setFieldValue('initial_date', date)
-                              }
-                              customInput={<DatepickerButton />}
-                              minDate={subMonths(new Date(), 12)}
-                              withPortal
-                              isClearable
-                              // fixedHeight
-                              dateFormat="dd/MM/yyyy"
-                              showMonthDropdown
-                              showYearDropdown
-                              dropdownMode="select"
-                              // showTimeSelect
-                              // timeFormat="HH:mm"
-                              // timeIntervals={15}
-                              // timeCaption="Horário"
-                              className={`
-                                form-control
-                                ${errors.initial_date &&
-                                  touched.initial_date &&
-                                  'is-invalid'}
-                              `}
-                            />
-                            {errors.initial_date && touched.initial_date ? (
-                              <div className="invalid-feedback">
-                                {errors.initial_date}
-                              </div>
-                            ) : null}
-                            <div className="form-control-position">
-                              <Calendar size={14} color="#212529" />
-                            </div>
-                          </div>
-                        </FormGroup>
-                      </Col>
-                      {!!values.initial_date && (
-                        <Col xl="4" lg="5" md="5" sm="12">
-                          <FormGroup>
-                            <Label for="end_date">Data final</Label>
-                            <div className="position-relative has-icon-left">
-                              <Datepicker
-                                name="end_date"
-                                id="end_date"
-                                locale={pt}
-                                selected={values.end_date}
-                                onChange={date =>
-                                  setFieldValue('end_date', date)
-                                }
-                                customInput={<DatepickerButton />}
-                                minDate={values.initial_date}
-                                maxDate={addDays(values.initial_date, 2)}
-                                withPortal
-                                fixedHeight
-                                dateFormat="dd/MM/yyyy"
-                                showMonthDropdown
-                                showYearDropdown
-                                dropdownMode="select"
-                                // showTimeSelect
-                                // timeFormat="HH:mm"
-                                // timeIntervals={5}
-                                // timeCaption="Horário"
-                                className={`
-                                  form-control
-                                  ${errors.end_date &&
-                                    touched.end_date &&
-                                    'is-invalid'}
-                                `}
-                              />
-                              {errors.end_date && touched.end_date ? (
-                                <div className="invalid-feedback">
-                                  {errors.end_date}
-                                </div>
-                              ) : null}
-                              <div className="form-control-position">
-                                <Calendar size={14} color="#212529" />
-                              </div>
-                            </div>
-                          </FormGroup>
-                        </Col>
-                      )}
-                    </Row>
+
                     <Row>
                       <Col lg="4" md="12" sm="12">
                         <FormGroup>
@@ -856,6 +761,189 @@ export default function TrainingCreate({ className }) {
                     </Row>
 
                     <h4 className="form-section">
+                      <i className="fa fa-home" size={20} color="#212529" />{' '}
+                      Cronograma
+                    </h4>
+                    <FieldArray
+                      name="schedules"
+                      render={({ remove, push }) => (
+                        <>
+                          {values.schedules.length > 0 &&
+                            values.schedules.map((schedule, index) => {
+                              const scheduleDate = `schedules[${index}].date`;
+                              const errorScheduleDate = getIn(
+                                errors,
+                                scheduleDate
+                              );
+                              const touchedScheduleDate = getIn(
+                                touched,
+                                scheduleDate
+                              );
+
+                              const startTime = `schedules[${index}].start_time`;
+                              const errorStartTime = getIn(errors, startTime);
+                              const touchedStartTime = getIn(
+                                touched,
+                                startTime
+                              );
+
+                              const endTime = `schedules[${index}].end_time`;
+                              const errorEndTime = getIn(errors, endTime);
+                              const touchedEndTime = getIn(touched, endTime);
+
+                              return (
+                                <div>
+                                  <Row className="justify-content-between ml-0 mr-0">
+                                    <h3>Dia {index + 1}</h3>
+                                    {values.schedules.length > 1 && (
+                                      <Button
+                                        color="danger"
+                                        onClick={() => remove(index)}
+                                      >
+                                        <X size={18} color="#fff" />
+                                      </Button>
+                                    )}
+                                  </Row>
+                                  <Row>
+                                    <Col sm="12" md="12" lg="3">
+                                      <FormGroup>
+                                        <Label for={`schedules[${index}].date`}>
+                                          Data
+                                        </Label>
+                                        <Datepicker
+                                          id={`schedules[${index}].date`}
+                                          name={`schedules[${index}].date`}
+                                          locale={pt}
+                                          selected={
+                                            values.schedules[index].date
+                                          }
+                                          onChange={date =>
+                                            setFieldValue(
+                                              `schedules[${index}].date`,
+                                              date
+                                            )
+                                          }
+                                          customInput={<DatepickerButton />}
+                                          minDate={minScheduleDate(
+                                            values.schedules,
+                                            values.schedules.length,
+                                            index
+                                          )}
+                                          withPortal
+                                          isClearable
+                                          dateFormat="dd/MM/yyyy"
+                                          showMonthDropdown
+                                          showYearDropdown
+                                          dropdownMode="select"
+                                          className={`
+                                              form-control
+                                              ${errorScheduleDate &&
+                                                touchedScheduleDate &&
+                                                'is-invalid'}
+                                            `}
+                                        />
+                                        {errorScheduleDate &&
+                                        touchedScheduleDate ? (
+                                          <div className="invalid-feedback">
+                                            {errorScheduleDate}
+                                          </div>
+                                        ) : null}
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+                                  <Row>
+                                    <Col sm="12" md="12" lg="2">
+                                      <FormGroup>
+                                        <Label
+                                          for={`schedules[${index}].start_time`}
+                                        >
+                                          Horário início
+                                        </Label>
+                                        <Input
+                                          id={`schedules[${index}].start_time`}
+                                          name={`schedules[${index}].start_time`}
+                                          type="time"
+                                          onChange={e => {
+                                            handleChangeStartTime(
+                                              e,
+                                              index,
+                                              setFieldValue
+                                            );
+                                          }}
+                                          className={`
+                                              form-control
+                                              ${errorStartTime &&
+                                                touchedStartTime &&
+                                                'is-invalid'}
+                                            `}
+                                        />
+                                        {errorStartTime && touchedStartTime ? (
+                                          <div className="invalid-feedback">
+                                            {errorStartTime}
+                                          </div>
+                                        ) : null}
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+                                  <Row>
+                                    <Col sm="12" md="12" lg="2">
+                                      <FormGroup>
+                                        <Label
+                                          for={`schedules[${index}].end_time`}
+                                        >
+                                          Horário fim
+                                        </Label>
+                                        <Input
+                                          id={`schedules[${index}].end_time`}
+                                          name={`schedules[${index}].end_time`}
+                                          type="time"
+                                          onChange={e => {
+                                            handleChangeEndTime(
+                                              e,
+                                              index,
+                                              setFieldValue
+                                            );
+                                          }}
+                                          className={`
+                                              form-control
+                                              ${errorEndTime &&
+                                                touchedEndTime &&
+                                                'is-invalid'}
+                                            `}
+                                        />
+                                        {errorEndTime && touchedEndTime ? (
+                                          <div className="invalid-feedback">
+                                            {errorEndTime}
+                                          </div>
+                                        ) : null}
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+                                  <div className="form-actions right" />
+                                </div>
+                              );
+                            })}
+
+                          <FormGroup>
+                            <Row className="pl-1">
+                              <Button
+                                outline
+                                color="success"
+                                onClick={() =>
+                                  push({
+                                    date: '',
+                                  })
+                                }
+                              >
+                                <Plus size={16} color="#0cc27e" /> Adicionar dia
+                              </Button>
+                            </Row>
+                          </FormGroup>
+                        </>
+                      )}
+                    />
+
+                    <h4 className="form-section">
                       <i className="fa fa-user" size={20} color="#212529" />{' '}
                       Treinador responsável
                     </h4>
@@ -888,120 +976,83 @@ export default function TrainingCreate({ className }) {
                       </Col>
                     </Row>
 
-                    <h4 className="form-section">
-                      <i className="fa fa-home" size={20} color="#212529" />{' '}
-                      Igreja responsável
-                    </h4>
-                    <Row className="align-items-center">
-                      <Col sm="12" md="6" lg="6" className="mb-2">
-                        <FormGroup>
-                          <Label className="ml-2" for="church">
-                            Nome da Igreja
-                          </Label>
-                          <Field
-                            readOnly
-                            type="text"
-                            placeholder="Pesquise a igreja"
-                            name="organization_name"
-                            id="organization_name"
-                            // onClick={toggleModalChurch}
-                            className={`
-                              form-control
-                              ${errors.organization_name &&
-                                touched.organization_name &&
-                                'is-invalid'}
-                            `}
-                          />
-                          {errors.organization_name &&
-                          touched.organization_name ? (
-                            <div className="invalid-feedback">
-                              {errors.organization_name}
-                            </div>
-                          ) : null}
-                        </FormGroup>
-                      </Col>
-                    </Row>
-
-                    <h4 className="form-section">
-                      <MapPin size={20} color="#212529" /> Localização do
-                      treinamento
-                    </h4>
-                    <Row>
-                      <Col sm="4">
-                        <FormGroup>
-                          <Label>País</Label>
-                          <Input
-                            type="select"
-                            id="country"
-                            name="country"
-                            onChange={e => {
-                              handleCountryChange(e, setFieldValue);
-                            }}
-                          >
-                            {countries.map(country => {
-                              return (
-                                <option
-                                  key={country.id}
-                                  value={country.id}
-                                  selected={country.id === '30'}
-                                >
-                                  {country.name}
-                                </option>
-                              );
-                            })}
-                          </Input>
-                        </FormGroup>
-                      </Col>
-                      {/* estado */}
-                      {values.country !== '30' && (
-                        <>
+                    {values.modality === 'Presencial' && (
+                      <>
+                        <h4 className="form-section">
+                          <MapPin size={20} color="#212529" /> Localização do
+                          treinamento
+                        </h4>
+                        <Row>
                           <Col sm="4">
                             <FormGroup>
-                              <Label>Estado</Label>
+                              <Label>País</Label>
                               <Input
                                 type="select"
-                                id="apiUf"
-                                name="apiUf"
+                                id="country"
+                                name="country"
                                 onChange={e => {
-                                  handleStateChange(e, setFieldValue);
+                                  handleCountryChange(e, setFieldValue);
                                 }}
-                                className={`
-                                        form-control
-                                        ${errors &&
-                                          errors.apiUf &&
-                                          touched &&
-                                          touched.apiUf &&
-                                          'is-invalid'}
-                                      `}
                               >
-                                <option value="">Selecione uma opção</option>
-
-                                {states.map(state => {
+                                {countries.map(country => {
                                   return (
-                                    <option key={state.id} value={state.id}>
-                                      {state.name}
+                                    <option
+                                      key={country.id}
+                                      value={country.id}
+                                      selected={country.id === '30'}
+                                    >
+                                      {country.name}
                                     </option>
                                   );
                                 })}
                               </Input>
-                              {errors.apiUf && touched.apiUf ? (
-                                <div className="invalid-feedback">
-                                  {errors.apiUf}
-                                </div>
-                              ) : null}
                             </FormGroup>
                           </Col>
-                          <Col sm="4">
-                            <FormGroup>
-                              <Label>Cidade</Label>
-                              <Input
-                                type="select"
-                                id="apiCity"
-                                name="apiCity"
-                                onChange={e => {
-                                  handleCityChange(e, setFieldValue);
-                                }}
-                                className={`
+                          {/* estado */}
+                          {values.country !== '30' && (
+                            <>
+                              <Col sm="4">
+                                <FormGroup>
+                                  <Label>Estado</Label>
+                                  <Input
+                                    type="select"
+                                    id="apiUf"
+                                    name="apiUf"
+                                    onChange={e => {
+                                      handleStateChange(e, setFieldValue);
+                                    }}
+                                    className="form-control"
+                                  >
+                                    <option value="">
+                                      Selecione uma opção
+                                    </option>
+
+                                    {states.map(state => {
+                                      return (
+                                        <option key={state.id} value={state.id}>
+                                          {state.name}
+                                        </option>
+                                      );
+                                    })}
+                                  </Input>
+                                  {/* {errors.apiUf && touched.apiUf ? (
+                                    <div className="invalid-feedback">
+                                      {errors.apiUf}
+                                    </div>
+                                  ) : null} */}
+                                </FormGroup>
+                              </Col>
+                              <Col sm="4">
+                                <FormGroup>
+                                  <Label>Cidade</Label>
+                                  <Input
+                                    type="select"
+                                    id="apiCity"
+                                    name="apiCity"
+                                    onChange={e => {
+                                      handleCityChange(e, setFieldValue);
+                                    }}
+                                    className={`
                                         form-control
                                         ${errors &&
                                           errors.apiCity &&
@@ -1009,40 +1060,37 @@ export default function TrainingCreate({ className }) {
                                           touched.apiCity &&
                                           'is-invalid'}
                                       `}
-                              >
-                                <option value="">Selecione uma opção</option>
-                                {cities.map(city => {
-                                  return (
-                                    <option key={city.id} value={city.id}>
-                                      {city.name}
+                                  >
+                                    <option value="">
+                                      Selecione uma opção
                                     </option>
-                                  );
-                                })}
-                              </Input>
-                              {/* {errors.apiCity && touched.apiCity ? (
-                                <div className="invalid-feedback">
-                                  {errors.apiCity}
-                                </div>
-                              ) : null} */}
-                            </FormGroup>
-                          </Col>
-                        </>
-                      )}
-                    </Row>
+                                    {cities.map(city => {
+                                      return (
+                                        <option key={city.id} value={city.id}>
+                                          {city.name}
+                                        </option>
+                                      );
+                                    })}
+                                  </Input>
+                                </FormGroup>
+                              </Col>
+                            </>
+                          )}
+                        </Row>
 
-                    {values.country === '30' && (
-                      <Row>
-                        <Col sm="4">
-                          <FormGroup>
-                            <Label for="cep">CEP</Label>
-                            <div className="position-relative has-icon-right">
-                              <CepFormat
-                                autoComplete="cep"
-                                id="cep"
-                                name="cep"
-                                placeholder="Ex: 17580-000"
-                                value={values.cep}
-                                className={`
+                        {/* {values.country === '30' && (
+                          <Row>
+                            <Col sm="4">
+                              <FormGroup>
+                                <Label for="cep">CEP</Label>
+                                <div className="position-relative has-icon-right">
+                                  <CepFormat
+                                    autoComplete="cep"
+                                    id="cep"
+                                    name="cep"
+                                    placeholder="Ex: 17580-000"
+                                    value={values.cep}
+                                    className={`
                                         form-control
                                         ${errors &&
                                           errors.cep &&
@@ -1050,263 +1098,311 @@ export default function TrainingCreate({ className }) {
                                           touched.cep &&
                                           'is-invalid'}
                                       `}
-                                onValueChange={val => {
-                                  setLoadCep(true);
-                                  handleCep(val.value, setFieldValue, values);
-                                }}
-                              />
-                              {errors.cep && touched.cep ? (
-                                <div className="invalid-feedback">
-                                  {errors.cep}
-                                </div>
-                              ) : null}
-                              {cep_loading && (
-                                <div className="form-control-position">
-                                  <RefreshCw
-                                    size={14}
-                                    color="#212529"
-                                    className="spinner"
+                                    onValueChange={val => {
+                                      setLoadCep(true);
+                                      handleCep(
+                                        val.value,
+                                        setFieldValue,
+                                        values
+                                      );
+                                    }}
                                   />
+                                  {errors.cep && touched.cep ? (
+                                    <div className="invalid-feedback">
+                                      {errors.cep}
+                                    </div>
+                                  ) : null}
+                                  {cep_loading && (
+                                    <div className="form-control-position">
+                                      <RefreshCw
+                                        size={14}
+                                        color="#212529"
+                                        className="spinner"
+                                      />
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                            </div>
-                          </FormGroup>
-                        </Col>
-                        <Col sm="3">
-                          <FormGroup>
-                            <Label for="uf">Estado</Label>
-                            <Field
-                              type="text"
-                              readOnly
-                              id="uf"
-                              name="uf"
-                              // onChange={handleChange}
-                              className={`
+                              </FormGroup>
+                            </Col>
+                            <Col sm="3">
+                              <FormGroup>
+                                <Label for="uf">Estado</Label>
+                                <Field
+                                  type="text"
+                                  readOnly
+                                  id="uf"
+                                  name="uf"
+                                  // onChange={handleChange}
+                                  className={`
                                   form-control
                                   ${errors.uf && touched.uf && 'is-invalid'}
                                 `}
-                            />
-                            {errors.uf && touched.uf ? (
-                              <div className="invalid-feedback">
-                                {errors.uf}
-                              </div>
-                            ) : null}
-                          </FormGroup>
-                        </Col>
-                        <Col sm="5">
-                          <FormGroup>
-                            <Label for="city">Cidade</Label>
-                            <Field
-                              type="text"
-                              readOnly
-                              autoComplete="city"
-                              id="city"
-                              name="city"
-                              className={`
+                                />
+                                {errors.uf && touched.uf ? (
+                                  <div className="invalid-feedback">
+                                    {errors.uf}
+                                  </div>
+                                ) : null}
+                              </FormGroup>
+                            </Col>
+                            <Col sm="5">
+                              <FormGroup>
+                                <Label for="city">Cidade</Label>
+                                <Field
+                                  type="text"
+                                  readOnly
+                                  autoComplete="city"
+                                  id="city"
+                                  name="city"
+                                  className={`
                                   form-control
                                   ${errors.city && touched.city && 'is-invalid'}
                                 `}
-                            />
-                            {errors.city && touched.city ? (
-                              <div className="invalid-feedback">
-                                {errors.city}
-                              </div>
-                            ) : null}
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    )}
-                    {/* <Row>
-                          <Col lg="8" md="8" sm="12">
-                            <FormGroup>
-                              <Label for="street">Rua</Label>
-                              <div className="position-relative has-icon-left">
-                                <Field
-                                  autoComplete="street"
-                                  type="text"
-                                  placeholder="Ex: Jose Cândido Prisão"
-                                  name="street"
-                                  id="street"
-                                  className={`
-                                  form-control
-                                  ${errors.street &&
-                                    touched.street &&
-                                    'is-invalid'}
-                                `}
                                 />
-                                {errors.street && touched.street ? (
+                                {errors.city && touched.city ? (
                                   <div className="invalid-feedback">
-                                    {errors.street}
+                                    {errors.city}
                                   </div>
                                 ) : null}
-                                <div className="form-control-position">
-                                  <i className="fa fa-road" />
-                                </div>
-                              </div>
-                            </FormGroup>
-                          </Col>
-                          <Col lg="4" md="4" sm="12">
-                            <FormGroup>
-                              <Label for="street_number">Número</Label>
-                              <div className="position-relative has-icon-left">
-                                <Field
-                                  autoComplete="street_number"
-                                  type="text"
-                                  placeholder="Ex: 543"
-                                  name="street_number"
-                                  id="street_number"
-                                  className={`
-                                  form-control
-                                  ${errors.street_number &&
-                                    touched.street_number &&
-                                    'is-invalid'}
-                                `}
-                                />
-                                {errors.street_number &&
-                                touched.street_number ? (
-                                  <div className="invalid-feedback">
-                                    {errors.street_number}
-                                  </div>
-                                ) : null}
-                                <div className="form-control-position">
-                                  <Navigation size={14} color="#212529" />
-                                </div>
-                              </div>
-                            </FormGroup>
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col lg="6" md="6" sm="12">
-                            <FormGroup>
-                              <Label for="neighborhood">Bairro</Label>
-                              <div className="position-relative has-icon-left">
-                                <Field
-                                  type="text"
-                                  placeholder="Ex: Vila Paulinia"
-                                  name="neighborhood"
-                                  id="neighborhood"
-                                  className={`
-                                  form-control
-                                  ${errors.neighborhood &&
-                                    touched.neighborhood &&
-                                    'is-invalid'}
-                                `}
-                                />
-                                {errors.neighborhood && touched.neighborhood ? (
-                                  <div className="invalid-feedback">
-                                    {errors.neighborhood}
-                                  </div>
-                                ) : null}
-                                <div className="form-control-position">
-                                  <i className="fa fa-map-signs" />
-                                </div>
-                              </div>
-                            </FormGroup>
-                          </Col>
-                          <Col lg="6" md="6" sm="12">
-                            <FormGroup>
-                              <Label for="complement">Complemento</Label>
-                              <div className="position-relative has-icon-left">
-                                <Field
-                                  type="text"
-                                  placeholder="Complemento"
-                                  name="complement"
-                                  id="complement"
-                                  className="form-control"
-                                />
-                                <div className="form-control-position">
-                                  <Edit size={14} color="#212529" />
-                                </div>
-                              </div>
-                            </FormGroup>
-                          </Col>
-                        </Row> */}
-
-                    <h4 className="form-section">
-                      <i className="fa fa-home" size={20} color="#212529" />{' '}
-                      Cronograma
-                    </h4>
-                    <Row className="align-items-center">
-                      <Col sm="12" md="6" lg="6" className="mb-2">
-                        <FormGroup>
-                          <Row className="ml-1">
-                            <Button
-                              outline
-                              disabled={scheduleData === null}
-                              color="success"
-                              onClick={e => {
-                                e.preventDefault();
-                                toggleModalEditSchedule();
-                              }}
-                            >
-                              <Edit size={16} color="#0cc27e" /> Editar
-                              cronograma
-                            </Button>
+                              </FormGroup>
+                            </Col>
                           </Row>
-                        </FormGroup>
-                      </Col>
-                    </Row>
+                        )} */}
 
-                    <h4 className="form-section">
-                      <i className="fa fa-home" size={20} color="#212529" />{' '}
-                      Planos de pagamentos
-                    </h4>
-                    {paymentPlans.length > 0 && (
-                      <>
-                        {paymentPlans.map((payment, index) => {
-                          return (
-                            <Card
-                              className="p-2 cursor-pointer"
-                              style={{ backgroundColor: '#E4F7FA' }}
-                              onClick={e => {
-                                e.preventDefault();
-                                toggleSelectPaymentPlan(payment, index);
-                              }}
-                            >
-                              <Row className="align-items-center">
-                                <Col
-                                  sm="4"
-                                  md="2"
-                                  lg="2"
-                                  className="text-center"
-                                >
-                                  <h3 className="font-weight-bold">
-                                    R$ {payment.amount}
-                                  </h3>
-                                </Col>
-                                <Col sm="8" md="10" lg="10">
-                                  <Row className="d-flex flex-column">
-                                    <Col>
-                                      {payment.plan_type === 'individual'
-                                        ? 'Individual'
-                                        : 'Casal'}
-                                    </Col>
-                                    <Col>
-                                      <h4 className="font-weight-bold">
-                                        {payment.title}
-                                      </h4>
-                                    </Col>
-                                    <Col>{payment.description}</Col>
-                                  </Row>
-                                </Col>
-                              </Row>
-                            </Card>
-                          );
-                        })}
+                        {values.country === '30' && (
+                          <>
+                            <Row>
+                              <Col sm="4">
+                                <FormGroup>
+                                  <Label for="cep">CEP</Label>
+                                  <div className="position-relative has-icon-right">
+                                    <CepFormat
+                                      autoComplete="cep"
+                                      id="cep"
+                                      name="cep"
+                                      placeholder="Ex: 17580-000"
+                                      value={values.cep}
+                                      className={`
+                                        form-control
+                                        ${errors &&
+                                          errors.cep &&
+                                          touched &&
+                                          touched.cep &&
+                                          'is-invalid'}
+                                      `}
+                                      onValueChange={val => {
+                                        setLoadCep(true);
+                                        handleCep(
+                                          val.value,
+                                          setFieldValue,
+                                          values
+                                        );
+                                      }}
+                                    />
+                                    {errors.cep && touched.cep ? (
+                                      <div className="invalid-feedback">
+                                        {errors.cep}
+                                      </div>
+                                    ) : null}
+                                    {cep_loading && (
+                                      <div className="form-control-position">
+                                        <RefreshCw
+                                          size={14}
+                                          color="#212529"
+                                          className="spinner"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                </FormGroup>
+                              </Col>
+                              <Col sm="3">
+                                <FormGroup>
+                                  <Label for="uf">Estado</Label>
+                                  <Field
+                                    type="text"
+                                    readOnly
+                                    id="uf"
+                                    name="uf"
+                                    // onChange={handleChange}
+                                    className={`
+                                      form-control
+                                      ${errors.uf && touched.uf && 'is-invalid'}
+                                    `}
+                                  />
+                                  {errors.uf && touched.uf ? (
+                                    <div className="invalid-feedback">
+                                      {errors.uf}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                              </Col>
+                              <Col sm="5">
+                                <FormGroup>
+                                  <Label for="city">Cidade</Label>
+                                  <Field
+                                    type="text"
+                                    readOnly
+                                    autoComplete="city"
+                                    id="city"
+                                    name="city"
+                                    className={`
+                                      form-control
+                                      ${errors.city &&
+                                        touched.city &&
+                                        'is-invalid'}
+                                    `}
+                                  />
+                                  {errors.city && touched.city ? (
+                                    <div className="invalid-feedback">
+                                      {errors.city}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col lg="8" md="8" sm="12">
+                                <FormGroup>
+                                  <Label for="address_name">
+                                    Local do evento
+                                  </Label>
+                                  <div className="position-relative">
+                                    <Field
+                                      type="text"
+                                      placeholder="Ex: Igreja do centro da cidade"
+                                      id="address_name"
+                                      name="address_name"
+                                      className={`
+                                        form-control
+                                        ${errors.address_name &&
+                                          touched.address_name &&
+                                          'is-invalid'}
+                                      `}
+                                    />
+                                    {errors.address_name &&
+                                    touched.address_name ? (
+                                      <div className="invalid-feedback">
+                                        {errors.address_name}
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                </FormGroup>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col lg="8" md="8" sm="12">
+                                <FormGroup>
+                                  <Label for="street">Rua</Label>
+                                  <div className="position-relative has-icon-left">
+                                    <Field
+                                      autoComplete="street"
+                                      type="text"
+                                      placeholder="Ex: Jose Cândido Prisão"
+                                      id="street"
+                                      name="street"
+                                      // className="form-control"
+                                      className={`
+                                        form-control
+                                        ${errors.street &&
+                                          touched.street &&
+                                          'is-invalid'}
+                                      `}
+                                    />
+                                    {errors.street && touched.street ? (
+                                      <div className="invalid-feedback">
+                                        {errors.street}
+                                      </div>
+                                    ) : null}
+                                    <div className="form-control-position">
+                                      <i className="fa fa-road" />
+                                    </div>
+                                  </div>
+                                </FormGroup>
+                              </Col>
+                              <Col lg="4" md="4" sm="12">
+                                <FormGroup>
+                                  <Label for="street_number">Número</Label>
+                                  <div className="position-relative has-icon-left">
+                                    <Field
+                                      autoComplete="street_number"
+                                      type="text"
+                                      placeholder="Ex: 543"
+                                      id="street_number"
+                                      name="street_number"
+                                      // className="form-control"
+                                      className={`
+                                        form-control
+                                        ${errors.street_number &&
+                                          touched.street_number &&
+                                          'is-invalid'}
+                                      `}
+                                    />
+                                    {errors.street_number &&
+                                    touched.street_number ? (
+                                      <div className="invalid-feedback">
+                                        {errors.street_number}
+                                      </div>
+                                    ) : null}
+                                    <div className="form-control-position">
+                                      <Navigation size={14} color="#212529" />
+                                    </div>
+                                  </div>
+                                </FormGroup>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col lg="6" md="6" sm="12">
+                                <FormGroup>
+                                  <Label for="neighborhood">Bairro</Label>
+                                  <div className="position-relative has-icon-left">
+                                    <Field
+                                      type="text"
+                                      placeholder="Ex: Vila Paulinia"
+                                      id="neighborhood"
+                                      name="neighborhood"
+                                      // className="form-control"
+                                      className={`
+                                        form-control
+                                        ${errors.neighborhood &&
+                                          touched.neighborhood &&
+                                          'is-invalid'}
+                                      `}
+                                    />
+                                    {errors.neighborhood &&
+                                    touched.neighborhood ? (
+                                      <div className="invalid-feedback">
+                                        {errors.neighborhood}
+                                      </div>
+                                    ) : null}
+                                    <div className="form-control-position">
+                                      <i className="fa fa-map-signs" />
+                                    </div>
+                                  </div>
+                                </FormGroup>
+                              </Col>
+                              <Col lg="6" md="6" sm="12">
+                                <FormGroup>
+                                  <Label for="complement">Complemento</Label>
+                                  <div className="position-relative has-icon-left">
+                                    <Field
+                                      type="text"
+                                      placeholder="Complemento"
+                                      id="complement"
+                                      name="complement"
+                                      className="form-control"
+                                    />
+                                    <div className="form-control-position">
+                                      <Edit size={14} color="#212529" />
+                                    </div>
+                                  </div>
+                                </FormGroup>
+                              </Col>
+                            </Row>
+                          </>
+                        )}
                       </>
                     )}
-                    <Row className="ml-1">
-                      <Button
-                        outline
-                        color="success"
-                        onClick={e => {
-                          e.preventDefault();
-                          toggleModalPaymentPlan();
-                        }}
-                      >
-                        <Plus size={16} color="#0cc27e" /> Adicionar novo plano
-                      </Button>
-                    </Row>
 
                     <h4 className="form-section">
                       <i className="fa fa-home" size={20} color="#212529" />{' '}
@@ -1420,7 +1516,7 @@ export default function TrainingCreate({ className }) {
                                   <FormGroup>
                                     <Label for="agency">Agência</Label>
                                     <Field
-                                      type="number"
+                                      type="text"
                                       id="agency"
                                       name="agency"
                                       className={`
@@ -1446,7 +1542,7 @@ export default function TrainingCreate({ className }) {
                                   <FormGroup>
                                     <Label for="account_number">Conta</Label>
                                     <Field
-                                      type="number"
+                                      type="text"
                                       id="account_number"
                                       name="account_number"
                                       className={`
@@ -1472,7 +1568,7 @@ export default function TrainingCreate({ className }) {
                               <Row>
                                 <Col sm="12" md="12" lg="12" xl="12">
                                   <FormGroup>
-                                    <Label for="favored">Favorecido</Label>
+                                    <Label for="favored">Titular</Label>
                                     <Field
                                       type="text"
                                       id="favored"
@@ -1981,7 +2077,7 @@ export default function TrainingCreate({ className }) {
                             type="submit"
                             color="success"
                             className="btn-default btn-raised"
-                            disabled={!(paymentPlans.length > 0)}
+                            // disabled={scheduleState[0].date === ''}
                           >
                             Criar treinamento
                           </Button>
@@ -1996,7 +2092,7 @@ export default function TrainingCreate({ className }) {
         </Card>
 
         {/* MODAL ADICIONAR PLANO DE PAGAMENTO */}
-        <Modal
+        {/* <Modal
           isOpen={modalPaymentPlan}
           toggle={toggleCloseModalPaymentPlan}
           className={className}
@@ -2114,67 +2210,10 @@ export default function TrainingCreate({ className }) {
               </Form>
             )}
           </Formik>
-        </Modal>
+        </Modal> */}
 
         {/* MODAL EDITAR PLANO DE PAGAMENTO */}
-        <Modal
-          isOpen={modalEditSchedule}
-          toggle={toggleModalEditSchedule}
-          className={className}
-          size="lg"
-        >
-          <ModalHeader toggle={toggleModalEditSchedule}>
-            Editar cronograma
-          </ModalHeader>
-
-          <ButtonGroup className="mx-4">
-            {modules.map(module => {
-              return (
-                <Button color="success" active>
-                  {module}
-                </Button>
-              );
-            })}
-
-            {/* {(() => {
-              if (scheduleData) {
-                console.tron.log(scheduleData.max_modules);
-
-                const modules = [];
-
-                for (
-                  let index = 1;
-                  index <= scheduleData.max_modules;
-                  index += 1
-                ) {
-                  modules.push(`Módulo ${index}`);
-                }
-
-                console.tron.log(modules);
-
-                modules.map(module => {
-                  return (
-                    <Button color="success" active>
-                      {`teste`}
-                    </Button>
-                  );
-                });
-              }
-            })()} */}
-          </ButtonGroup>
-
-          <Table bordered responsive hover>
-            <thead>
-              <tr>
-                <th>Horário</th>
-                <th>Nome</th>
-              </tr>
-            </thead>
-          </Table>
-        </Modal>
-
-        {/* MODAL EDITAR PLANO DE PAGAMENTO */}
-        <Modal
+        {/* <Modal
           isOpen={modalEditPaymentPlan}
           toggle={toggleModalEditPaymentPlan}
           className={className}
@@ -2293,7 +2332,7 @@ export default function TrainingCreate({ className }) {
               </Form>
             )}
           </Formik>
-        </Modal>
+        </Modal> */}
       </>
     )
   );
