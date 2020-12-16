@@ -1562,9 +1562,9 @@ function* addEvent(action) {
 
     delete data.organizator_id;
 
-    if (data.paymentPlans) {
-      const { paymentPlans } = data;
-      delete data.paymentPlans;
+    if (data.schedules) {
+      const { schedules } = data;
+      delete data.schedules;
 
       const response = yield call(api.post, '/event', data);
       yield put(EventActions.addEventSuccess());
@@ -1575,12 +1575,12 @@ function* addEvent(action) {
       });
       yield put(OrganizatorActions.addOrganizatorSuccess());
 
-      paymentPlans.forEach(paymentPlan => {
-        paymentPlan.event_id = response.data.id;
+      schedules.forEach(schedule => {
+        schedule.event_id = response.data.id;
       });
 
-      yield call(api.post, '/payment_plan', {
-        payment_plans: paymentPlans,
+      yield call(api.post, '/schedule', {
+        schedules,
       });
 
       yield put(push('/eventos/treinamentos'));

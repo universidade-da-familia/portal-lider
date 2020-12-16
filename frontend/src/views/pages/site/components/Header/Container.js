@@ -1,12 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
-
 import { useSelector } from 'react-redux';
+
+// import PropTypes from 'prop-types';
+import styled from 'styled-components';
 
 import globals from '../../utils/globals';
 
-import backgroundImage from '../../media/images/bannerhab.jpg';
+// import backgroundImage from '../../media/images/bannerhab.jpg';
 
 const StyledContainer = styled.div`
   background: url(${props => props.banner});
@@ -30,13 +30,13 @@ const StyledContainer = styled.div`
 `;
 
 export default function Container({ children }) {
-  const data = useSelector(state => state.siteEvent.data);
+  const data = useSelector(state => state.event.data);
 
   return (
     data !== null && (
       <StyledContainer
-        banner={data.files.banner}
-        bannerMobile={data.files.banner_mobile}
+        banner={data.defaultEvent.img_banner_dash_url}
+        bannerMobile={data.defaultEvent.img_banner_mobile_site_url}
       >
         {children}
       </StyledContainer>

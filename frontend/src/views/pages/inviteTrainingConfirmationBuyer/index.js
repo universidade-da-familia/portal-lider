@@ -40,7 +40,7 @@ import {
   ButtonGroup,
   Modal,
   ModalBody,
-  // ModalFooter,
+  ModalFooter,
 } from 'reactstrap';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -54,7 +54,7 @@ import { Line } from 'rc-progress';
 import { useDebounce } from 'use-debounce';
 import * as Yup from 'yup';
 
-import history from '~/app/history';
+// import history from '~/app/history';
 import logo from '~/assets/img/logo-big.png';
 import CepFormat from '~/components/fields/CepFormat';
 import PhoneFormat from '~/components/fields/PhoneFormat';
@@ -178,7 +178,7 @@ class CpfFormat extends Component {
   }
 }
 
-export default function InviteConfirmation({ match }) {
+export default function TrainingInviteConfirmation({ match }) {
   const [modalCaminhosLegadosInvite, setModalCaminhosLegadosInvite] = useState(
     false
   );
@@ -193,7 +193,7 @@ export default function InviteConfirmation({ match }) {
 
   const [searchEmail, setSearchEmail] = useState('');
   const [emailDebounce] = useDebounce(searchEmail, 800);
-  const [invite, setInvite] = useState(null);
+  // const [invite, setInvite] = useState(null);
   const [participant, setParticipant] = useState(null);
   const [errorSex, setErrorSex] = useState(false);
   const [notFoundParticipant, setNotFoundParticipant] = useState(false);
@@ -201,6 +201,7 @@ export default function InviteConfirmation({ match }) {
   const [shippingSelected, setShippingSelected] = useState(null);
   const [paymentSelected, setPaymentSelected] = useState(null);
   const [shippingOptions, setShippingOptions] = useState(null);
+  // const [inscriptionType, setInscriptionType] = useState(null);
   const [addresses, setAddresses] = useState([
     {
       id: null,
@@ -554,15 +555,15 @@ export default function InviteConfirmation({ match }) {
     if (event !== null) {
       const products = [];
 
-      const invite = event.invites.find(
-        invite => invite.id === parseInt(match.params.id, 10)
-      );
+      // const invite = event.invites.find(
+      //   invite => invite.id === parseInt(match.params.id, 10)
+      // );
 
-      if (invite === undefined) {
-        history.push(`/evento/${event.id}/convite/expirado`);
-      } else {
-        setInvite(invite);
-      }
+      // if (invite === undefined) {
+      //   history.push(`/evento/${event.id}/convite/expirado`);
+      // } else {
+      //   setInvite(invite);
+      // }
 
       event.defaultEvent.kit.products.forEach(product => {
         if (
@@ -666,12 +667,12 @@ export default function InviteConfirmation({ match }) {
   }, [shippingOptionsData]);
 
   useEffect(() => {
-    dispatch(
-      ParticipantActions.searchParticipantByEmailRequest(
-        emailDebounce,
-        participant ? participant.email : 'null'
-      )
-    );
+    // dispatch(
+    //   ParticipantActions.searchParticipantByEmailRequest(
+    //     emailDebounce,
+    //     participant ? participant.email : 'null'
+    //   )
+    // );
   }, [emailDebounce]);
 
   useEffect(() => {
@@ -700,6 +701,7 @@ export default function InviteConfirmation({ match }) {
     // if (canOpenedModalCaminhosLegadosInvite) {
     //   setModalCaminhosLegadosInvite(true);
     // }
+
     setModalCaminhosLegadosInvite(true);
 
     sessionStorage.setItem('@dashboard/caminhoslegados_invite', true);
@@ -733,7 +735,7 @@ export default function InviteConfirmation({ match }) {
   return (
     <div className="bg-static-pages-image d-flex flex-column flex-1 p-0 flex-lg-row">
       <div className="fit min-full-height-vh color-overlay" />
-      {event !== null && invite !== null && (
+      {event !== null && (
         <>
           <div
             className="d-none d-lg-flex flex-column flex-grow-0 text-white width-50-per p-2 p-lg-5"
@@ -748,7 +750,7 @@ export default function InviteConfirmation({ match }) {
               {event.defaultEvent.name}
             </Label>
             <Label className="d-none d-lg-block fit width-700 font-medium-1">
-              Olá {invite.name}, você foi convidado{' '}
+              Olá, você foi convidado{' '}
               {event.organizators.length === 1 &&
                 `pelo líder ${event.organizators[0].name}`}
               {event.organizators.length > 1 && handleManyOrganizators()} para
@@ -816,6 +818,34 @@ export default function InviteConfirmation({ match }) {
                               />
 
                               <Steps>
+                                <Step id="type">
+                                  <CardBody className="d-flex flex-column justify-content-center">
+                                    <Button
+                                      outline
+                                      color="default"
+                                      className="btn-default height-100 icon-light-hover font-medium-2"
+                                      // onClick={setInscriptionType('single')}
+                                    >
+                                      <div className="d-flex justify-content-around align-items-center">
+                                        <div>
+                                          <h5 className="mb-0">Individual</h5>
+                                        </div>
+                                      </div>
+                                    </Button>
+
+                                    <Button
+                                      outline
+                                      color="default"
+                                      className="btn-default height-100 icon-light-hover font-medium-2"
+                                    >
+                                      <div className="d-flex justify-content-around align-items-center">
+                                        <div>
+                                          <h5 className="mb-0">Casal</h5>
+                                        </div>
+                                      </div>
+                                    </Button>
+                                  </CardBody>
+                                </Step>
                                 <Step id="entity">
                                   <FormGroup>
                                     <Row className="mt-3">
@@ -2275,7 +2305,7 @@ export default function InviteConfirmation({ match }) {
           <Modal
             size="lg"
             isOpen={modalCaminhosLegadosInvite}
-            // toggle={() => setModalCaminhosLegadosInvite(false)}
+            toggle={() => setModalCaminhosLegadosInvite(false)}
           >
             <ModalBody>
               <img
@@ -2285,15 +2315,22 @@ export default function InviteConfirmation({ match }) {
                 height="auto"
               />
             </ModalBody>
-            {/* <ModalFooter>
+            <ModalFooter>
               <Button
                 className="ml-1 my-1 btn-default"
                 color="primary"
+                onClick={() => window.open('https://seriefamilias.udf.org.br/')}
+              >
+                Quero saber mais!
+              </Button>
+              <Button
+                className="ml-1 my-1"
+                color="success"
                 onClick={() => setModalCaminhosLegadosInvite(false)}
               >
-                Entendi!
+                Entendi
               </Button>
-            </ModalFooter> */}
+            </ModalFooter>
           </Modal>
         </>
       )}

@@ -1,15 +1,15 @@
 // import external modules
 import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+
 import { createGlobalStyle } from 'styled-components';
 
-import { useDispatch } from 'react-redux';
-import { Creators as SiteEventActions } from '~/store/ducks/siteEvent';
+// import { Creators as SiteEventActions } from '~/store/ducks/siteEvent';
+import { Creators as EventActions } from '~/store/ducks/event';
 
-import globals from './site/utils/globals';
-
-import Header from './site/components/Header';
 import Body from './site/components/Body';
-import Footer from './site/components/Footer';
+import Header from './site/components/Header';
+import globals from './site/utils/globals';
 
 const GlobalStyle = createGlobalStyle`
   html, body {
@@ -29,7 +29,7 @@ export default function SiteEvent({ match }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(SiteEventActions.siteEventRequest(match.params.event_id));
+    dispatch(EventActions.eventRequest(match.params.event_id));
   }, []);
 
   return (
@@ -37,7 +37,7 @@ export default function SiteEvent({ match }) {
       <GlobalStyle />
       <Header />
       <Body />
-      <Footer />
+      <Header />
     </>
   );
 }

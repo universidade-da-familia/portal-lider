@@ -89,14 +89,14 @@ export default function OrderCreate() {
   const [modalCaminhosLegadosOrder, setModalCaminhosLegadosOrder] = useState(
     false
   );
-  const [canOpenedModalCaminhosLegadosOrder] = useState(() => {
-    const caminhoslegados = sessionStorage.getItem(
-      '@dashboard/caminhoslegados_order'
-    );
+  // const [canOpenedModalCaminhosLegadosOrder] = useState(() => {
+  //   const caminhoslegados = sessionStorage.getItem(
+  //     '@dashboard/caminhoslegados_order'
+  //   );
 
-    // eslint-disable-next-line no-unneeded-ternary
-    return caminhoslegados ? false : true;
-  });
+  //   // eslint-disable-next-line no-unneeded-ternary
+  //   return caminhoslegados ? false : true;
+  // });
 
   const userId = localStorage.getItem('@dashboard/user');
 
@@ -601,9 +601,11 @@ export default function OrderCreate() {
       installments: '1',
     });
 
-    if (canOpenedModalCaminhosLegadosOrder) {
-      setModalCaminhosLegadosOrder(true);
-    }
+    // if (canOpenedModalCaminhosLegadosOrder) {
+    //   setModalCaminhosLegadosOrder(true);
+    // }
+
+    setModalCaminhosLegadosOrder(true);
 
     sessionStorage.setItem('@dashboard/caminhoslegados_order', true);
 
@@ -1670,19 +1672,22 @@ export default function OrderCreate() {
                           Criando pedido, aguarde...
                         </Button>
                       ) : (
-                        <Button
-                          disabled={
-                            subTotalPriceError < 11 ||
-                            paymentSelected === null ||
-                            verifyCPF === true
-                          }
-                          type="submit"
-                          className={
-                            paymentSelected === null
-                              ? 'btn-secondary'
-                              : 'btn-success'
-                          }
-                        >
+                        // <Button
+                        //   disabled={
+                        //     subTotalPriceError < 11 ||
+                        //     paymentSelected === null ||
+                        //     verifyCPF === true
+                        //   }
+                        //   type="submit"
+                        //   className={
+                        //     paymentSelected === null
+                        //       ? 'btn-secondary'
+                        //       : 'btn-success'
+                        //   }
+                        // >
+                        //   Finalizar pedido
+                        // </Button>
+                        <Button type="submit" disabled>
                           Finalizar pedido
                         </Button>
                       )}
@@ -1908,14 +1913,10 @@ export default function OrderCreate() {
         </ModalBody>
       </Modal>
 
-      <Modal
-        size="lg"
-        isOpen={modalCaminhosLegadosOrder}
-        toggle={() => setModalCaminhosLegadosOrder(false)}
-      >
+      <Modal size="lg" isOpen={modalCaminhosLegadosOrder}>
         <ModalBody>
           <img
-            src="https://i.imgur.com/FP18FYe.jpg"
+            src="https://i.imgur.com/tsfW6t5.png"
             alt="Caminhos e Legados"
             width="100%"
             height="auto"
@@ -1925,16 +1926,9 @@ export default function OrderCreate() {
           <Button
             className="ml-1 my-1 btn-default"
             color="primary"
-            onClick={() => window.open('https://seriefamilias.udf.org.br/')}
+            onClick={() => window.history.back()}
           >
-            Quero saber mais!
-          </Button>
-          <Button
-            className="ml-1 my-1"
-            color="success"
-            onClick={() => setModalCaminhosLegadosOrder(false)}
-          >
-            Entendi
+            Voltar
           </Button>
         </ModalFooter>
       </Modal>
