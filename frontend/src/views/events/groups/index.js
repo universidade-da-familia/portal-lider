@@ -27,16 +27,16 @@ import LeaderTable from './leaderTable';
 export default function Groups() {
   const [modalCaminhosLegados, setModalCaminhosLegados] = useState(false);
   const [allEvents, setAllEvents] = useState([]);
-  // const [
-  //   canOpenedModalCaminhosLegados,
-  //   setCanOpenedModalCaminhosLegados,
-  // ] = useState(() => {
-  //   const caminhoslegados = sessionStorage.getItem(
-  //     '@dashboard/caminhoslegados'
-  //   );
+  const [
+    canOpenedModalCaminhosLegados,
+    setCanOpenedModalCaminhosLegados,
+  ] = useState(() => {
+    const caminhoslegados = sessionStorage.getItem(
+      '@dashboard/caminhoslegados'
+    );
 
-  //   return caminhoslegados ? false : true;
-  // });
+    return caminhoslegados ? false : true;
+  });
 
   const profile = useSelector(state => state.profile.data);
   const allData = useSelector(state => state.event.allData);
@@ -78,10 +78,10 @@ export default function Groups() {
   }, [profile]);
 
   useEffect(() => {
-    // if (canOpenedModalCaminhosLegados) {
-    //   setModalCaminhosLegados(true);
-    // }
-    setModalCaminhosLegados(true);
+    if (canOpenedModalCaminhosLegados) {
+      setModalCaminhosLegados(true);
+    }
+    // setModalCaminhosLegados(true);
 
     sessionStorage.setItem('@dashboard/caminhoslegados', true);
   }, []);
