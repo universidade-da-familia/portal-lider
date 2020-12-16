@@ -1,11 +1,9 @@
 import React from 'react';
-import styled from 'styled-components';
-import globals from '../utils/globals';
-
 import { useSelector } from 'react-redux';
 
-import { Title, SubTitle } from './Title';
-import Video from './Video';
+import styled from 'styled-components';
+
+import globals from '../utils/globals';
 
 const Container = styled.div`
   width: 80%;
@@ -22,15 +20,6 @@ const Wrapper = styled.div`
 
   @media screen and (max-width: 768px) {
     margin: 0;
-  }
-`;
-
-const StyledVideo = styled(Video)`
-  height: 50vh;
-  width: 50%;
-
-  @media screen and (max-width: 1128px) {
-    width: 100%;
   }
 `;
 
@@ -52,22 +41,15 @@ const Text = styled.p`
 `;
 
 export default function Event() {
-  const data = useSelector(state => state.siteEvent.data);
+  const data = useSelector(state => state.event.data);
 
   return (
     data !== null && (
       <Container>
-        <Title title="O evento" />
-        <SubTitle title={data.details.title} />
-
         <Wrapper>
-          <StyledVideo />
           <Texts>
-            <div>
-              <Text className="ml-2 text-dark">{data.details.description}</Text>
-              <Text className="ml-2 font-italic text-muted">
-                {data.details.sub_description}
-              </Text>
+            <div className="m-auto">
+              <Text className="text-dark">{data.defaultEvent.description}</Text>
             </div>
           </Texts>
         </Wrapper>

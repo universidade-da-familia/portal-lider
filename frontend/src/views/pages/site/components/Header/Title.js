@@ -1,14 +1,12 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { css } from 'glamor';
-
 import { useSelector } from 'react-redux';
-
-import { getYear } from 'date-fns';
-
 import { CardImg } from 'reactstrap';
 
-import logo from '../../../../../assets/img/logo-big.png';
+import { getYear } from 'date-fns';
+import { css } from 'glamor';
 
+import logo from '../../../../../assets/img/logo-big.png';
 import globals from '../../utils/globals';
 
 const styles = {
@@ -57,7 +55,7 @@ const styles = {
 };
 
 export default function Title() {
-  const data = useSelector(state => state.siteEvent.data);
+  const data = useSelector(state => state.event.data);
 
   const actualYear = getYear(new Date());
 

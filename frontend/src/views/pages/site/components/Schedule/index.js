@@ -1,10 +1,13 @@
 import React from 'react';
-import styled from 'styled-components';
-import schedule from '../../utils/data/schedule';
+import { useSelector } from 'react-redux';
+import { Table } from 'reactstrap';
 
-import List from './List';
-import Item from './Item';
+import moment from 'moment';
+import styled from 'styled-components';
+
 import { Title } from '../Title';
+// import Item from './Item';
+import List from './List';
 
 const Container = styled.section`
   background: #fff;
@@ -24,21 +27,37 @@ const Disclaimer = styled.p`
   }
 `;
 
-const Schedule = () => !!schedule.length && (
-<Container>
-  <Title title="Programação" />
-  <List>
-    {schedule.map(event => (
-      <Item
-        key={event.title}
-        event={event.title}
-        time={event.time}
-        description={event.description}
-      />
-    ))}
-  </List>
-  <Disclaimer>Horário sujeito a alteração sem aviso prévio</Disclaimer>
-</Container>
-);
+export default function Schedule() {
+  const data = useSelector(state => state.event.data);
 
-export default Schedule;
+  return (
+    data !== null && (
+      <Container>
+        <Title title="Programação" />
+        <List>
+          {data.schedules.map((schedule, index) => (
+            <Table>
+              <thead>
+                <tr>
+                  <th>{`Dia ${index + 1}`}</th>
+                  <th>Início</th>
+                  <th>Fim</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">
+                    {moment(schedule.date).format('DD/MM/YYYY')}
+                  </th>
+                  <td>{schedule.start_time}</td>
+                  <td>{schedule.end_time}</td>
+                </tr>
+              </tbody>
+            </Table>
+          ))}
+        </List>
+        <Disclaimer>Horário sujeito a alteração sem aviso prévio</Disclaimer>
+      </Container>
+    )
+  );
+}

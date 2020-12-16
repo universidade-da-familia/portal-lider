@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+
 import { css } from 'glamor';
 
 const styles = {
@@ -12,20 +13,13 @@ const styles = {
 
 class Item extends PureComponent {
   render() {
-    const { title, subtitle, children, color } = this.props;
+    const { day, startTime, children } = this.props;
 
     return (
+      // eslint-disable-next-line react/jsx-props-no-spreading
       <div {...styles.container}>
-        <h3>
-          {title}
-        </h3>
-        {color
-          ? <h2 {...css({ color: color })}>
-              {subtitle}
-            </h2>
-          : <h2>
-              {subtitle}
-            </h2>}
+        <h3>Dia {day + 1}</h3>
+        <h2>{startTime}</h2>
         {children}
       </div>
     );

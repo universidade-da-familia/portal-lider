@@ -1,10 +1,10 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { css, before } from 'glamor';
-
 import { useSelector } from 'react-redux';
 
-import globals from '../utils/globals';
+import { css, before } from 'glamor';
 
+import globals from '../utils/globals';
 import Item from './Item';
 
 const styles = {
@@ -52,7 +52,7 @@ const styles = {
 };
 
 export default function Footer() {
-  const data = useSelector(state => state.siteEvent.data);
+  const data = useSelector(state => state.event.data);
 
   return (
     data !== null && (

@@ -20,7 +20,7 @@ const TicketHere = styled(Button)`
 `;
 
 export default function TicketButton() {
-  const data = useSelector(state => state.siteEvent.data);
+  const data = useSelector(state => state.event.data);
 
   return (
     data !== null && (

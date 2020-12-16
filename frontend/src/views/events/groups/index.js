@@ -79,7 +79,7 @@ export default function Groups() {
 
   useEffect(() => {
     if (canOpenedModalCaminhosLegados) {
-    setModalCaminhosLegados(true);
+      setModalCaminhosLegados(true);
     }
 
     sessionStorage.setItem('@dashboard/caminhoslegados', true);
@@ -164,29 +164,25 @@ export default function Groups() {
         toggle={() => setModalCaminhosLegados(false)}
       >
         <ModalBody>
-          <a href="https://www.lojadafamilia.org.br/serie-familias/caminhos-e-legados/caminhos-e-legados" target="_blank">
-          <img
-            src="https://i.imgur.com/mqwYjbT.png"
-            alt="Caminhos e Legados"
-            width="100%"
-            height="auto"
-          />
+          <a
+            href="https://www.lojadafamilia.org.br/serie-familias/caminhos-e-legados/caminhos-e-legados"
+            target="_blank"
+          >
+            <img
+              src="https://i.imgur.com/tsfW6t5.png"
+              alt="Caminhos e Legados"
+              width="100%"
+              height="auto"
+            />
           </a>
         </ModalBody>
         <ModalFooter>
           <Button
             className="ml-1 my-1 btn-default"
             color="primary"
-            onClick={() => window.open('https://seriefamilias.udf.org.br/')}
+            onClick={() => setModalCaminhosLegadosInvite(false)}
           >
-            Quero saber mais!
-          </Button>
-          <Button
-            className="ml-1 my-1"
-            color="success"
-            onClick={() => window.open('https://www.lojadafamilia.org.br/serie-familias/caminhos-e-legados/caminhos-e-legados')}
-          >
-            Garantir o meu!
+            Entendi!
           </Button>
         </ModalFooter>
       </Modal>
