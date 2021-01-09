@@ -176,7 +176,7 @@ export default function Groups() {
           <Button
             className="ml-1 my-1 btn-default"
             color="primary"
-            onClick={() => setModalCaminhosLegadosInvite(false)}
+            onClick={() => setModalCaminhosLegados(false)}
           >
             Entendi!
           </Button>
