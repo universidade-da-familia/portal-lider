@@ -11,6 +11,7 @@ import {
   Map,
   RefreshCw,
   User,
+  Users,
   Edit,
   Smartphone,
   Check,
@@ -38,9 +39,9 @@ import {
   CustomInput,
   UncontrolledTooltip,
   ButtonGroup,
-  Modal,
-  ModalBody,
-  ModalFooter,
+  // Modal,
+  // ModalBody,
+  // ModalFooter,
 } from 'reactstrap';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -179,9 +180,9 @@ class CpfFormat extends Component {
 }
 
 export default function TrainingInviteConfirmation({ match }) {
-  const [modalCaminhosLegadosInvite, setModalCaminhosLegadosInvite] = useState(
-    false
-  );
+  // const [modalCaminhosLegadosInvite, setModalCaminhosLegadosInvite] = useState(
+  //   false
+  // );
   // const [canOpenedModalCaminhosLegadosInvite] = useState(() => {
   //   const caminhoslegados = sessionStorage.getItem(
   //     '@dashboard/caminhoslegados_invite'
@@ -201,7 +202,7 @@ export default function TrainingInviteConfirmation({ match }) {
   const [shippingSelected, setShippingSelected] = useState(null);
   const [paymentSelected, setPaymentSelected] = useState(null);
   const [shippingOptions, setShippingOptions] = useState(null);
-  // const [inscriptionType, setInscriptionType] = useState(null);
+  const [inscriptionType, setInscriptionType] = useState(null);
   const [addresses, setAddresses] = useState([
     {
       id: null,
@@ -220,10 +221,15 @@ export default function TrainingInviteConfirmation({ match }) {
   ]);
   const [cepState, setCepState] = useState('');
   const [initialState, setInitialState] = useState({
+    inscription_type: '',
     cpf: '',
     name: '',
     email: '',
     sex: '',
+    couple_cpf: '',
+    couple_name: '',
+    couple_email: '',
+    couple_sex: '',
     type: '',
     address_type: '',
     address_other_type_name: '',
@@ -551,6 +557,10 @@ export default function TrainingInviteConfirmation({ match }) {
     setPaymentSelected(selected);
   }
 
+  function handleInscriptionType(selected) {
+    setInscriptionType(selected);
+  }
+
   useEffect(() => {
     if (event !== null) {
       const products = [];
@@ -702,9 +712,9 @@ export default function TrainingInviteConfirmation({ match }) {
     //   setModalCaminhosLegadosInvite(true);
     // }
 
-    setModalCaminhosLegadosInvite(true);
+    // setModalCaminhosLegadosInvite(true);
 
-    sessionStorage.setItem('@dashboard/caminhoslegados_invite', true);
+    // sessionStorage.setItem('@dashboard/caminhoslegados_invite', true);
 
     return () => {
       // setKitProducts(null);
@@ -819,96 +829,215 @@ export default function TrainingInviteConfirmation({ match }) {
 
                               <Steps>
                                 <Step id="type">
-                                  <CardBody className="d-flex flex-column justify-content-center">
-                                    <Button
-                                      outline
-                                      color="default"
-                                      className="btn-default height-100 icon-light-hover font-medium-2"
-                                      // onClick={setInscriptionType('single')}
-                                    >
-                                      <div className="d-flex justify-content-around align-items-center">
-                                        <div>
-                                          <h5 className="mb-0">Individual</h5>
-                                        </div>
-                                      </div>
-                                    </Button>
-
-                                    <Button
-                                      outline
-                                      color="default"
-                                      className="btn-default height-100 icon-light-hover font-medium-2"
-                                    >
-                                      <div className="d-flex justify-content-around align-items-center">
-                                        <div>
-                                          <h5 className="mb-0">Casal</h5>
-                                        </div>
-                                      </div>
-                                    </Button>
-                                  </CardBody>
-                                </Step>
-                                <Step id="entity">
-                                  <FormGroup>
-                                    <Row className="mt-3">
-                                      <Label className="pl-3 font-medium-3 text-dark text-bold-400 text-center">
-                                        Dados do participante
-                                      </Label>
-                                      <Col sm="12">
-                                        <Label className="pl-2 mt-2" for="cpf">
-                                          Digite seu CPF
-                                        </Label>
-                                        <div className="position-relative has-icon-right">
-                                          <Field
-                                            name="cpf"
-                                            id="cpf"
-                                            className={`
-                                              new-form-padding
-                                              form-control
-                                              ${errors.cpf &&
-                                                touched.cpf &&
-                                                'is-invalid'}
-                                            `}
-                                            validate={validateCPF}
-                                            render={({ field }) => (
-                                              <CpfFormat
-                                                {...field}
-                                                id="cpf"
-                                                name="cpf"
-                                                placeholder="Ex: 423.123.321-12"
-                                                className={`
-                                                  new-form-padding
-                                                  form-control
-                                                  ${errors.cpf &&
-                                                    touched.cpf &&
-                                                    'is-invalid'}
-                                                `}
-                                                value={values.cpf}
-                                                onValueChange={val =>
-                                                  handleSearchCpf(val.value)
-                                                }
+                                  <FormGroup className="mb-0">
+                                    <ButtonGroup className="d-flex flex-column">
+                                      <Button
+                                        key={1}
+                                        outline
+                                        className={`shipping-selected ${inscriptionType !==
+                                          null &&
+                                          inscriptionType === 'single' &&
+                                          'shipping-selected-active'}`}
+                                        onClick={() =>
+                                          handleInscriptionType('single')
+                                        }
+                                        active={
+                                          inscriptionType !== null &&
+                                          inscriptionType === 'single'
+                                        }
+                                      >
+                                        <Label className="mb-0 black font-medium-2">
+                                          {inscriptionType !== null &&
+                                            inscriptionType === 'single' && (
+                                              <Check
+                                                size={24}
+                                                color="#0cc27e"
                                               />
                                             )}
+                                          Individual
+                                          <User
+                                            size={24}
+                                            color="#000"
+                                            className="ml-2"
                                           />
-                                          {errors.cpf && touched.cpf ? (
-                                            <div className="invalid-feedback">
-                                              {errors.cpf}
-                                            </div>
-                                          ) : null}
-                                          {loading && (
-                                            <div className="new-form-control-position">
-                                              <RefreshCw
-                                                size={16}
-                                                className="spinner"
-                                              />
-                                            </div>
-                                          )}
-                                        </div>
-                                      </Col>
+                                        </Label>
+                                      </Button>
 
-                                      {!!values.cpf &&
-                                        participant !== null &&
-                                        participant.error === undefined &&
-                                        typeof participant === 'object' && (
+                                      <Button
+                                        key={2}
+                                        outline
+                                        className={`shipping-selected ${inscriptionType !==
+                                          null &&
+                                          inscriptionType === 'couple' &&
+                                          'shipping-selected-active'}`}
+                                        onClick={() =>
+                                          handleInscriptionType('couple')
+                                        }
+                                        active={
+                                          inscriptionType !== null &&
+                                          inscriptionType === 'couple'
+                                        }
+                                      >
+                                        <Label className="mb-0 black font-medium-2">
+                                          {inscriptionType !== null &&
+                                            inscriptionType === 'couple' && (
+                                              <Check
+                                                size={24}
+                                                color="#0cc27e"
+                                              />
+                                            )}
+                                          Casal
+                                          <Users
+                                            size={24}
+                                            color="#000"
+                                            className="ml-2"
+                                          />
+                                        </Label>
+                                      </Button>
+                                    </ButtonGroup>
+                                  </FormGroup>
+                                </Step>
+                                <Step id="entity">
+                                  {inscriptionType === 'single' && (
+                                    <FormGroup>
+                                      <Row className="mt-3">
+                                        <Label className="pl-3 font-medium-3 text-dark text-bold-400 text-center">
+                                          Dados do participante
+                                        </Label>
+                                        <Col sm="12">
+                                          <Label
+                                            className="pl-2 mt-2"
+                                            for="cpf"
+                                          >
+                                            CPF
+                                          </Label>
+                                          <div className="position-relative has-icon-right">
+                                            <Field
+                                              name="cpf"
+                                              id="cpf"
+                                              className={`
+                                                new-form-padding
+                                                form-control
+                                                ${errors.cpf &&
+                                                  touched.cpf &&
+                                                  'is-invalid'}
+                                              `}
+                                              validate={validateCPF}
+                                              render={({ field }) => (
+                                                <CpfFormat
+                                                  {...field}
+                                                  id="cpf"
+                                                  name="cpf"
+                                                  placeholder="Ex: 423.123.321-12"
+                                                  className={`
+                                                    new-form-padding
+                                                    form-control
+                                                    ${errors.cpf &&
+                                                      touched.cpf &&
+                                                      'is-invalid'}
+                                                  `}
+                                                  value={values.cpf}
+                                                  onValueChange={val =>
+                                                    handleSearchCpf(val.value)
+                                                  }
+                                                />
+                                              )}
+                                            />
+                                            {errors.cpf && touched.cpf ? (
+                                              <div className="invalid-feedback">
+                                                {errors.cpf}
+                                              </div>
+                                            ) : null}
+                                            {loading && (
+                                              <div className="new-form-control-position">
+                                                <RefreshCw
+                                                  size={16}
+                                                  className="spinner"
+                                                />
+                                              </div>
+                                            )}
+                                          </div>
+                                        </Col>
+
+                                        {!!values.cpf &&
+                                          participant !== null &&
+                                          participant.error === undefined &&
+                                          typeof participant === 'object' && (
+                                            <>
+                                              <Col sm="12" className="mt-2">
+                                                <Label>Nome</Label>
+                                                <div className="position-relative has-icon-left">
+                                                  <Field
+                                                    type="text"
+                                                    name="name"
+                                                    id="name"
+                                                    className={`
+                                                    new-form-padding
+                                                    form-control
+                                                    ${errors.name &&
+                                                      touched.name &&
+                                                      'is-invalid'}
+                                                  `}
+                                                    autoComplete="off"
+                                                  />
+                                                  {errors.name &&
+                                                  touched.name ? (
+                                                    <div className="invalid-feedback">
+                                                      {errors.name}
+                                                    </div>
+                                                  ) : null}
+                                                  <div className="new-form-control-position">
+                                                    <User
+                                                      size={14}
+                                                      color="#212529"
+                                                    />
+                                                  </div>
+                                                </div>
+                                              </Col>
+                                              <Col sm="12" className="mt-2">
+                                                <Label>Email</Label>
+                                                <div className="position-relative has-icon-left">
+                                                  <Field
+                                                    type="email"
+                                                    name="email"
+                                                    id="email"
+                                                    onChange={event =>
+                                                      handleSearchEmail(
+                                                        event,
+                                                        setFieldValue
+                                                      )
+                                                    }
+                                                    className={`
+                                                    new-form-padding
+                                                    form-control
+                                                    ${errors.email &&
+                                                      touched.email &&
+                                                      'is-invalid'}
+                                                  `}
+                                                    autoComplete="off"
+                                                  />
+                                                  {errors.email &&
+                                                  touched.email ? (
+                                                    <div className="invalid-feedback">
+                                                      {errors.email}
+                                                    </div>
+                                                  ) : null}
+                                                  <div className="new-form-control-position">
+                                                    <User
+                                                      size={14}
+                                                      color="#212529"
+                                                    />
+                                                  </div>
+                                                </div>
+                                              </Col>
+                                            </>
+                                          )}
+
+                                        {notFoundParticipant === true && (
                                           <>
+                                            <Label className="font-small-3 text-center text-dark text-bold-400 text-uppercase mt-3 mx-auto">
+                                              Complete seu cadastro
+                                            </Label>
                                             <Col sm="12" className="mt-2">
                                               <Label>Nome</Label>
                                               <div className="position-relative has-icon-left">
@@ -917,12 +1046,12 @@ export default function TrainingInviteConfirmation({ match }) {
                                                   name="name"
                                                   id="name"
                                                   className={`
-                                                  new-form-padding
-                                                  form-control
-                                                  ${errors.name &&
-                                                    touched.name &&
-                                                    'is-invalid'}
-                                                `}
+                                                    new-form-padding
+                                                    form-control
+                                                    ${errors.name &&
+                                                      touched.name &&
+                                                      'is-invalid'}
+                                                  `}
                                                   autoComplete="off"
                                                 />
                                                 {errors.name && touched.name ? (
@@ -945,19 +1074,19 @@ export default function TrainingInviteConfirmation({ match }) {
                                                   type="email"
                                                   name="email"
                                                   id="email"
+                                                  className={`
+                                                    new-form-padding
+                                                    form-control
+                                                    ${errors.email &&
+                                                      touched.email &&
+                                                      'is-invalid'}
+                                                  `}
                                                   onChange={event =>
                                                     handleSearchEmail(
                                                       event,
                                                       setFieldValue
                                                     )
                                                   }
-                                                  className={`
-                                                  new-form-padding
-                                                  form-control
-                                                  ${errors.email &&
-                                                    touched.email &&
-                                                    'is-invalid'}
-                                                `}
                                                   autoComplete="off"
                                                 />
                                                 {errors.email &&
@@ -974,85 +1103,548 @@ export default function TrainingInviteConfirmation({ match }) {
                                                 </div>
                                               </div>
                                             </Col>
+                                            <Col sm="12" className="mt-2">
+                                              <RadioButtonGroup
+                                                id="radioGroup"
+                                                value={values.radioGroup}
+                                                error={errors.radioGroup}
+                                                touched={touched.radioGroup}
+                                                className={`
+                                              new-form-padding
+                                              form-control
+                                              border-0
+                                              ${errors.sex &&
+                                                touched.sex &&
+                                                'is-invalid'}
+                                            `}
+                                              >
+                                                <Row className="d-flex justify-content-around">
+                                                  {event.defaultEvent
+                                                    .sex_type === 'M' && (
+                                                    <Field
+                                                      component={RadioButton}
+                                                      name="sex"
+                                                      id="M"
+                                                      label="Masculino"
+                                                    />
+                                                  )}
+                                                  {event.defaultEvent
+                                                    .sex_type === 'F' && (
+                                                    <Field
+                                                      component={RadioButton}
+                                                      name="sex"
+                                                      id="F"
+                                                      label="Feminino"
+                                                    />
+                                                  )}
+                                                  {event.defaultEvent
+                                                    .sex_type === 'A' && (
+                                                    <>
+                                                      <Field
+                                                        component={RadioButton}
+                                                        name="sex"
+                                                        id="M"
+                                                        label="Masculino"
+                                                      />
+                                                      <Field
+                                                        component={RadioButton}
+                                                        name="sex"
+                                                        id="F"
+                                                        label="Feminino"
+                                                      />
+                                                    </>
+                                                  )}
+                                                </Row>
+                                              </RadioButtonGroup>
+                                            </Col>
                                           </>
                                         )}
+                                      </Row>
+                                    </FormGroup>
+                                  )}
 
-                                      {notFoundParticipant === true && (
-                                        <>
-                                          <Label className="font-small-3 text-center text-dark text-bold-400 text-uppercase mt-3 mx-auto">
-                                            Complete seu cadastro
+                                  {inscriptionType === 'couple' && (
+                                    <>
+                                      <FormGroup>
+                                        <Row className="mt-3">
+                                          <Label className="pl-3 font-medium-3 text-dark text-bold-400 text-center">
+                                            Dados do participante
                                           </Label>
-                                          <Col sm="12" className="mt-2">
-                                            <Label>Nome</Label>
-                                            <div className="position-relative has-icon-left">
+                                          <Col sm="12">
+                                            <Label
+                                              className="pl-2 mt-2"
+                                              for="cpf"
+                                            >
+                                              CPF
+                                            </Label>
+                                            <div className="position-relative has-icon-right">
                                               <Field
-                                                type="text"
-                                                name="name"
-                                                id="name"
+                                                name="cpf"
+                                                id="cpf"
                                                 className={`
+                                                new-form-padding
+                                                form-control
+                                                ${errors.cpf &&
+                                                  touched.cpf &&
+                                                  'is-invalid'}
+                                              `}
+                                                validate={validateCPF}
+                                                render={({ field }) => (
+                                                  <CpfFormat
+                                                    {...field}
+                                                    id="cpf"
+                                                    name="cpf"
+                                                    placeholder="Ex: 423.123.321-12"
+                                                    className={`
+                                                    new-form-padding
+                                                    form-control
+                                                    ${errors.cpf &&
+                                                      touched.cpf &&
+                                                      'is-invalid'}
+                                                  `}
+                                                    value={values.cpf}
+                                                    onValueChange={val =>
+                                                      handleSearchCpf(val.value)
+                                                    }
+                                                  />
+                                                )}
+                                              />
+                                              {errors.cpf && touched.cpf ? (
+                                                <div className="invalid-feedback">
+                                                  {errors.cpf}
+                                                </div>
+                                              ) : null}
+                                              {loading && (
+                                                <div className="new-form-control-position">
+                                                  <RefreshCw
+                                                    size={16}
+                                                    className="spinner"
+                                                  />
+                                                </div>
+                                              )}
+                                            </div>
+                                          </Col>
+
+                                          {!!values.cpf &&
+                                            participant !== null &&
+                                            participant.error === undefined &&
+                                            typeof participant === 'object' && (
+                                              <>
+                                                <Col sm="12" className="mt-2">
+                                                  <Label>Nome</Label>
+                                                  <div className="position-relative has-icon-left">
+                                                    <Field
+                                                      type="text"
+                                                      name="name"
+                                                      id="name"
+                                                      className={`
+                                                    new-form-padding
+                                                    form-control
+                                                    ${errors.name &&
+                                                      touched.name &&
+                                                      'is-invalid'}
+                                                  `}
+                                                      autoComplete="off"
+                                                    />
+                                                    {errors.name &&
+                                                    touched.name ? (
+                                                      <div className="invalid-feedback">
+                                                        {errors.name}
+                                                      </div>
+                                                    ) : null}
+                                                    <div className="new-form-control-position">
+                                                      <User
+                                                        size={14}
+                                                        color="#212529"
+                                                      />
+                                                    </div>
+                                                  </div>
+                                                </Col>
+                                                <Col sm="12" className="mt-2">
+                                                  <Label>Email</Label>
+                                                  <div className="position-relative has-icon-left">
+                                                    <Field
+                                                      type="email"
+                                                      name="email"
+                                                      id="email"
+                                                      onChange={event =>
+                                                        handleSearchEmail(
+                                                          event,
+                                                          setFieldValue
+                                                        )
+                                                      }
+                                                      className={`
+                                                    new-form-padding
+                                                    form-control
+                                                    ${errors.email &&
+                                                      touched.email &&
+                                                      'is-invalid'}
+                                                  `}
+                                                      autoComplete="off"
+                                                    />
+                                                    {errors.email &&
+                                                    touched.email ? (
+                                                      <div className="invalid-feedback">
+                                                        {errors.email}
+                                                      </div>
+                                                    ) : null}
+                                                    <div className="new-form-control-position">
+                                                      <User
+                                                        size={14}
+                                                        color="#212529"
+                                                      />
+                                                    </div>
+                                                  </div>
+                                                </Col>
+                                              </>
+                                            )}
+
+                                          {notFoundParticipant === true && (
+                                            <>
+                                              <Label className="font-small-3 text-center text-dark text-bold-400 text-uppercase mt-3 mx-auto">
+                                                Complete seu cadastro
+                                              </Label>
+                                              <Col sm="12" className="mt-2">
+                                                <Label>Nome</Label>
+                                                <div className="position-relative has-icon-left">
+                                                  <Field
+                                                    type="text"
+                                                    name="name"
+                                                    id="name"
+                                                    className={`
+                                                    new-form-padding
+                                                    form-control
+                                                    ${errors.name &&
+                                                      touched.name &&
+                                                      'is-invalid'}
+                                                  `}
+                                                    autoComplete="off"
+                                                  />
+                                                  {errors.name &&
+                                                  touched.name ? (
+                                                    <div className="invalid-feedback">
+                                                      {errors.name}
+                                                    </div>
+                                                  ) : null}
+                                                  <div className="new-form-control-position">
+                                                    <User
+                                                      size={14}
+                                                      color="#212529"
+                                                    />
+                                                  </div>
+                                                </div>
+                                              </Col>
+                                              <Col sm="12" className="mt-2">
+                                                <Label>Email</Label>
+                                                <div className="position-relative has-icon-left">
+                                                  <Field
+                                                    type="email"
+                                                    name="email"
+                                                    id="email"
+                                                    className={`
+                                                    new-form-padding
+                                                    form-control
+                                                    ${errors.email &&
+                                                      touched.email &&
+                                                      'is-invalid'}
+                                                  `}
+                                                    onChange={event =>
+                                                      handleSearchEmail(
+                                                        event,
+                                                        setFieldValue
+                                                      )
+                                                    }
+                                                    autoComplete="off"
+                                                  />
+                                                  {errors.email &&
+                                                  touched.email ? (
+                                                    <div className="invalid-feedback">
+                                                      {errors.email}
+                                                    </div>
+                                                  ) : null}
+                                                  <div className="new-form-control-position">
+                                                    <User
+                                                      size={14}
+                                                      color="#212529"
+                                                    />
+                                                  </div>
+                                                </div>
+                                              </Col>
+                                              <Col sm="12" className="mt-2">
+                                                <RadioButtonGroup
+                                                  id="radioGroup"
+                                                  value={values.radioGroup}
+                                                  error={errors.radioGroup}
+                                                  touched={touched.radioGroup}
+                                                  className={`
+                                              new-form-padding
+                                              form-control
+                                              border-0
+                                              ${errors.sex &&
+                                                touched.sex &&
+                                                'is-invalid'}
+                                            `}
+                                                >
+                                                  <Row className="d-flex justify-content-around">
+                                                    {event.defaultEvent
+                                                      .sex_type === 'M' && (
+                                                      <Field
+                                                        component={RadioButton}
+                                                        name="sex"
+                                                        id="M"
+                                                        label="Masculino"
+                                                      />
+                                                    )}
+                                                    {event.defaultEvent
+                                                      .sex_type === 'F' && (
+                                                      <Field
+                                                        component={RadioButton}
+                                                        name="sex"
+                                                        id="F"
+                                                        label="Feminino"
+                                                      />
+                                                    )}
+                                                    {event.defaultEvent
+                                                      .sex_type === 'A' && (
+                                                      <>
+                                                        <Field
+                                                          component={
+                                                            RadioButton
+                                                          }
+                                                          name="sex"
+                                                          id="M"
+                                                          label="Masculino"
+                                                        />
+                                                        <Field
+                                                          component={
+                                                            RadioButton
+                                                          }
+                                                          name="sex"
+                                                          id="F"
+                                                          label="Feminino"
+                                                        />
+                                                      </>
+                                                    )}
+                                                  </Row>
+                                                </RadioButtonGroup>
+                                              </Col>
+                                            </>
+                                          )}
+                                        </Row>
+                                      </FormGroup>
+
+                                      <FormGroup>
+                                        <Row className="mt-3">
+                                          <Label className="pl-3 font-medium-3 text-dark text-bold-400 text-center">
+                                            Dados do participante
+                                          </Label>
+                                          <Col sm="12">
+                                            <Label
+                                              className="pl-2 mt-2"
+                                              for="cpf"
+                                            >
+                                              CPF
+                                            </Label>
+                                            <div className="position-relative has-icon-right">
+                                              <Field
+                                                name="cpf"
+                                                id="cpf"
+                                                className={`
+                                              new-form-padding
+                                              form-control
+                                              ${errors.cpf &&
+                                                touched.cpf &&
+                                                'is-invalid'}
+                                            `}
+                                                validate={validateCPF}
+                                                render={({ field }) => (
+                                                  <CpfFormat
+                                                    {...field}
+                                                    id="cpf"
+                                                    name="cpf"
+                                                    placeholder="Ex: 423.123.321-12"
+                                                    className={`
+                                                  new-form-padding
+                                                  form-control
+                                                  ${errors.cpf &&
+                                                    touched.cpf &&
+                                                    'is-invalid'}
+                                                `}
+                                                    value={values.cpf}
+                                                    onValueChange={val =>
+                                                      handleSearchCpf(val.value)
+                                                    }
+                                                  />
+                                                )}
+                                              />
+                                              {errors.cpf && touched.cpf ? (
+                                                <div className="invalid-feedback">
+                                                  {errors.cpf}
+                                                </div>
+                                              ) : null}
+                                              {loading && (
+                                                <div className="new-form-control-position">
+                                                  <RefreshCw
+                                                    size={16}
+                                                    className="spinner"
+                                                  />
+                                                </div>
+                                              )}
+                                            </div>
+                                          </Col>
+
+                                          {!!values.cpf &&
+                                            participant !== null &&
+                                            participant.error === undefined &&
+                                            typeof participant === 'object' && (
+                                              <>
+                                                <Col sm="12" className="mt-2">
+                                                  <Label>Nome</Label>
+                                                  <div className="position-relative has-icon-left">
+                                                    <Field
+                                                      type="text"
+                                                      name="name"
+                                                      id="name"
+                                                      className={`
                                                   new-form-padding
                                                   form-control
                                                   ${errors.name &&
                                                     touched.name &&
                                                     'is-invalid'}
                                                 `}
-                                                autoComplete="off"
-                                              />
-                                              {errors.name && touched.name ? (
-                                                <div className="invalid-feedback">
-                                                  {errors.name}
-                                                </div>
-                                              ) : null}
-                                              <div className="new-form-control-position">
-                                                <User
-                                                  size={14}
-                                                  color="#212529"
-                                                />
-                                              </div>
-                                            </div>
-                                          </Col>
-                                          <Col sm="12" className="mt-2">
-                                            <Label>Email</Label>
-                                            <div className="position-relative has-icon-left">
-                                              <Field
-                                                type="email"
-                                                name="email"
-                                                id="email"
-                                                className={`
+                                                      autoComplete="off"
+                                                    />
+                                                    {errors.name &&
+                                                    touched.name ? (
+                                                      <div className="invalid-feedback">
+                                                        {errors.name}
+                                                      </div>
+                                                    ) : null}
+                                                    <div className="new-form-control-position">
+                                                      <User
+                                                        size={14}
+                                                        color="#212529"
+                                                      />
+                                                    </div>
+                                                  </div>
+                                                </Col>
+                                                <Col sm="12" className="mt-2">
+                                                  <Label>Email</Label>
+                                                  <div className="position-relative has-icon-left">
+                                                    <Field
+                                                      type="email"
+                                                      name="email"
+                                                      id="email"
+                                                      onChange={event =>
+                                                        handleSearchEmail(
+                                                          event,
+                                                          setFieldValue
+                                                        )
+                                                      }
+                                                      className={`
                                                   new-form-padding
                                                   form-control
                                                   ${errors.email &&
                                                     touched.email &&
                                                     'is-invalid'}
                                                 `}
-                                                onChange={event =>
-                                                  handleSearchEmail(
-                                                    event,
-                                                    setFieldValue
-                                                  )
-                                                }
-                                                autoComplete="off"
-                                              />
-                                              {errors.email && touched.email ? (
-                                                <div className="invalid-feedback">
-                                                  {errors.email}
+                                                      autoComplete="off"
+                                                    />
+                                                    {errors.email &&
+                                                    touched.email ? (
+                                                      <div className="invalid-feedback">
+                                                        {errors.email}
+                                                      </div>
+                                                    ) : null}
+                                                    <div className="new-form-control-position">
+                                                      <User
+                                                        size={14}
+                                                        color="#212529"
+                                                      />
+                                                    </div>
+                                                  </div>
+                                                </Col>
+                                              </>
+                                            )}
+
+                                          {notFoundParticipant === true && (
+                                            <>
+                                              <Label className="font-small-3 text-center text-dark text-bold-400 text-uppercase mt-3 mx-auto">
+                                                Complete seu cadastro
+                                              </Label>
+                                              <Col sm="12" className="mt-2">
+                                                <Label>Nome</Label>
+                                                <div className="position-relative has-icon-left">
+                                                  <Field
+                                                    type="text"
+                                                    name="name"
+                                                    id="name"
+                                                    className={`
+                                                  new-form-padding
+                                                  form-control
+                                                  ${errors.name &&
+                                                    touched.name &&
+                                                    'is-invalid'}
+                                                `}
+                                                    autoComplete="off"
+                                                  />
+                                                  {errors.name &&
+                                                  touched.name ? (
+                                                    <div className="invalid-feedback">
+                                                      {errors.name}
+                                                    </div>
+                                                  ) : null}
+                                                  <div className="new-form-control-position">
+                                                    <User
+                                                      size={14}
+                                                      color="#212529"
+                                                    />
+                                                  </div>
                                                 </div>
-                                              ) : null}
-                                              <div className="new-form-control-position">
-                                                <User
-                                                  size={14}
-                                                  color="#212529"
-                                                />
-                                              </div>
-                                            </div>
-                                          </Col>
-                                          <Col sm="12" className="mt-2">
-                                            <RadioButtonGroup
-                                              id="radioGroup"
-                                              value={values.radioGroup}
-                                              error={errors.radioGroup}
-                                              touched={touched.radioGroup}
-                                              className={`
+                                              </Col>
+                                              <Col sm="12" className="mt-2">
+                                                <Label>Email</Label>
+                                                <div className="position-relative has-icon-left">
+                                                  <Field
+                                                    type="email"
+                                                    name="email"
+                                                    id="email"
+                                                    className={`
+                                                  new-form-padding
+                                                  form-control
+                                                  ${errors.email &&
+                                                    touched.email &&
+                                                    'is-invalid'}
+                                                `}
+                                                    onChange={event =>
+                                                      handleSearchEmail(
+                                                        event,
+                                                        setFieldValue
+                                                      )
+                                                    }
+                                                    autoComplete="off"
+                                                  />
+                                                  {errors.email &&
+                                                  touched.email ? (
+                                                    <div className="invalid-feedback">
+                                                      {errors.email}
+                                                    </div>
+                                                  ) : null}
+                                                  <div className="new-form-control-position">
+                                                    <User
+                                                      size={14}
+                                                      color="#212529"
+                                                    />
+                                                  </div>
+                                                </div>
+                                              </Col>
+                                              <Col sm="12" className="mt-2">
+                                                <RadioButtonGroup
+                                                  id="radioGroup"
+                                                  value={values.radioGroup}
+                                                  error={errors.radioGroup}
+                                                  touched={touched.radioGroup}
+                                                  className={`
                                             new-form-padding
                                             form-control
                                             border-0
@@ -1060,50 +1652,56 @@ export default function TrainingInviteConfirmation({ match }) {
                                               touched.sex &&
                                               'is-invalid'}
                                           `}
-                                            >
-                                              <Row className="d-flex justify-content-around">
-                                                {event.defaultEvent.sex_type ===
-                                                  'M' && (
-                                                  <Field
-                                                    component={RadioButton}
-                                                    name="sex"
-                                                    id="M"
-                                                    label="Masculino"
-                                                  />
-                                                )}
-                                                {event.defaultEvent.sex_type ===
-                                                  'F' && (
-                                                  <Field
-                                                    component={RadioButton}
-                                                    name="sex"
-                                                    id="F"
-                                                    label="Feminino"
-                                                  />
-                                                )}
-                                                {event.defaultEvent.sex_type ===
-                                                  'A' && (
-                                                  <>
-                                                    <Field
-                                                      component={RadioButton}
-                                                      name="sex"
-                                                      id="M"
-                                                      label="Masculino"
-                                                    />
-                                                    <Field
-                                                      component={RadioButton}
-                                                      name="sex"
-                                                      id="F"
-                                                      label="Feminino"
-                                                    />
-                                                  </>
-                                                )}
-                                              </Row>
-                                            </RadioButtonGroup>
-                                          </Col>
-                                        </>
-                                      )}
-                                    </Row>
-                                  </FormGroup>
+                                                >
+                                                  <Row className="d-flex justify-content-around">
+                                                    {event.defaultEvent
+                                                      .sex_type === 'M' && (
+                                                      <Field
+                                                        component={RadioButton}
+                                                        name="sex"
+                                                        id="M"
+                                                        label="Masculino"
+                                                      />
+                                                    )}
+                                                    {event.defaultEvent
+                                                      .sex_type === 'F' && (
+                                                      <Field
+                                                        component={RadioButton}
+                                                        name="sex"
+                                                        id="F"
+                                                        label="Feminino"
+                                                      />
+                                                    )}
+                                                    {event.defaultEvent
+                                                      .sex_type === 'A' && (
+                                                      <>
+                                                        <Field
+                                                          component={
+                                                            RadioButton
+                                                          }
+                                                          name="sex"
+                                                          id="M"
+                                                          label="Masculino"
+                                                        />
+                                                        <Field
+                                                          component={
+                                                            RadioButton
+                                                          }
+                                                          name="sex"
+                                                          id="F"
+                                                          label="Feminino"
+                                                        />
+                                                      </>
+                                                    )}
+                                                  </Row>
+                                                </RadioButtonGroup>
+                                              </Col>
+                                            </>
+                                          )}
+                                        </Row>
+                                      </FormGroup>
+                                    </>
+                                  )}
                                 </Step>
                                 <Step id="products">
                                   <Label className="mt-3 pl-2 font-medium-3 text-dark text-bold-400 text-center">
@@ -2232,6 +2830,7 @@ export default function TrainingInviteConfirmation({ match }) {
                               <WithWizard
                                 render={({ next, previous, step, steps }) => {
                                   let error = true;
+                                  // checkpoint
 
                                   if (
                                     step.id === 'shipping_options' &&
@@ -2253,15 +2852,31 @@ export default function TrainingInviteConfirmation({ match }) {
                                     } else {
                                       error = false;
                                     }
-                                  } else if (values.cpf === '' || errors.cpf) {
-                                    error = true;
-                                  } else if (!isValidEmail) {
-                                    error = true;
-                                  } else if (errors.email || errors.name) {
-                                    error = true;
-                                  } else {
+                                  } else if (step.id === 'entity') {
+                                    if (values.cpf === '' || errors.cpf) {
+                                      error = true;
+                                    } else if (!isValidEmail) {
+                                      error = true;
+                                    } else if (errors.email || errors.name) {
+                                      error = true;
+                                    } else {
+                                      error = false;
+                                    }
+                                  } else if (inscriptionType !== null) {
                                     error = false;
+                                  } else {
+                                    error = true;
                                   }
+
+                                  // } else if (values.cpf === '' || errors.cpf) {
+                                  //   error = true;
+                                  // } else if (!isValidEmail) {
+                                  //   error = true;
+                                  // } else if (errors.email || errors.name) {
+                                  //   error = true;
+                                  // } else {
+                                  //   error = false;
+                                  // }
 
                                   return (
                                     <div className="example-buttons ">
@@ -2302,7 +2917,7 @@ export default function TrainingInviteConfirmation({ match }) {
             )}
           </Motion>
 
-          <Modal
+          {/* <Modal
             size="lg"
             isOpen={modalCaminhosLegadosInvite}
             toggle={() => setModalCaminhosLegadosInvite(false)}
@@ -2331,7 +2946,7 @@ export default function TrainingInviteConfirmation({ match }) {
                 Entendi
               </Button>
             </ModalFooter>
-          </Modal>
+          </Modal> */}
         </>
       )}
     </div>
