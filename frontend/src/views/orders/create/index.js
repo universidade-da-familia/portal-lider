@@ -86,9 +86,9 @@ const formOrder = Yup.object().shape({
 });
 
 export default function OrderCreate() {
-  const [modalCaminhosLegadosOrder, setModalCaminhosLegadosOrder] = useState(
-    false
-  );
+  // const [modalCaminhosLegadosOrder, setModalCaminhosLegadosOrder] = useState(
+  //   false
+  // );
   // const [canOpenedModalCaminhosLegadosOrder] = useState(() => {
   //   const caminhoslegados = sessionStorage.getItem(
   //     '@dashboard/caminhoslegados_order'
@@ -605,9 +605,9 @@ export default function OrderCreate() {
     //   setModalCaminhosLegadosOrder(true);
     // }
 
-    setModalCaminhosLegadosOrder(true);
+    // setModalCaminhosLegadosOrder(true);
 
-    sessionStorage.setItem('@dashboard/caminhoslegados_order', true);
+    // sessionStorage.setItem('@dashboard/caminhoslegados_order', true);
 
     return () => {
       setDataProducts(null);
@@ -1672,24 +1672,24 @@ export default function OrderCreate() {
                           Criando pedido, aguarde...
                         </Button>
                       ) : (
-                        // <Button
-                        //   disabled={
-                        //     subTotalPriceError < 11 ||
-                        //     paymentSelected === null ||
-                        //     verifyCPF === true
-                        //   }
-                        //   type="submit"
-                        //   className={
-                        //     paymentSelected === null
-                        //       ? 'btn-secondary'
-                        //       : 'btn-success'
-                        //   }
-                        // >
-                        //   Finalizar pedido
-                        // </Button>
-                        <Button type="submit" disabled>
+                        <Button
+                          disabled={
+                            subTotalPriceError < 11 ||
+                            paymentSelected === null ||
+                            verifyCPF === true
+                          }
+                          type="submit"
+                          className={
+                            paymentSelected === null
+                              ? 'btn-secondary'
+                              : 'btn-success'
+                          }
+                        >
                           Finalizar pedido
                         </Button>
+                        // <Button type="submit" disabled>
+                        //   Finalizar pedido
+                        // </Button>
                       )}
                     </ModalFooter>
                   </>
@@ -1913,7 +1913,7 @@ export default function OrderCreate() {
         </ModalBody>
       </Modal>
 
-      <Modal size="lg" isOpen={modalCaminhosLegadosOrder}>
+      {/* <Modal size="lg" isOpen={modalCaminhosLegadosOrder}>
         <ModalBody>
           <img
             src="https://i.imgur.com/tsfW6t5.png"
@@ -1931,7 +1931,7 @@ export default function OrderCreate() {
             Voltar
           </Button>
         </ModalFooter>
-      </Modal>
+      </Modal> */}
     </>
   );
 }

@@ -38,8 +38,8 @@ import {
   CustomInput,
   UncontrolledTooltip,
   ButtonGroup,
-  Modal,
-  ModalBody,
+  // Modal,
+  // ModalBody,
   // ModalFooter,
 } from 'reactstrap';
 
@@ -179,9 +179,9 @@ class CpfFormat extends Component {
 }
 
 export default function InviteConfirmation({ match }) {
-  const [modalCaminhosLegadosInvite, setModalCaminhosLegadosInvite] = useState(
-    false
-  );
+  // const [modalCaminhosLegadosInvite, setModalCaminhosLegadosInvite] = useState(
+  //   false
+  // );
   // const [canOpenedModalCaminhosLegadosInvite] = useState(() => {
   //   const caminhoslegados = sessionStorage.getItem(
   //     '@dashboard/caminhoslegados_invite'
@@ -700,9 +700,9 @@ export default function InviteConfirmation({ match }) {
     // if (canOpenedModalCaminhosLegadosInvite) {
     //   setModalCaminhosLegadosInvite(true);
     // }
-    setModalCaminhosLegadosInvite(true);
+    // setModalCaminhosLegadosInvite(true);
 
-    sessionStorage.setItem('@dashboard/caminhoslegados_invite', true);
+    // sessionStorage.setItem('@dashboard/caminhoslegados_invite', true);
 
     return () => {
       // setKitProducts(null);
@@ -2272,7 +2272,7 @@ export default function InviteConfirmation({ match }) {
             )}
           </Motion>
 
-          <Modal
+          {/* <Modal
             size="lg"
             isOpen={modalCaminhosLegadosInvite}
             // toggle={() => setModalCaminhosLegadosInvite(false)}
@@ -2285,16 +2285,7 @@ export default function InviteConfirmation({ match }) {
                 height="auto"
               />
             </ModalBody>
-            {/* <ModalFooter>
-              <Button
-                className="ml-1 my-1 btn-default"
-                color="primary"
-                onClick={() => setModalCaminhosLegadosInvite(false)}
-              >
-                Entendi!
-              </Button>
-            </ModalFooter> */}
-          </Modal>
+          </Modal> */}
         </>
       )}
     </div>

@@ -9,9 +9,9 @@ import {
   Col,
   Button,
   Badge,
-  Modal,
-  ModalBody,
-  ModalFooter,
+  // Modal,
+  // ModalBody,
+  // ModalFooter,
 } from 'reactstrap';
 
 import ContentHeader from '../../../components/contentHead/contentHeader';
@@ -25,18 +25,18 @@ import LeaderTable from './leaderTable';
 
 // Table example pages
 export default function Groups() {
-  const [modalCaminhosLegados, setModalCaminhosLegados] = useState(false);
+  // const [modalCaminhosLegados, setModalCaminhosLegados] = useState(false);
   const [allEvents, setAllEvents] = useState([]);
-  const [
-    canOpenedModalCaminhosLegados,
-    setCanOpenedModalCaminhosLegados,
-  ] = useState(() => {
-    const caminhoslegados = sessionStorage.getItem(
-      '@dashboard/caminhoslegados'
-    );
+  // const [
+  //   canOpenedModalCaminhosLegados,
+  //   setCanOpenedModalCaminhosLegados,
+  // ] = useState(() => {
+  //   const caminhoslegados = sessionStorage.getItem(
+  //     '@dashboard/caminhoslegados'
+  //   );
 
-    return caminhoslegados ? false : true;
-  });
+  //   return caminhoslegados ? false : true;
+  // });
 
   const profile = useSelector(state => state.profile.data);
   const allData = useSelector(state => state.event.allData);
@@ -77,14 +77,13 @@ export default function Groups() {
     dispatch(EventActions.allEventRequest());
   }, [profile]);
 
-  useEffect(() => {
-    if (canOpenedModalCaminhosLegados) {
-      setModalCaminhosLegados(true);
-    }
-    // setModalCaminhosLegados(true);
+  // useEffect(() => {
+  //   if (canOpenedModalCaminhosLegados) {
+  //     setModalCaminhosLegados(true);
+  //   }
 
-    sessionStorage.setItem('@dashboard/caminhoslegados', true);
-  }, []);
+  //   sessionStorage.setItem('@dashboard/caminhoslegados', true);
+  // }, []);
 
   return (
     <>
@@ -160,7 +159,7 @@ export default function Groups() {
           </Card> */}
         </Col>
       </Row>
-      <Modal
+      {/* <Modal
         isOpen={modalCaminhosLegados}
         toggle={() => setModalCaminhosLegados(false)}
       >
@@ -181,7 +180,7 @@ export default function Groups() {
             Entendi!
           </Button>
         </ModalFooter>
-      </Modal>
+      </Modal> */}
     </>
   );
 }
