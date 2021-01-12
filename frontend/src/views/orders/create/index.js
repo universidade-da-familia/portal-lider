@@ -39,7 +39,7 @@ import {
   Table,
   ButtonGroup,
   UncontrolledTooltip,
-  Progress,
+  // Progress,
 } from 'reactstrap';
 
 import { Formik, Field, Form } from 'formik';
@@ -575,9 +575,9 @@ export default function OrderCreate() {
         return 0;
       });
 
-      if (manualCountToFreeShipping >= 4) {
-        shippingsLowestToBiggestPrice[0].free_shipping = true;
-      }
+      // if (manualCountToFreeShipping >= 4) {
+      //   shippingsLowestToBiggestPrice[0].free_shipping = true;
+      // }
 
       setShippingOptions(shippingsLowestToBiggestPrice);
     }
@@ -1185,20 +1185,20 @@ export default function OrderCreate() {
                             <Truck size={20} color="#212529" /> Opções de envio
                             (escolha uma das opções abaixo):
                           </h4>
-                          <div className="text-center font-medium-1 font-weight-bold">
+                          {/* <div className="text-center font-medium-1 font-weight-bold">
                             {manualCountToFreeShipping < 4
                               ? `Compre mais ${4 -
                                   manualCountToFreeShipping} manuais para conseguir frete grátis (${manualCountToFreeShipping *
                                   25}%)`
                               : `Parabéns, você conseguiu o frete grátis.`}
-                          </div>
-                          <Progress
+                          </div> */}
+                          {/* <Progress
                             value={manualCountToFreeShipping * 25}
                             color="success"
                             className="height-40 font-medium-2 font-weight-bold"
                           >
                             {`${manualCountToFreeShipping}/4 manuais`}
-                          </Progress>
+                          </Progress> */}
                           <FormGroup className="mb-0">
                             <ButtonGroup className="d-flex flex-column">
                               {shippingOptions.map(shippingOption => (
@@ -1467,7 +1467,9 @@ export default function OrderCreate() {
                                   paymentSelected === 2 && (
                                     <Check size={24} color="#0cc27e" />
                                   )}
-                                Boleto para 30 dias
+                                {totalPrice > 1100 && orderType !== 'Curso'
+                                  ? 'Boleto para 30 dias'
+                                  : 'Boleto à vista'}
                                 <FileText
                                   size={24}
                                   color="#000"
