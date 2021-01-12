@@ -2399,6 +2399,8 @@ function* addOrder(action) {
 
     data.order_details.amount = data.order_details.amount.toFixed(2);
 
+    data.invite = true;
+
     const signature = `${apiKey}~${merchantId}~${referenceCode}~${data.order_details.amount}~BRL`;
     const signatureHash = md5(signature);
 
@@ -2594,6 +2596,7 @@ function* addOrder(action) {
         };
       }
 
+      // CHECK2
       const response = yield call(api.post, '/order', data);
 
       yield put(OrderActions.addOrderSuccess());
