@@ -2420,6 +2420,17 @@ function* addOrder(action) {
       { phone: formattedPhone }
     );
 
+    let expirationDateAux = null;
+
+    if (data.order_details.order_type === 'Curso') {
+      expirationDateAux = addDays(endOfCurrentDay, 3);
+    } else {
+      expirationDateAux = addDays(endOfCurrentDay, 3);
+      if (data.order_details.amount > 1100) {
+        expirationDateAux = addDays(endOfCurrentDay, 30);
+      }
+    }
+
     if (response_user.data.id) {
       delete data.shipping_address.phone;
 
@@ -2489,7 +2500,8 @@ function* addOrder(action) {
             type: 'AUTHORIZATION_AND_CAPTURE',
             paymentMethod: 'BOLETO_BANCARIO',
             paymentCountry: 'BR',
-            expirationDate: addDays(endOfCurrentDay, 30),
+            // expirationDate: addDays(endOfCurrentDay, 30),
+            expirationDate: expirationDateAux,
             ipAddress: '127.0.0.1',
           },
           test: false,
