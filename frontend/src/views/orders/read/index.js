@@ -380,13 +380,35 @@ export default function OrderRead({ match }) {
                 <p className="font-medium-2">
                   <span className="black">Vencimento do boleto: </span>
                   <span className="black font-weight-bold">
-                    {format(
-                      addDays(new Date(order_data.created_at), 30),
+                    {(() => {
+                      if (
+                        order_data.type !== 'Curso' &&
+                        order_data.total > 1100
+                      ) {
+                        return format(
+                          addDays(new Date(order_data.created_at), 30),
+                          'dd/MM/yyyy',
+                          {
+                            locale: ptBR,
+                          }
+                        );
+                      } else {
+                        return format(
+                          addDays(new Date(order_data.created_at), 3),
+                          'dd/MM/yyyy',
+                          {
+                            locale: ptBR,
+                          }
+                        );
+                      }
+                    })()}
+                    {/* {format(
+                      addDays(new Date(order_data.created_at), 3),
                       'dd/MM/yyyy',
                       {
                         locale: ptBR,
                       }
-                    )}
+                    )} */}
                   </span>
                 </p>
               )}

@@ -1600,7 +1600,8 @@ export default function OrderCreate() {
                             <Row className="justify-content-end">
                               <Col sm="12" md="12" lg="8" xl="8">
                                 <Label className="pl-2">
-                                  Quantidade de parcelas (3x acima de R$850,00)
+                                  Quantidade de parcelas (até R$250,00 em duas
+                                  vezes e acima de R$250,00 em três vezes.)
                                 </Label>
                                 <Col
                                   sm="12"
@@ -1633,7 +1634,7 @@ export default function OrderCreate() {
                                         }
                                       )}
                                     </option>
-                                    {totalPrice >= 850 && (
+                                    {totalPrice >= 250 && (
                                       <option value="3">
                                         Parcelar em 3x de{' '}
                                         {(totalPrice / 3).toLocaleString(
