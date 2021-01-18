@@ -4429,7 +4429,7 @@ export default function UserProfile({ match, className }) {
                           <Label for="invite_email">Email</Label>
                           <Field
                             type="text"
-                            placeholder="Digite o email do pariticpante"
+                            placeholder="Digite o email do participante"
                             name="invite_email"
                             id="invite_email"
                             className={`
