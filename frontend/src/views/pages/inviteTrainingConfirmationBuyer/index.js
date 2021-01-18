@@ -84,6 +84,14 @@ const formSchema = Yup.object().shape({
       'Digite um email válido'
     )
     .required('O email é obrigatório'),
+  church_name: Yup.string().required('Nome da igreja é obrigatório'),
+  pastor_name: Yup.string().required('O nome do pastor é obrigatório'),
+  pastor_email: Yup.string()
+    .matches(
+      /^[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}$/i,
+      'Digite um email válido'
+    )
+    .required('O email é obrigatório'),
   type: Yup.string().required('O tipo é obrigatório'),
   address_type: Yup.string().required('O tipo é obrigatório'),
   address_other_type_name: Yup.string().when('address_type', {
@@ -230,6 +238,9 @@ export default function TrainingInviteConfirmation({ match }) {
     couple_name: '',
     couple_email: '',
     couple_sex: '',
+    church_name: '',
+    pastor_name: '',
+    pastor_email: '',
     type: '',
     address_type: '',
     address_other_type_name: '',
@@ -311,6 +322,10 @@ export default function TrainingInviteConfirmation({ match }) {
       );
     }
   }
+
+  // function handleSearchCoupleCpf(cpf) {
+
+  // }
 
   function handleSearchEmail(event, setFieldValue) {
     const email = event.target.value;
@@ -580,7 +595,7 @@ export default function TrainingInviteConfirmation({ match }) {
           product.product_category === 'manual' ||
           product.product_category === 'book'
         ) {
-          product.isSelected = false;
+          product.isSelected = true;
           product.quantity = 1;
 
           products.push(product);
@@ -904,6 +919,7 @@ export default function TrainingInviteConfirmation({ match }) {
                                         <Label className="pl-3 font-medium-3 text-dark text-bold-400 text-center">
                                           Dados do participante
                                         </Label>
+                                        {/* {console.tron.log(participant)} */}
                                         <Col sm="12">
                                           <Label
                                             className="pl-2 mt-2"
@@ -1703,6 +1719,82 @@ export default function TrainingInviteConfirmation({ match }) {
                                     </>
                                   )}
                                 </Step>
+                                <Step id="authorization">
+                                  <FormGroup>
+                                    <Col sm="12" className="mt-2">
+                                      <Label>Nome da igreja</Label>
+                                      <div className="position-relative">
+                                        <Field
+                                          type="text"
+                                          name="church_name"
+                                          id="church_name"
+                                          className={`
+                                          new-form-padding
+                                          form-control
+                                          ${errors.church_name &&
+                                            touched.church_name &&
+                                            'is-invalid'}
+                                        `}
+                                          autoComplete="off"
+                                        />
+                                        {errors.church_name &&
+                                        touched.church_name ? (
+                                          <div className="invalid-feedback">
+                                            {errors.church_name}
+                                          </div>
+                                        ) : null}
+                                      </div>
+                                    </Col>
+                                    <Col sm="12" className="mt-2">
+                                      <Label>Nome do pastor</Label>
+                                      <div className="position-relative">
+                                        <Field
+                                          type="text"
+                                          name="pastor_name"
+                                          id="pastor_name"
+                                          className={`
+                                          new-form-padding
+                                          form-control
+                                          ${errors.pastor_name &&
+                                            touched.pastor_name &&
+                                            'is-invalid'}
+                                        `}
+                                          autoComplete="off"
+                                        />
+                                        {errors.pastor_name &&
+                                        touched.pastor_name ? (
+                                          <div className="invalid-feedback">
+                                            {errors.pastor_name}
+                                          </div>
+                                        ) : null}
+                                      </div>
+                                    </Col>
+                                    <Col sm="12" className="mt-2">
+                                      <Label>Email do pastor</Label>
+                                      <div className="position-relative">
+                                        <Field
+                                          type="email"
+                                          name="pastor_email"
+                                          id="pastor_email"
+                                          className={`
+                                          new-form-padding
+                                          form-control
+                                          ${errors.pastor_email &&
+                                            touched.pastor_email &&
+                                            'is-invalid'}
+                                        `}
+                                          autoComplete="off"
+                                        />
+                                        {errors.pastor_email &&
+                                        touched.pastor_email ? (
+                                          <div className="invalid-feedback">
+                                            {errors.pastor_email}
+                                          </div>
+                                        ) : null}
+                                      </div>
+                                    </Col>
+                                  </FormGroup>
+                                </Step>
                                 <Step id="products">
                                   <Label className="mt-3 pl-2 font-medium-3 text-dark text-bold-400 text-center">
                                     Selecione os produtos
@@ -1743,7 +1835,8 @@ export default function TrainingInviteConfirmation({ match }) {
                                         <CustomInput
                                           type="checkbox"
                                           id={`product-${product.id}`}
-                                          defaultChecked={product.isSelected}
+                                          defaultChecked
+                                          disabled
                                           onChange={e =>
                                             handleChangeChild(e, index)
                                           }
