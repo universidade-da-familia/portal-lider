@@ -35,16 +35,16 @@ export default function SideMenuContent({
         </NavLink>
       </SideMenu.MenuSingleItem> */}
 
-      <SideMenu.MenuSingleItem>
+      {/* <SideMenu.MenuSingleItem>
         <NavLink to="/eventos/grupos" activeclassname="active">
           <i className="menu-icon">
             <Users size={18} />
           </i>
           <span className="menu-item-text">Grupos</span>
         </NavLink>
-      </SideMenu.MenuSingleItem>
+      </SideMenu.MenuSingleItem> */}
 
-      {/* <SideMenu.MenuMultiItems
+      <SideMenu.MenuMultiItems
         name="Eventos"
         Icon={<Users size={18} />}
         ArrowRight={<ChevronRight size={14} />}
@@ -66,15 +66,15 @@ export default function SideMenuContent({
         >
           <span className="menu-item-text">Treinamentos</span>
         </NavLink>
-        <NavLink
+        {/* <NavLink
           to="/eventos/seminarios"
           exact
           className="item"
           activeclassname="active"
         >
           <span className="menu-item-text">Seminários</span>
-        </NavLink>
-      </SideMenu.MenuMultiItems> */}
+        </NavLink> */}
+      </SideMenu.MenuMultiItems>
 
       <SideMenu.MenuSingleItem>
         <NavLink to="/pedidos" activeclassname="active">
