@@ -76,6 +76,23 @@ import {
 // import Navigation from './navigation';
 
 const formSchema = Yup.object().shape({
+  couple_cpf: Yup.string().when('inscription_type', {
+    is: 'couple',
+    then: Yup.string().required('CPF do conjuge é obrigatório'),
+  }),
+  couple_name: Yup.string().when('inscription_type', {
+    is: 'couple',
+    then: Yup.string().required('Nome do conjuge é obrigatório'),
+  }),
+  couple_email: Yup.string().when('inscription_type', {
+    is: 'couple',
+    then: Yup.string()
+      .matches(
+        /^[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}$/i,
+        'Digite um email válido'
+      )
+      .required('Email do conjuge é obrigatório'),
+  }),
   cpf: Yup.string().required('O CPF é obrigatório'),
   name: Yup.string().required('O nome é obrigatório'),
   email: Yup.string()
@@ -204,8 +221,12 @@ export default function TrainingInviteConfirmation({ match }) {
   const [emailDebounce] = useDebounce(searchEmail, 800);
   // const [invite, setInvite] = useState(null);
   const [participant, setParticipant] = useState(null);
+  const [coupleParticipant, setCoupleParticipant] = useState(null);
   const [errorSex, setErrorSex] = useState(false);
   const [notFoundParticipant, setNotFoundParticipant] = useState(false);
+  const [notFoundCoupleParticipant, setNotFoundCoupleParticipant] = useState(
+    true
+  );
   const [kitProducts, setKitProducts] = useState([]);
   const [shippingSelected, setShippingSelected] = useState(null);
   const [paymentSelected, setPaymentSelected] = useState(null);
@@ -265,6 +286,9 @@ export default function TrainingInviteConfirmation({ match }) {
     focused: '',
   });
   const [errorProduct, setErrorProduct] = useState(false);
+  // const [coupleData, setCoupleData] = useState(null);
+  // const [coupleError, setCoupleError] = useState(false);
+  const [isCouple, setIsCouple] = useState(false);
 
   const event = useSelector(state => state.event.data);
   const participantData = useSelector(state => state.participant.data);
@@ -306,6 +330,7 @@ export default function TrainingInviteConfirmation({ match }) {
 
   function handleSearchCpf(cpf) {
     setParticipant(null);
+    setIsCouple(false);
     dispatch(ParticipantActions.searchParticipantByEmailFailure(false));
 
     const formattedCpf = cpf
@@ -323,16 +348,36 @@ export default function TrainingInviteConfirmation({ match }) {
     }
   }
 
-  // function handleSearchCoupleCpf(cpf) {
+  function handleSearchCoupleCpf(cpf) {
+    setCoupleParticipant(null);
+    setIsCouple(true);
+    dispatch(ParticipantActions.searchParticipantByEmailFailure(false));
 
-  // }
+    const formattedCpf = cpf
+      .replace('.', '')
+      .replace('.', '')
+      .replace('-', '');
 
-  function handleSearchEmail(event, setFieldValue) {
+    if (formattedCpf.length === 11) {
+      dispatch(
+        ParticipantActions.searchParticipantRequest(
+          formattedCpf,
+          event.defaultEvent.id
+        )
+      );
+    }
+  }
+
+  function handleSearchEmail(event, setFieldValue, couple) {
     const email = event.target.value;
 
     dispatch(ParticipantActions.searchParticipantByEmailFailure(false));
 
-    setFieldValue('email', email);
+    if (couple) {
+      setFieldValue('couple_email', email);
+    } else {
+      setFieldValue('email', email);
+    }
 
     setSearchEmail(email);
   }
@@ -426,7 +471,7 @@ export default function TrainingInviteConfirmation({ match }) {
       }
     });
 
-    if (notFoundParticipant === true) {
+    if (notFoundParticipant === true && notFoundCoupleParticipant === false) {
       const password = randomstring.generate(6);
       const formattedCpf = values.cpf
         .replace('.', '')
@@ -434,9 +479,11 @@ export default function TrainingInviteConfirmation({ match }) {
         .replace('-', '');
 
       const createData = {
-        invite_id: match.params.id,
+        // invite_id: match.params.id,
+        inscription_type: values.inscription_type,
         event_id: parseInt(match.params.event_id, 10),
         user: {
+          id: null,
           name: values.name,
           cpf: formattedCpf,
           email: values.email,
@@ -444,6 +491,7 @@ export default function TrainingInviteConfirmation({ match }) {
           phone: values.phone,
           password,
         },
+        couple_user: coupleParticipant,
         card: paymentSelected === 1 ? card : null,
         products: dataProducts,
         shipping_address: values,
@@ -459,13 +507,31 @@ export default function TrainingInviteConfirmation({ match }) {
         },
       };
 
-      dispatch(InviteActions.createByInviteOrderRequest(createData));
-    } else {
-      const toSend = {
-        invite_id: parseInt(match.params.id, 10),
+      dispatch(InviteActions.createParticipantTrainingRequest(createData));
+    } else if (
+      notFoundParticipant === false &&
+      notFoundCoupleParticipant === true
+    ) {
+      const couplePassword = randomstring.generate(6);
+      const formattedCoupleCpf = values.couple_cpf
+        .replace('.', '')
+        .replace('.', '')
+        .replace('-', '');
+
+      const createData = {
+        // invite_id: parseInt(match.params.id, 10),
+        inscription_type: values.inscription_type,
         event_id: parseInt(match.params.event_id, 10),
-        assistant: false,
         user: participant,
+        couple_user: {
+          id: null,
+          name: values.couple_name,
+          cpf: formattedCoupleCpf,
+          email: values.couple_email,
+          sex: values.couple_sex,
+          phone: values.couple_phone,
+          password: couplePassword,
+        },
         card: paymentSelected === 1 ? card : null,
         products: dataProducts,
         shipping_address: values,
@@ -479,10 +545,91 @@ export default function TrainingInviteConfirmation({ match }) {
           amount: totalPrice,
           installments: parseInt(values.installments, 10),
         },
-        invite: true,
       };
 
-      dispatch(InviteActions.confirmInviteOrderRequest(toSend));
+      dispatch(InviteActions.createParticipantTrainingRequest(createData));
+    } else if (
+      notFoundParticipant === true &&
+      notFoundCoupleParticipant === true
+    ) {
+      const password = randomstring.generate(6);
+
+      const formattedCpf = values.cpf
+        .replace('.', '')
+        .replace('.', '')
+        .replace('-', '');
+
+      const couplePassword = randomstring.generate(6);
+
+      const formattedCoupleCpf = values.couple_cpf
+        .replace('.', '')
+        .replace('.', '')
+        .replace('-', '');
+
+      const createData = {
+        inscription_type: values.inscription_type,
+        invite_id: match.params.id,
+        event_id: parseInt(match.params.event_id, 10),
+        user: {
+          id: null,
+          name: values.name,
+          cpf: formattedCpf,
+          email: values.email,
+          sex: values.sex,
+          phone: values.phone,
+          password,
+        },
+        couple_user: {
+          id: null,
+          name: values.name,
+          cpf: formattedCoupleCpf,
+          email: values.email,
+          sex: values.sex,
+          phone: values.phone,
+          password: couplePassword,
+        },
+        card: paymentSelected === 1 ? card : null,
+        products: dataProducts,
+        shipping_address: values,
+        shipping_option: shippingSelected,
+        order_details: {
+          order_type: 'Curso',
+          subtotal: subTotalPrice,
+          shipping_amount: shippingSelected.free_shipping
+            ? 0
+            : shippingSelected.final_shipping_cost,
+          amount: totalPrice,
+          installments: parseInt(values.installments, 10),
+        },
+      };
+
+      dispatch(InviteActions.createParticipantTrainingRequest(createData));
+    } else if (
+      notFoundParticipant === false &&
+      notFoundCoupleParticipant === false
+    ) {
+      const createData = {
+        // invite_id: parseInt(match.params.id, 10),
+        inscription_type: values.inscription_type,
+        event_id: parseInt(match.params.event_id, 10),
+        user: participant,
+        couple_user: coupleParticipant,
+        card: paymentSelected === 1 ? card : null,
+        products: dataProducts,
+        shipping_address: values,
+        shipping_option: shippingSelected,
+        order_details: {
+          order_type: 'Curso',
+          subtotal: subTotalPrice,
+          shipping_amount: shippingSelected.free_shipping
+            ? 0
+            : shippingSelected.final_shipping_cost,
+          amount: totalPrice,
+          installments: parseInt(values.installments, 10),
+        },
+      };
+
+      dispatch(InviteActions.createParticipantTrainingRequest(createData));
     }
   }
 
@@ -553,6 +700,10 @@ export default function TrainingInviteConfirmation({ match }) {
           name: values.name,
           email: values.email,
           sex: values.sex,
+          couple_cpf: values.couple_cpf,
+          couple_name: values.couple_name,
+          couple_email: values.couple_email,
+          couple_sex: values.couple_sex,
           type: 'other',
           address_type: values.address_type,
           address_other_type_name: values.address_other_type_name || '',
@@ -572,8 +723,19 @@ export default function TrainingInviteConfirmation({ match }) {
     setPaymentSelected(selected);
   }
 
-  function handleInscriptionType(selected) {
+  function handleInscriptionType(selected, setFieldValue) {
+    setFieldValue('inscription_type', selected);
     setInscriptionType(selected);
+
+    if (selected === 'single') {
+      setInitialState({
+        ...initialState,
+        couple_cpf: '',
+        couple_name: '',
+        couple_email: '',
+        couple_sex: '',
+      });
+    }
   }
 
   useEffect(() => {
@@ -593,7 +755,8 @@ export default function TrainingInviteConfirmation({ match }) {
       event.defaultEvent.kit.products.forEach(product => {
         if (
           product.product_category === 'manual' ||
-          product.product_category === 'book'
+          product.product_category === 'book' ||
+          product.product_category === 'guide'
         ) {
           product.isSelected = true;
           product.quantity = 1;
@@ -608,13 +771,18 @@ export default function TrainingInviteConfirmation({ match }) {
 
   useEffect(() => {
     if (participantData !== null) {
-      setParticipant(participantData);
+      if (isCouple) {
+        setCoupleParticipant(participantData);
+        setNotFoundCoupleParticipant(false);
+      } else {
+        setParticipant(participantData);
+        setNotFoundParticipant(false);
+        setAddresses(participantData.addresses);
+      }
+
       setErrorSex(false);
-      setNotFoundParticipant(false);
 
-      setAddresses(participantData.addresses);
-
-      if (participantData.error !== undefined) {
+      if (participantData.error !== undefined && participant === null) {
         setAddresses([
           {
             id: null,
@@ -631,18 +799,62 @@ export default function TrainingInviteConfirmation({ match }) {
             receiver: '',
           },
         ]);
+      }
+
+      if (participantData.error !== undefined) {
+        // setAddresses([
+        //   {
+        //     id: null,
+        //     type: '',
+        //     other_type_name: '',
+        //     cep: '',
+        //     country: 'Brasil',
+        //     uf: '',
+        //     city: '',
+        //     street: '',
+        //     street_number: '',
+        //     neighborhood: '',
+        //     complement: '',
+        //     receiver: '',
+        //   },
+        // ]);
 
         if (participantData.error.type === 'sex_type') {
           setErrorSex(true);
-        } else if (participantData.error.type === 'not_found') {
+        } else if (participantData.error.type === 'not_found' && isCouple) {
+          setNotFoundCoupleParticipant(true);
+        } else if (participantData.error.type === 'not_found' && !isCouple) {
           setNotFoundParticipant(true);
         } else {
           setErrorSex(false);
           setNotFoundParticipant(false);
+          setNotFoundCoupleParticipant(false);
         }
+      }
+      // else {
+      //   setInitialState({
+      //     ...initialState,
+      //     cpf: participantData.cpf,
+      //     name: participantData.name,
+      //     email: participantData.email,
+      //     sex: participantData.sex,
+      //     phone: participantData.phone,
+      //   });
+      // }
+      else if (isCouple) {
+        setInitialState({
+          ...initialState,
+          inscription_type: 'couple',
+          couple_cpf: participantData.cpf,
+          couple_name: participantData.name,
+          couple_email: participantData.email,
+          couple_sex: participantData.sex,
+          // phone: participantData.phone,
+        });
       } else {
         setInitialState({
           ...initialState,
+          inscription_type: 'single',
           cpf: participantData.cpf,
           name: participantData.name,
           email: participantData.email,
@@ -650,6 +862,56 @@ export default function TrainingInviteConfirmation({ match }) {
           phone: participantData.phone,
         });
       }
+
+      // if (inscriptionType === 'couple') {
+      //   const coupleAux = participantData.relationships.find(
+      //     relationship =>
+      //       relationship.relationship_type === 'Esposa' ||
+      //       relationship.relationship_type === 'Marido'
+      //   );
+
+      //   if (coupleAux !== undefined) {
+      //     setCoupleData(coupleAux.relationshipEntity);
+      //     setCoupleError(false);
+
+      //     setInitialState({
+      //       ...initialState,
+      //       cpf: participantData.cpf,
+      //       name: participantData.name,
+      //       email: participantData.email,
+      //       sex: participantData.sex,
+      //       couple_cpf: coupleAux.relationshipEntity.cpf,
+      //       couple_name: coupleAux.relationshipEntity.name,
+      //       couple_email: coupleAux.relationshipEntity.email,
+      //       couple_sex: coupleAux.relationshipEntity.sex,
+      //       phone: participantData.phone,
+      //     });
+      //   } else {
+      //     setCoupleError(true);
+
+      //     setInitialState({
+      //       ...initialState,
+      //       cpf: participantData.cpf,
+      //       name: participantData.name,
+      //       email: participantData.email,
+      //       sex: participantData.sex,
+      //       couple_cpf: '',
+      //       couple_name: '',
+      //       couple_email: '',
+      //       couple_sex: '',
+      //       phone: participantData.phone,
+      //     });
+      //   }
+      // } else {
+      //   setInitialState({
+      //     ...initialState,
+      //     cpf: participantData.cpf,
+      //     name: participantData.name,
+      //     email: participantData.email,
+      //     sex: participantData.sex,
+      //     phone: participantData.phone,
+      //   });
+      // }
     }
   }, [participantData]);
 
@@ -692,22 +954,27 @@ export default function TrainingInviteConfirmation({ match }) {
   }, [shippingOptionsData]);
 
   useEffect(() => {
-    // dispatch(
-    //   ParticipantActions.searchParticipantByEmailRequest(
-    //     emailDebounce,
-    //     participant ? participant.email : 'null'
-    //   )
-    // );
+    dispatch(
+      ParticipantActions.searchParticipantByEmailRequest(
+        emailDebounce,
+        participant ? participant.email : 'null'
+      )
+    );
   }, [emailDebounce]);
 
   useEffect(() => {
     dispatch(EventActions.eventRequest(match.params.event_id));
 
     setInitialState({
+      inscription_type: '',
       cpf: '',
       name: '',
       email: '',
       sex: '',
+      couple_cpf: '',
+      couple_name: '',
+      couple_email: '',
+      couple_sex: '',
       type: '',
       address_type: '',
       address_other_type_name: '',
@@ -736,10 +1003,15 @@ export default function TrainingInviteConfirmation({ match }) {
       // setShippingSelected(null);
       // setShippingOptions(null);
       setInitialState({
+        inscription_type: '',
         cpf: '',
         name: '',
         email: '',
         sex: '',
+        couple_cpf: '',
+        couple_name: '',
+        couple_email: '',
+        couple_sex: '',
         type: '',
         address_type: '',
         address_other_type_name: '',
@@ -854,7 +1126,10 @@ export default function TrainingInviteConfirmation({ match }) {
                                           inscriptionType === 'single' &&
                                           'shipping-selected-active'}`}
                                         onClick={() =>
-                                          handleInscriptionType('single')
+                                          handleInscriptionType(
+                                            'single',
+                                            setFieldValue
+                                          )
                                         }
                                         active={
                                           inscriptionType !== null &&
@@ -886,7 +1161,10 @@ export default function TrainingInviteConfirmation({ match }) {
                                           inscriptionType === 'couple' &&
                                           'shipping-selected-active'}`}
                                         onClick={() =>
-                                          handleInscriptionType('couple')
+                                          handleInscriptionType(
+                                            'couple',
+                                            setFieldValue
+                                          )
                                         }
                                         active={
                                           inscriptionType !== null &&
@@ -919,7 +1197,6 @@ export default function TrainingInviteConfirmation({ match }) {
                                         <Label className="pl-3 font-medium-3 text-dark text-bold-400 text-center">
                                           Dados do participante
                                         </Label>
-                                        {/* {console.tron.log(participant)} */}
                                         <Col sm="12">
                                           <Label
                                             className="pl-2 mt-2"
@@ -1020,7 +1297,8 @@ export default function TrainingInviteConfirmation({ match }) {
                                                     onChange={event =>
                                                       handleSearchEmail(
                                                         event,
-                                                        setFieldValue
+                                                        setFieldValue,
+                                                        false
                                                       )
                                                     }
                                                     className={`
@@ -1100,7 +1378,8 @@ export default function TrainingInviteConfirmation({ match }) {
                                                   onChange={event =>
                                                     handleSearchEmail(
                                                       event,
-                                                      setFieldValue
+                                                      setFieldValue,
+                                                      false
                                                     )
                                                   }
                                                   autoComplete="off"
@@ -1286,7 +1565,8 @@ export default function TrainingInviteConfirmation({ match }) {
                                                       onChange={event =>
                                                         handleSearchEmail(
                                                           event,
-                                                          setFieldValue
+                                                          setFieldValue,
+                                                          true
                                                         )
                                                       }
                                                       className={`
@@ -1367,7 +1647,8 @@ export default function TrainingInviteConfirmation({ match }) {
                                                     onChange={event =>
                                                       handleSearchEmail(
                                                         event,
-                                                        setFieldValue
+                                                        setFieldValue,
+                                                        false
                                                       )
                                                     }
                                                     autoComplete="off"
@@ -1450,52 +1731,56 @@ export default function TrainingInviteConfirmation({ match }) {
                                       </FormGroup>
 
                                       <FormGroup>
-                                        <Row className="mt-3">
+                                        <Row className="mt-5">
                                           <Label className="pl-3 font-medium-3 text-dark text-bold-400 text-center">
-                                            Dados do participante
+                                            Dados do cônjuge
                                           </Label>
+                                          {/* Checkpoint */}
                                           <Col sm="12">
                                             <Label
                                               className="pl-2 mt-2"
-                                              for="cpf"
+                                              for="couple_cpf"
                                             >
-                                              CPF
+                                              CPF Cônjuge
                                             </Label>
                                             <div className="position-relative has-icon-right">
                                               <Field
-                                                name="cpf"
-                                                id="cpf"
+                                                name="couple_cpf"
+                                                id="couple_cpf"
                                                 className={`
                                               new-form-padding
                                               form-control
-                                              ${errors.cpf &&
-                                                touched.cpf &&
+                                              ${errors.couple_cpf &&
+                                                touched.couple_cpf &&
                                                 'is-invalid'}
                                             `}
                                                 validate={validateCPF}
                                                 render={({ field }) => (
                                                   <CpfFormat
                                                     {...field}
-                                                    id="cpf"
-                                                    name="cpf"
+                                                    id="couple_cpf"
+                                                    name="couple_cpf"
                                                     placeholder="Ex: 423.123.321-12"
                                                     className={`
                                                   new-form-padding
                                                   form-control
-                                                  ${errors.cpf &&
-                                                    touched.cpf &&
+                                                  ${errors.couple_cpf &&
+                                                    touched.couple_cpf &&
                                                     'is-invalid'}
                                                 `}
-                                                    value={values.cpf}
+                                                    value={values.couple_cpf}
                                                     onValueChange={val =>
-                                                      handleSearchCpf(val.value)
+                                                      handleSearchCoupleCpf(
+                                                        val.value
+                                                      )
                                                     }
                                                   />
                                                 )}
                                               />
-                                              {errors.cpf && touched.cpf ? (
+                                              {errors.couple_cpf &&
+                                              touched.couple_cpf ? (
                                                 <div className="invalid-feedback">
-                                                  {errors.cpf}
+                                                  {errors.couple_cpf}
                                                 </div>
                                               ) : null}
                                               {loading && (
@@ -1509,31 +1794,33 @@ export default function TrainingInviteConfirmation({ match }) {
                                             </div>
                                           </Col>
 
-                                          {!!values.cpf &&
-                                            participant !== null &&
-                                            participant.error === undefined &&
-                                            typeof participant === 'object' && (
+                                          {!!values.couple_cpf &&
+                                            coupleParticipant !== null &&
+                                            coupleParticipant.error ===
+                                              undefined &&
+                                            typeof coupleParticipant ===
+                                              'object' && (
                                               <>
                                                 <Col sm="12" className="mt-2">
-                                                  <Label>Nome</Label>
+                                                  <Label>Nome cônjuge</Label>
                                                   <div className="position-relative has-icon-left">
                                                     <Field
                                                       type="text"
-                                                      name="name"
-                                                      id="name"
+                                                      name="couple_name"
+                                                      id="couple_name"
                                                       className={`
                                                   new-form-padding
                                                   form-control
-                                                  ${errors.name &&
-                                                    touched.name &&
+                                                  ${errors.couple_name &&
+                                                    touched.couple_name &&
                                                     'is-invalid'}
                                                 `}
                                                       autoComplete="off"
                                                     />
-                                                    {errors.name &&
-                                                    touched.name ? (
+                                                    {errors.couple_name &&
+                                                    touched.couple_name ? (
                                                       <div className="invalid-feedback">
-                                                        {errors.name}
+                                                        {errors.couple_name}
                                                       </div>
                                                     ) : null}
                                                     <div className="new-form-control-position">
@@ -1545,31 +1832,32 @@ export default function TrainingInviteConfirmation({ match }) {
                                                   </div>
                                                 </Col>
                                                 <Col sm="12" className="mt-2">
-                                                  <Label>Email</Label>
+                                                  <Label>Email cônjuge</Label>
                                                   <div className="position-relative has-icon-left">
                                                     <Field
-                                                      type="email"
-                                                      name="email"
-                                                      id="email"
+                                                      type="couple_email"
+                                                      name="couple_email"
+                                                      id="couple_email"
                                                       onChange={event =>
                                                         handleSearchEmail(
                                                           event,
-                                                          setFieldValue
+                                                          setFieldValue,
+                                                          true
                                                         )
                                                       }
                                                       className={`
                                                   new-form-padding
                                                   form-control
-                                                  ${errors.email &&
-                                                    touched.email &&
+                                                  ${errors.couple_email &&
+                                                    touched.couple_email &&
                                                     'is-invalid'}
                                                 `}
                                                       autoComplete="off"
                                                     />
-                                                    {errors.email &&
-                                                    touched.email ? (
+                                                    {errors.couple_email &&
+                                                    touched.couple_email ? (
                                                       <div className="invalid-feedback">
-                                                        {errors.email}
+                                                        {errors.couple_email}
                                                       </div>
                                                     ) : null}
                                                     <div className="new-form-control-position">
@@ -1583,31 +1871,32 @@ export default function TrainingInviteConfirmation({ match }) {
                                               </>
                                             )}
 
-                                          {notFoundParticipant === true && (
+                                          {notFoundCoupleParticipant ===
+                                            true && (
                                             <>
                                               <Label className="font-small-3 text-center text-dark text-bold-400 text-uppercase mt-3 mx-auto">
-                                                Complete seu cadastro
+                                                Complete cadastro cônjuge
                                               </Label>
                                               <Col sm="12" className="mt-2">
-                                                <Label>Nome</Label>
+                                                <Label>Nome cônjuge</Label>
                                                 <div className="position-relative has-icon-left">
                                                   <Field
                                                     type="text"
-                                                    name="name"
-                                                    id="name"
+                                                    name="couple_name"
+                                                    id="couple_name"
                                                     className={`
                                                   new-form-padding
                                                   form-control
-                                                  ${errors.name &&
-                                                    touched.name &&
+                                                  ${errors.couple_name &&
+                                                    touched.couple_name &&
                                                     'is-invalid'}
                                                 `}
                                                     autoComplete="off"
                                                   />
-                                                  {errors.name &&
-                                                  touched.name ? (
+                                                  {errors.couple_name &&
+                                                  touched.couple_name ? (
                                                     <div className="invalid-feedback">
-                                                      {errors.name}
+                                                      {errors.couple_name}
                                                     </div>
                                                   ) : null}
                                                   <div className="new-form-control-position">
@@ -1619,31 +1908,32 @@ export default function TrainingInviteConfirmation({ match }) {
                                                 </div>
                                               </Col>
                                               <Col sm="12" className="mt-2">
-                                                <Label>Email</Label>
+                                                <Label>Email cônjuge</Label>
                                                 <div className="position-relative has-icon-left">
                                                   <Field
                                                     type="email"
-                                                    name="email"
-                                                    id="email"
+                                                    name="couple_email"
+                                                    id="couple_email"
                                                     className={`
                                                   new-form-padding
                                                   form-control
-                                                  ${errors.email &&
-                                                    touched.email &&
+                                                  ${errors.couple_email &&
+                                                    touched.couple_email &&
                                                     'is-invalid'}
                                                 `}
                                                     onChange={event =>
                                                       handleSearchEmail(
                                                         event,
-                                                        setFieldValue
+                                                        setFieldValue,
+                                                        true
                                                       )
                                                     }
                                                     autoComplete="off"
                                                   />
-                                                  {errors.email &&
-                                                  touched.email ? (
+                                                  {errors.couple_email &&
+                                                  touched.couple_email ? (
                                                     <div className="invalid-feedback">
-                                                      {errors.email}
+                                                      {errors.couple_email}
                                                     </div>
                                                   ) : null}
                                                   <div className="new-form-control-position">
@@ -1661,20 +1951,20 @@ export default function TrainingInviteConfirmation({ match }) {
                                                   error={errors.radioGroup}
                                                   touched={touched.radioGroup}
                                                   className={`
-                                            new-form-padding
-                                            form-control
-                                            border-0
-                                            ${errors.sex &&
-                                              touched.sex &&
-                                              'is-invalid'}
-                                          `}
+                                                    new-form-padding
+                                                    form-control
+                                                    border-0
+                                                    ${errors.couple_sex &&
+                                                      touched.couple_sex &&
+                                                      'is-invalid'}
+                                                  `}
                                                 >
                                                   <Row className="d-flex justify-content-around">
                                                     {event.defaultEvent
                                                       .sex_type === 'M' && (
                                                       <Field
                                                         component={RadioButton}
-                                                        name="sex"
+                                                        name="couple_sex"
                                                         id="M"
                                                         label="Masculino"
                                                       />
@@ -1683,7 +1973,7 @@ export default function TrainingInviteConfirmation({ match }) {
                                                       .sex_type === 'F' && (
                                                       <Field
                                                         component={RadioButton}
-                                                        name="sex"
+                                                        name="couple_sex"
                                                         id="F"
                                                         label="Feminino"
                                                       />
@@ -1695,7 +1985,7 @@ export default function TrainingInviteConfirmation({ match }) {
                                                           component={
                                                             RadioButton
                                                           }
-                                                          name="sex"
+                                                          name="couple_sex"
                                                           id="M"
                                                           label="Masculino"
                                                         />
@@ -1703,7 +1993,7 @@ export default function TrainingInviteConfirmation({ match }) {
                                                           component={
                                                             RadioButton
                                                           }
-                                                          name="sex"
+                                                          name="couple_sex"
                                                           id="F"
                                                           label="Feminino"
                                                         />
@@ -2941,6 +3231,16 @@ export default function TrainingInviteConfirmation({ match }) {
                                     error = true;
                                   } else if (step.id === 'products') {
                                     if (errorProduct === true) {
+                                      error = true;
+                                    } else {
+                                      error = false;
+                                    }
+                                  } else if (step.id === 'authorization') {
+                                    if (
+                                      errors.church_name ||
+                                      errors.pastor_email ||
+                                      errors.pastor_name
+                                    ) {
                                       error = true;
                                     } else {
                                       error = false;

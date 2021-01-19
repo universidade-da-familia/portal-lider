@@ -25,6 +25,13 @@ export const Types = {
   CONFIRM_INVITE_ORDER_REQUEST: 'CONFIRM_INVITE_ORDER_PARTICIPANT_REQUEST',
   CONFIRM_INVITE_ORDER_SUCCESS: 'CONFIRM_INVITE_ORDER_PARTICIPANT_SUCCESS',
   CONFIRM_INVITE_ORDER_FAILURE: 'CONFIRM_INVITE_ORDER_PARTICIPANT_FAILURE',
+
+  CREATE_PARTICIPANT_TRAINING_REQUEST:
+    'CREATE_PARTICIPANT_TRAINING_PARTICIPANT_REQUEST',
+  CREATE_PARTICIPANT_TRAINING_SUCCESS:
+    'CREATE_PARTICIPANT_TRAINING_PARTICIPANT_SUCCESS',
+  CREATE_PARTICIPANT_TRAINING_FAILURE:
+    'CREATE_PARTICIPANT_TRAINING_PARTICIPANT_FAILURE',
 };
 
 /**
@@ -117,6 +124,22 @@ export default function invite(state = INITIAL_STATE, action) {
         loading: false,
       };
 
+    // CRIAR PARTICIPANTE SEMINARIO
+    case Types.CREATE_PARTICIPANT_TRAINING_REQUEST:
+      return { ...state, loading: true };
+    case Types.CREATE_PARTICIPANT_TRAINING_SUCCESS:
+      return {
+        ...state,
+        error: false,
+        loading: false,
+      };
+    case Types.CREATE_PARTICIPANT_TRAINING_FAILURE:
+      return {
+        ...state,
+        error: true,
+        loading: false,
+      };
+
     // CRIAR PARTICIPANTE NOVO POR INVITE
     case Types.CONFIRM_INVITE_ORDER_REQUEST:
       return { ...state, loading: true };
@@ -202,6 +225,22 @@ export const Creators = {
 
   createByInviteOrderFailure: () => ({
     type: Types.CREATE_BY_INVITE_ORDER_FAILURE,
+  }),
+
+  // CREATE BY INVITE AND CREATE ORDER
+  createParticipantTrainingRequest: data => ({
+    type: Types.CREATE_PARTICIPANT_TRAINING_REQUEST,
+    payload: {
+      data,
+    },
+  }),
+
+  createParticipantTrainingSuccess: () => ({
+    type: Types.CREATE_PARTICIPANT_TRAINING_SUCCESS,
+  }),
+
+  createParticipantTrainingFailure: () => ({
+    type: Types.CREATE_PARTICIPANT_TRAINING_FAILURE,
   }),
 
   // INVITE REQUEST

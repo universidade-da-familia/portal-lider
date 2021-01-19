@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Row, Col } from 'reactstrap';
 
@@ -149,7 +149,76 @@ const ButtonInscription = styled.button`
 `;
 
 export default function Body() {
+  const [singlePrice, setSinglePrice] = useState(null);
+  const [couplePrice, setCouplePrice] = useState(null);
+
   const data = useSelector(state => state.event.data);
+
+  useEffect(() => {
+    if (data !== null) {
+      let auxSumSingle = 0;
+      let auxSumCouple = 0;
+      data.defaultEvent.kit.products.forEach(product => {
+        if (
+          product.product_category === 'book' ||
+          product.product_category === 'manual' ||
+          product.product_category === 'guide'
+        ) {
+          // alianca romance
+          if (data.default_event_id === 50) {
+            auxSumCouple += product.training_price;
+          }
+
+          // financas crown
+          if (data.default_event_id === 54) {
+            auxSumSingle += product.training_price;
+            auxSumCouple += product.training_price;
+          }
+
+          // yes
+          if (data.default_event_id === 64) {
+            auxSumSingle += product.training_price;
+            auxSumCouple += product.training_price;
+          }
+
+          // habitudes
+          if (data.default_event_id === 63) {
+            auxSumSingle += product.training_price;
+            auxSumCouple += product.training_price;
+          }
+
+          // hombridade
+          if (data.default_event_id === 56) {
+            auxSumSingle += product.training_price;
+          }
+
+          // mulher unica
+          if (data.default_event_id === 60) {
+            auxSumSingle += product.training_price;
+          }
+
+          // mulher unica
+          if (data.default_event_id === 60) {
+            auxSumSingle += product.training_price;
+          }
+
+          // mulher prospera
+          if (data.default_event_id === 59) {
+            auxSumSingle += product.training_price;
+          }
+
+          // paternidade biblica
+          if (data.default_event_id === 65) {
+            auxSumSingle += product.training_price;
+            auxSumCouple += product.training_price;
+          }
+        }
+      });
+
+      setSinglePrice(auxSumSingle);
+      setCouplePrice(auxSumCouple);
+    }
+  }, [data]);
 
   return (
     data !== null && (
@@ -298,7 +367,8 @@ export default function Body() {
               </Col>
               <Col className="px-4">
                 <TextSection2>
-                  Essa capacitação faz tal coisa muito louca
+                  Ser membro de uma igreja evangélica <br />
+                  Ter mais de 18 anos.
                 </TextSection2>
               </Col>
             </Row>
@@ -324,40 +394,44 @@ export default function Body() {
                 <TitleSection3>Investimento</TitleSection3>
               </Col>
               <Col>
-                <Row>
-                  <Col>
-                    <Row
-                      className="flex-column m-4"
-                      style={{
-                        border: '1px solid #999999',
-                        borderRadius: '10px',
-                        width: 'auto',
-                      }}
-                    >
-                      <Col>
-                        <Section3BoxTitle>Individual</Section3BoxTitle>
-                      </Col>
-                      <Col>
-                        <Section3BoxPrice>R$ 150,00</Section3BoxPrice>
-                      </Col>
-                    </Row>
-                  </Col>
-                  <Col>
-                    <Row
-                      className="flex-column m-4"
-                      style={{
-                        border: '1px solid #999999',
-                        borderRadius: '10px',
-                      }}
-                    >
-                      <Col>
-                        <Section3BoxTitle>Casal</Section3BoxTitle>
-                      </Col>
-                      <Col>
-                        <Section3BoxPrice>R$ 200,00</Section3BoxPrice>
-                      </Col>
-                    </Row>
-                  </Col>
+                <Row className="flex-1 justify-content-center">
+                  {singlePrice > 0 && (
+                    <Col>
+                      <Row
+                        className="flex-column m-4 w3-row"
+                        style={{
+                          border: '1px solid #999999',
+                          borderRadius: '10px',
+                          width: '50%',
+                        }}
+                      >
+                        <Col>
+                          <Section3BoxTitle>Individual</Section3BoxTitle>
+                        </Col>
+                        <Col>
+                          <Section3BoxPrice>R$ 150,00</Section3BoxPrice>
+                        </Col>
+                      </Row>
+                    </Col>
+                  )}
+                  {couplePrice > 0 && (
+                    <Col sm="12" md="6" lg="4">
+                      <Row
+                        className="flex-column m-4"
+                        style={{
+                          border: '1px solid #999999',
+                          borderRadius: '10px',
+                        }}
+                      >
+                        <Col>
+                          <Section3BoxTitle>Casal</Section3BoxTitle>
+                        </Col>
+                        <Col>
+                          <Section3BoxPrice>R$ 200,00</Section3BoxPrice>
+                        </Col>
+                      </Row>
+                    </Col>
+                  )}
                 </Row>
               </Col>
               <Col>
@@ -369,7 +443,12 @@ export default function Body() {
                 className="mt-3"
                 style={{ textAlign: 'center', marginBottom: '100px' }}
               >
-                <ButtonInscription className="p-2">
+                <ButtonInscription
+                  className="p-2"
+                  onClick={() => {
+                    window.location = `/evento/${data.id}/confirmacao-treinamento`;
+                  }}
+                >
                   Inscrever-me
                 </ButtonInscription>
               </Col>
