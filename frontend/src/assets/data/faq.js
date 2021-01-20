@@ -17,8 +17,10 @@ export default [
         description: 'Quais materiais posso adquirir pelo Portal do Líder?',
         answer: (
           <p>
-            Você poderá adquirir todos os materiais didáticos dos cursos para os
-            quais está habilitado como líder.
+            O líder pode comprar quantidade indeterminada de materiais didáticos
+            de todos os cursos para os quais está habilitado. Já o participante
+            só pode comprar, para si próprio, o material didático correspondente
+            ao curso no qual está inscrito.
           </p>
         ),
       },
@@ -28,10 +30,10 @@ export default [
         answer: (
           <p>
             Não. Até o momento, os pedidos no Portal do Líder são feitos
-            pessoalmente pelo líder cadastrado. Pedidos em nome da igreja ou
-            outra pessoa jurídica deverão ser feitos pelo telefone (14) 3405
-            8500, pelo WhatsApp (14) 9 8163 0195 ou pelo e-mail
-            pedidos@udf.org.br
+            pessoalmente pelo líder ou participante cadastrado. Pedidos em nome
+            da igreja ou outra pessoa jurídica deverão ser feitos pelo telefone
+            (14) 3405 8500, pelo WhatsApp (14) 9 8163 0195 ou pelo e-mail
+            pedidos@udf.org.br.
           </p>
         ),
       },
@@ -77,9 +79,11 @@ export default [
           <p>
             Há duas formas de pagamento possíveis: boleto bancário e cartão de
             crédito. Para compras de qualquer valor com pagamento mediante
-            boleto bancário, o prazo é de 30 dias. No cartão de crédito, pedidos
-            de até R$ 850,00 podem ser parcelados em duas vezes; a partir de R$
-            850,00, é possível parcelar em até três vezes.
+            boleto bancário, o pagamento é à vista (o boleto tem vencimento para
+            3 dias úteis e o pedido só é liberado após a identificação do
+            pagamento do boleto). No cartão de crédito, pedidos de até R$ 250,00
+            podem ser parcelados em duas vezes; a partir de R$ 250,00, é
+            possível parcelar em até três vezes.
           </p>
         ),
       },
@@ -118,15 +122,25 @@ export default [
     category: 'Frete e envio',
     questions: [
       {
-        description: 'Quais são as condições de frete grátis?',
+        description: 'Quais são as condições de frete?',
         answer: (
           <p>
-            A Universidade da Família oferece frete grátis para todas as compras
-            no Portal do Líder que contenham, ao menos, quatro manuais do aluno
-            de qualquer dos cursos. A opção de frete grátis é selecionada
-            automaticamente pelo nosso sistema e não pode ser alterada. Para sua
-            maior conveniência, o Portal oferece outras opões de transportadoras
-            e de prazo de envio, porém sem a gratuidade do frete.
+            A partir de 01/01/2021, a Universidade da Família deixou de oferecer
+            frete grátis para materiais didáticos. Ao fazer seu pedido, você
+            deverá selecionar a opção de frete mais conveniente. O valor será
+            acrescentado ao preço final do pedido.
+          </p>
+        ),
+      },
+      {
+        description:
+          'Posso reunir os materiais do meu grupo num só pedido para otimizar o frete?',
+        answer: (
+          <p>
+            Sim. Nesse caso, o pedido deverá ser feito pelo líder, pois só ele
+            está autorizado a comprar o material na quantidade suficiente para
+            todos os participantes do grupo - o participante só pode comprar
+            diretamente para si próprio.
           </p>
         ),
       },
@@ -166,31 +180,32 @@ export default [
           'Como funciona o envio dos certificados de conclusão de curso?',
         answer: (
           <p>
-            Os certificados impressos são enviados para o endereço do líder após
-            a confirmação da regularidade do cadastro do grupo. Assim, se o
-            líder cadastrar o grupo até a primeira reunião, receberá os
-            certificados antes da última lição semanal do curso.
+            Desde 01/01/2020, a Universidade da Família emite certificados de
+            conclusão de curso somente em formato digital. Após o líder
+            cadastrar o grupo no Portal e respeitada a exigência mínima de
+            frequência de cada curso, os certificados estarão disponíveis para
+            download pelo líder.
           </p>
         ),
       },
-      {
-        description: 'Qual o prazo para recebimento dos certificados?',
-        answer: (
-          <p>O prazo é de 15 a 20 dias, contados da data de envio pela UDF.</p>
-        ),
-      },
-      {
-        description:
-          'Existe opção mais rápida para recebimento dos certificados?',
-        answer: (
-          <p>
-            Caso os certificados de seu grupo ainda não tenham sido enviados,
-            você pode solicitar à secretaria do ministério de seu curso que
-            envie o certificado mediante uma opção de frete com prazo mais
-            curto. Nesse caso, o frete será cobrado.
-          </p>
-        ),
-      },
+      // {
+      //   description: 'Qual o prazo para recebimento dos certificados?',
+      //   answer: (
+      //     <p>O prazo é de 15 a 20 dias, contados da data de envio pela UDF.</p>
+      //   ),
+      // },
+      // {
+      //   description:
+      //     'Existe opção mais rápida para recebimento dos certificados?',
+      //   answer: (
+      //     <p>
+      //       Caso os certificados de seu grupo ainda não tenham sido enviados,
+      //       você pode solicitar à secretaria do ministério de seu curso que
+      //       envie o certificado mediante uma opção de frete com prazo mais
+      //       curto. Nesse caso, o frete será cobrado.
+      //     </p>
+      //   ),
+      // },
       {
         description:
           'Meu grupo já chegou à última lição do curso, mas não recebi os certificados. O que devo fazer?',
@@ -204,29 +219,29 @@ export default [
               <li>Hombridade: (14) 9 8195 0053</li>
               <li>Mulher Única: (14) 9 8195 0052</li>
               <li>Crown Finanças: (14) 9 8219 0045</li>{' '}
-              <li>A Mulher Que Prospera: (14) 9 8163 0233</li>
+              <li>A Mulher Que Prospera: (14) 9 8195 0051</li>
               <li>Aliança e Romance: (14) 9 8219 0071</li>
               <li>Habitudes e Yes!: (14) 9 8206 3773</li>
               <li>Paternidade Bíblica: (14) 9 8163 0301</li>
             </ul>
-            <br />
+            {/* <br />
             Caso o não recebimento dos certificados tenha ocorrido por falta de
             cadastro do grupo ou por irregularidades nos relatórios semanais, o
             líder receberá os arquivos em PDF para impressão e distribuição
-            direta ao grupo.
+            direta ao grupo. */}
           </p>
         ),
       },
-      {
-        description: 'Posso receber segunda via dos certificados do meu grupo?',
-        answer: (
-          <p>
-            A UDF somente envia segunda via de certificados de grupo mediante
-            arquivo em PDF. Você deve fazer sua solicitação junto à secretaria
-            do ministério de seu curso.
-          </p>
-        ),
-      },
+      // {
+      //   description: 'Posso receber segunda via dos certificados do meu grupo?',
+      //   answer: (
+      //     <p>
+      //       A UDF somente envia segunda via de certificados de grupo mediante
+      //       arquivo em PDF. Você deve fazer sua solicitação junto à secretaria
+      //       do ministério de seu curso.
+      //     </p>
+      //   ),
+      // },
     ],
   },
   {
@@ -234,13 +249,18 @@ export default [
     questions: [
       {
         description:
-          'Até quando posso cadastrar os participantes do meu grupo?',
+          'Até quando o líder deve cadastrar os participantes do meu grupo?',
         answer: (
           <p>
-            Você deve cadastrar os participantes do seu grupo até a primeira
-            lição semanal. Essa ação é importante para a ativação do grupo junto
-            à Universidade da Família e outros processos decorrentes disso, como
-            a emissão e envio dos certificados.
+            O líder deve cadastrar os participantes de seu grupo (com nome e
+            e-mail) imediatamente à confirmação da participação deles no curso.
+            Feito isso, cada participante receberá um convite por e-mail para
+            acessar o Portal do Líder e fazer seu cadastro. Na sequência, o
+            participante também estará habilitado a fazer o pedido de seu
+            material didático.
+            <br />O cadastro do grupo no Portal do Líder é indispensável para a
+            ativação do grupo junto à Universidade da Família e outros processos
+            decorrentes disso, como a emissão dos certificados.
           </p>
         ),
       },
@@ -263,15 +283,15 @@ export default [
         answer: (
           <p>
             Cadastro de estrangeiros que não possuem CPF deverão ser feitos
-            junto às secretarias do ministério de seu curso.Entre em contato
+            junto à secretaria do ministério de seu curso. Entre em contato
             pelos números abaixo (WhatsApp):
             <br />
             <br />
             <ul>
               <li>Hombridade: (14) 9 8195 0053</li>
               <li>Mulher Única: (14) 9 8195 0052</li>
-              <li>Crown Finanças: (14) 9 8219 0045</li>
-              <li>A Mulher Que Prospera: (14) 9 8163 0233</li>
+              <li>Crown Finanças: (14) 9 8219 0045</li>{' '}
+              <li>A Mulher Que Prospera: (14) 9 8195 0051</li>
               <li>Aliança e Romance: (14) 9 8219 0071</li>
               <li>Habitudes e Yes!: (14) 9 8206 3773</li>
               <li>Paternidade Bíblica: (14) 9 8163 0301</li>
@@ -279,6 +299,53 @@ export default [
           </p>
         ),
       },
+      // {
+      //   description:
+      //     'Até quando posso cadastrar os participantes do meu grupo?',
+      //   answer: (
+      //     <p>
+      //       Você deve cadastrar os participantes do seu grupo até a primeira
+      //       lição semanal. Essa ação é importante para a ativação do grupo junto
+      //       à Universidade da Família e outros processos decorrentes disso, como
+      //       a emissão e envio dos certificados.
+      //     </p>
+      //   ),
+      // },
+      // {
+      //   description:
+      //     'O e-mail é campo obrigatório no cadastro do participante, mas uma pessoa do meu grupo não tem. O que fazer?',
+      //   answer: (
+      //     <p>
+      //       O e-mail é o canal para a Universidade da Família solicitar o
+      //       consentimento do participante para cadastrar seus dados pessoais.
+      //       Trata-se de uma exigência legal. Se alguém de seu grupo não possui
+      //       e-mail, pedimos que oriente essa pessoa a criar uma conta pessoal
+      //       para essa finalidade.
+      //     </p>
+      //   ),
+      // },
+      // {
+      //   description:
+      //     'O CPF é campo obrigatório no cadastro do participante, mas meu grupo tem um estrangeiro que não possui esse documento. Como fazer?',
+      //   answer: (
+      //     <p>
+      //       Cadastro de estrangeiros que não possuem CPF deverão ser feitos
+      //       junto às secretarias do ministério de seu curso.Entre em contato
+      //       pelos números abaixo (WhatsApp):
+      //       <br />
+      //       <br />
+      //       <ul>
+      //         <li>Hombridade: (14) 9 8195 0053</li>
+      //         <li>Mulher Única: (14) 9 8195 0052</li>
+      //         <li>Crown Finanças: (14) 9 8219 0045</li>
+      //         <li>A Mulher Que Prospera: (14) 9 8163 0233</li>
+      //         <li>Aliança e Romance: (14) 9 8219 0071</li>
+      //         <li>Habitudes e Yes!: (14) 9 8206 3773</li>
+      //         <li>Paternidade Bíblica: (14) 9 8163 0301</li>
+      //       </ul>
+      //     </p>
+      //   ),
+      // },
     ],
   },
 ];
