@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Row, Col } from 'reactstrap';
+import { Row, Col, CardImg } from 'reactstrap';
 
 import styled from 'styled-components';
+
+import contato from '~/assets/img/contato.svg';
+import dataEvento from '~/assets/img/data-evento.svg';
+import email from '~/assets/img/email.svg';
+import fone from '~/assets/img/fone.svg';
+import informacoes from '~/assets/img/informacoes.svg';
+import investimento from '~/assets/img/investimento.svg';
+import local from '~/assets/img/local.svg';
+import perfil from '~/assets/img/perfil.svg';
+import preRequisitos from '~/assets/img/pre-requisitos.svg';
+import treinador from '~/assets/img/treinador.svg';
 
 // import globals from '../utils/globals';
 
@@ -243,10 +254,32 @@ export default function Body() {
             <Row className="flex-column">
               <Col className="pb-4 invisible"> .</Col>
               <Col className="pb-1">
-                <LocalEvent>{`${data.city}/${data.uf}`}</LocalEvent>
+                <Row>
+                  <Col sm="1" md="1" lg="1">
+                    <CardImg
+                      alt="local"
+                      className="mb-2 width-35 img-fluid"
+                      src={local}
+                    />
+                  </Col>
+                  <Col sm="11" md="11" lg="11">
+                    <LocalEvent>{`${data.city}/${data.uf}`}</LocalEvent>
+                  </Col>
+                </Row>
               </Col>
               <Col className="pb-1">
-                <LocalEvent>12 a 13 de Dezembro de 2020</LocalEvent>
+                <Row>
+                  <Col sm="1" md="1" lg="1">
+                    <CardImg
+                      alt="dataEvento"
+                      className="mb-2 width-35 img-fluid"
+                      src={dataEvento}
+                    />
+                  </Col>
+                  <Col sm="11" md="11" lg="11">
+                    <LocalEvent>12 a 13 de Dezembro de 2020</LocalEvent>
+                  </Col>
+                </Row>
               </Col>
               <Col>
                 {data !== null && (
@@ -323,16 +356,33 @@ export default function Body() {
           >
             <Col className="p-5">
               <Row className="flex-column">
-                <Col>Image</Col>
                 <Col>
-                  <TitleBoxTrainer className="mb-4">
+                  <CardImg
+                    alt="treinador"
+                    className="mb-2 width-50 img-fluid"
+                    src={treinador}
+                  />
+                </Col>
+                <Col>
+                  <TitleBoxTrainer className="mb-4 mt-2">
                     Treinadores
                   </TitleBoxTrainer>
                 </Col>
                 {data.organizators.map(organizator => {
                   return (
                     <Col>
-                      <TextBoxTrainer>{organizator.name}</TextBoxTrainer>
+                      <Row>
+                        <Col sm="1" md="1" lg="1">
+                          <CardImg
+                            alt="perfil"
+                            className="mb-2 width-25 img-fluid"
+                            src={perfil}
+                          />
+                        </Col>
+                        <Col sm="11" md="11" lg="11">
+                          <TextBoxTrainer>{organizator.name}</TextBoxTrainer>
+                        </Col>
+                      </Row>
                     </Col>
                   );
                 })}
@@ -344,15 +394,49 @@ export default function Body() {
             </Col>
             <Col className="p-5">
               <Row className="flex-column">
-                <Col>Image</Col>
                 <Col>
-                  <TitleBoxTrainer className="mb-4">Contato</TitleBoxTrainer>
+                  <CardImg
+                    alt="contato"
+                    className="mb-2 width-50 img-fluid"
+                    src={contato}
+                  />
                 </Col>
                 <Col>
-                  <TextBoxTrainer>{data.organizators[0].email}</TextBoxTrainer>
+                  <TitleBoxTrainer className="mb-4 mt-2">
+                    Contato
+                  </TitleBoxTrainer>
                 </Col>
                 <Col>
-                  <TextBoxTrainer>{data.organizators[0].phone}</TextBoxTrainer>
+                  <Row>
+                    <Col sm="1" md="1" lg="1">
+                      <CardImg
+                        alt="email"
+                        className="mb-2 width-25 img-fluid"
+                        src={email}
+                      />
+                    </Col>
+                    <Col sm="11" md="11" lg="11">
+                      <TextBoxTrainer>
+                        {data.organizators[0].email}
+                      </TextBoxTrainer>
+                    </Col>
+                  </Row>
+                </Col>
+                <Col>
+                  <Row>
+                    <Col sm="1" md="1" lg="1">
+                      <CardImg
+                        alt="fone"
+                        className="mb-2 width-25 img-fluid"
+                        src={fone}
+                      />
+                    </Col>
+                    <Col sm="11" md="11" lg="11">
+                      <TextBoxTrainer>
+                        {data.organizators[0].phone}
+                      </TextBoxTrainer>
+                    </Col>
+                  </Row>
                 </Col>
               </Row>
             </Col>
@@ -362,6 +446,13 @@ export default function Body() {
         <Row>
           <Col sm="12" md="6" lg="6" className="p-5">
             <Row className="flex-column">
+              <Col>
+                <CardImg
+                  alt="pre-requisitos"
+                  className="ml-3 mb-4 width-125 img-fluid"
+                  src={preRequisitos}
+                />
+              </Col>
               <Col className="px-4 pb-5">
                 <TitleSection2>Pré-requisitos</TitleSection2>
               </Col>
@@ -375,6 +466,13 @@ export default function Body() {
           </Col>
           <Col sm="12" md="6" lg="6" className="p-5">
             <Row className="flex-column">
+              <Col>
+                <CardImg
+                  alt="informacoes"
+                  className="ml-3 mb-4 width-125 img-fluid"
+                  src={informacoes}
+                />
+              </Col>
               <Col className="px-4 pb-5">
                 <TitleSection2>Informações adicionais</TitleSection2>
               </Col>
@@ -390,6 +488,13 @@ export default function Body() {
         <Row style={{ backgroundColor: '#ffffff' }}>
           <Col sm="12" md="12" lg="12" className="p-5">
             <Row className="flex-column">
+              <Col className="text-center">
+                <CardImg
+                  alt="investimento"
+                  className="mb-4 width-125 img-fluid"
+                  src={investimento}
+                />
+              </Col>
               <Col>
                 <TitleSection3>Investimento</TitleSection3>
               </Col>

@@ -30,6 +30,9 @@ const LazyGroupCreate = lazy(() =>
 );
 
 const LazyTrainings = lazy(() => import('~/views/events/trainings/index'));
+const LazyTrainingEdit = lazy(() =>
+  import('~/views/events/trainings/edit/index')
+);
 
 const LazyTrainingCreate = lazy(() =>
   import('~/views/events/trainings/create/index')
@@ -278,6 +281,16 @@ export default function Router() {
           render={matchprops => (
             <Suspense fallback={<Spinner />}>
               <LazyTrainings {...matchprops} />
+            </Suspense>
+          )}
+        />
+
+        <ProtectedMainLayoutRoutes // treinamentos EDITAR
+          exact
+          path="/eventos/treinamento/:event_id/editar"
+          render={matchprops => (
+            <Suspense fallback={<Spinner />}>
+              <LazyTrainingEdit {...matchprops} />
             </Suspense>
           )}
         />
