@@ -96,7 +96,7 @@ import Certificate from '~/views/certificate/index';
 import CustomTabs from '../../../../components/tabs/default';
 import ChurchsTable from './churchsTable';
 import { formatName } from './formatName';
-import InvitedTable from './invitedTable';
+// import InvitedTable from './invitedTable';
 import ParticipantTable from './participantTable';
 import QuitterTable from './quitterTable';
 
@@ -1977,7 +1977,7 @@ export default function UserProfile({ match, className }) {
                           )}
                           onClick={() => toggle('4')}
                         >
-                          Aulas
+                          Cronograma
                         </NavLink>
                       </li>
                     </ul>
@@ -3170,7 +3170,7 @@ export default function UserProfile({ match, className }) {
                       />
                     </CardBody>
                   </Card>
-                  <Card>
+                  {/* <Card>
                     <CardBody>
                       <div className="d-flex justify-content-between">
                         <Badge color="warning" className="align-self-center">
@@ -3181,7 +3181,7 @@ export default function UserProfile({ match, className }) {
                         TabContent={<InvitedTable data={invites} />}
                       />
                     </CardBody>
-                  </Card>
+                  </Card> */}
                 </Col>
               </Row>
             </>
