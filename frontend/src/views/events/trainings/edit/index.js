@@ -25,12 +25,12 @@ import {
   Edit,
   Plus,
 } from 'react-feather';
-import { Datepicker } from 'react-formik-ui';
+// import { Datepicker } from 'react-formik-ui';
 import { FaChurch } from 'react-icons/fa';
 import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { toastr } from 'react-redux-toastr';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import 'react-datepicker/dist/react-datepicker.css';
 import { BounceLoader } from 'react-spinners';
 import {
@@ -289,9 +289,14 @@ export default function UserProfile({ match, className }) {
     apiCity: '',
     uf: '',
     city: '',
+    street: '',
+    street_number: '',
+    neighborhood: '',
+    complement: '',
     initialDate: '',
     endDate: '',
     modality: '',
+    is_public: '',
     isAdminPrinted: false,
   });
   const [loadCep, setLoadCep] = useState(false);
@@ -358,16 +363,16 @@ export default function UserProfile({ match, className }) {
   const churchs = useSelector(state => state.church.data);
   const loadingChurchs = useSelector(state => state.church.loading);
 
-  const DatepickerButton = ({ value, onClick }) => (
-    <Button
-      outline
-      color="secondary"
-      className="form-control height-38"
-      onClick={onClick}
-    >
-      {value}
-    </Button>
-  );
+  // const DatepickerButton = ({ value, onClick }) => (
+  //   <Button
+  //     outline
+  //     color="secondary"
+  //     className="form-control height-38"
+  //     onClick={onClick}
+  //   >
+  //     {value}
+  //   </Button>
+  // );
 
   const InputFeedback = ({ error }) =>
     error ? <div className={classnames('input-feedback')}>{error}</div> : null;
@@ -535,9 +540,14 @@ export default function UserProfile({ match, className }) {
         city: event_data.city || '',
         apiUf: event_data.uf || '',
         apiCity: event_data.city || '',
+        street: event_data.street,
+        street_number: event_data.street_number,
+        neighborhood: event_data.neighborhood,
+        complement: event_data.complement,
         initialDate: event_data.start_date,
         endDate: event_data.end_date,
         modality: event_data.modality,
+        is_public: event_data.is_public,
         isAdminPrinted: event_data.is_admin_printed,
       });
     }
@@ -1218,15 +1228,15 @@ export default function UserProfile({ match, className }) {
     }
   }
 
-  function verifyInscriptionsFinished(e) {
-    if (event_data.is_inscription_finished === false) {
-      e.preventDefault();
-      toastr.confirm('Finalize as inscrições primeiro!', {
-        onOk: () => {},
-        disableCancel: true,
-      });
-    }
-  }
+  // function verifyInscriptionsFinished(e) {
+  //   if (event_data.is_inscription_finished === false) {
+  //     e.preventDefault();
+  //     toastr.confirm('Finalize as inscrições primeiro!', {
+  //       onOk: () => {},
+  //       disableCancel: true,
+  //     });
+  //   }
+  // }
 
   function handleSubmitDetails(values) {
     if (values.country === '30') {
@@ -1245,9 +1255,14 @@ export default function UserProfile({ match, className }) {
       country: values.country,
       uf: values.uf,
       city: values.city,
+      street: values.street,
+      street_number: values.street_number,
+      neighborhood: values.neighborhood,
+      complement: values.complement,
       start_date: values.initialDate,
       end_date: values.endDate,
       modality: values.modality,
+      is_public: values.is_public,
       is_admin_printed: values.isAdminPrinted,
       admin_print_date:
         values.isAdminPrinted && profile_data.admin ? new Date() : null,
@@ -1387,6 +1402,12 @@ export default function UserProfile({ match, className }) {
     const modality = event.target.value;
 
     setFieldValue('modality', modality);
+  }
+
+  function handleIsPublicChange(event, setFieldValue) {
+    const is_public = event.target.value;
+
+    setFieldValue('is_public', is_public);
   }
 
   function handleCountryChange(event, setFieldValue) {
@@ -1587,6 +1608,10 @@ export default function UserProfile({ match, className }) {
           cep: cep_data.cep.replace('-', ''),
           uf: cep_data.uf,
           city: cep_data.localidade,
+          street: cep_data.logradouro || eventDetails.street,
+          street_number: eventDetails.street_number,
+          neighborhood: cep_data.bairro || eventDetails.neighborhood,
+          complement: cep_data.complemento || eventDetails.complement,
         });
       }
     }
@@ -2355,7 +2380,6 @@ export default function UserProfile({ match, className }) {
                             </Row>
                           )}
 
-                          {/*
                           <Row>
                             <Col sm="12" md="8" lg="8">
                               <FormGroup>
@@ -2365,6 +2389,7 @@ export default function UserProfile({ match, className }) {
                                     type="text"
                                     placeholder="Rua"
                                     autoComplete="street"
+                                    disabled={cep_loading}
                                     name="street"
                                     id="street"
                                     className={`
@@ -2423,6 +2448,7 @@ export default function UserProfile({ match, className }) {
                                     type="text"
                                     placeholder="Bairro"
                                     autoComplete="neighborhood"
+                                    disabled={cep_loading}
                                     name="neighborhood"
                                     id="neighborhood"
                                     className={`
@@ -2451,6 +2477,7 @@ export default function UserProfile({ match, className }) {
                                   <Field
                                     type="text"
                                     autoComplete="complement"
+                                    disabled={cep_loading}
                                     id="complement"
                                     name="complement"
                                     placeholder="Ex: Apartamento 1"
@@ -2463,9 +2490,8 @@ export default function UserProfile({ match, className }) {
                               </FormGroup>
                             </Col>
                           </Row>
-                           */}
 
-                          <Row>
+                          {/* <Row>
                             <Col xl="3" lg="4" md="5" sm="12">
                               <FormGroup>
                                 <Label for="initialDate">Inicio</Label>
@@ -2540,9 +2566,35 @@ export default function UserProfile({ match, className }) {
                                 </div>
                               </FormGroup>
                             </Col>
-                          </Row>
+                          </Row> */}
 
                           <Row>
+                            <Col sm="4">
+                              <FormGroup>
+                                <Label>É público</Label>
+                                <Input
+                                  type="select"
+                                  id="is_public"
+                                  name="is_public"
+                                  onChange={e => {
+                                    handleIsPublicChange(e, setFieldValue);
+                                  }}
+                                >
+                                  <option
+                                    value="true"
+                                    selected={eventDetails.is_public === true}
+                                  >
+                                    Sim
+                                  </option>
+                                  <option
+                                    value="false"
+                                    selected={eventDetails.is_public === false}
+                                  >
+                                    Não
+                                  </option>
+                                </Input>
+                              </FormGroup>
+                            </Col>
                             <Col sm="4">
                               <FormGroup>
                                 <Label>Modalidade</Label>
@@ -3187,7 +3239,7 @@ export default function UserProfile({ match, className }) {
             </>
           </TabPane>
 
-          {/* AULAS */}
+          {/* CRONOGRAMA */}
           <TabPane tabId="4">
             <Row>
               <Col xs="12">
@@ -3195,46 +3247,29 @@ export default function UserProfile({ match, className }) {
                   <CardBody>
                     <div className="grid-hover p-0 py-4">
                       <Row className="justify-content-around align-items-center">
-                        {event_data.lessonReports.map(lessonReport => {
-                          return (
-                            <div
-                              className="lesson-container"
-                              key={lessonReport.id}
-                            >
-                              <figure
-                                className={`${
-                                  lessonReport.is_finished
-                                    ? 'effect-finished'
-                                    : 'effect-chico'
-                                }`}
-                              >
-                                <img
-                                  src={lessonReport.lesson.img_url}
-                                  alt="img1"
-                                />
-                                <figcaption>
-                                  <div>
-                                    <h2>
-                                      <span>{lessonReport.lesson.title}</span>
-                                    </h2>
-                                    {lessonReport.is_finished && (
-                                      <h6 className="font-weight-bold">
-                                        <em>(Aula concluida)</em>
-                                      </h6>
-                                    )}
-                                    <p className="white">
-                                      {lessonReport.lesson.description}
-                                    </p>
-                                  </div>
-                                  <Link
-                                    onClick={e => verifyInscriptionsFinished(e)}
-                                    to={`/eventos/grupo/${event_data.id}/editar/aula/${lessonReport.id}`}
-                                  />
-                                </figcaption>
-                              </figure>
-                            </div>
-                          );
-                        })}
+                        <Col>
+                          {event_data.schedules.map(schedule => {
+                            return (
+                              <>
+                                <Row className="flex-column">
+                                  <Col className="my-2">
+                                    <h4>
+                                      {moment(schedule.date).format(
+                                        'DD/MM/YYYY'
+                                      )}
+                                    </h4>
+                                  </Col>
+                                  <Col className="my-2">
+                                    <div>{`Início: ${schedule.start_time}`}</div>
+                                  </Col>
+                                  <Col className="border-bottom-grey border-bottom-lighten-4 mt-2 mb-4">
+                                    <div className="mb-3">{`Fim: ${schedule.end_time}`}</div>
+                                  </Col>
+                                </Row>
+                              </>
+                            );
+                          })}
+                        </Col>
                       </Row>
                     </div>
                   </CardBody>

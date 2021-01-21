@@ -522,9 +522,9 @@ export default function OrderCreate() {
         // if (value >= 7) {
         //   options.push('1-Treinamento de treinadores');
         // }
-        // if (value >= 6) {
-        //   options.push('3-Seminário');
-        // }
+        if (value >= 6) {
+          options.push('3-Seminário');
+        }
         // if (value >= 5) {
         //   options.push('2-Capacitação de líderes');
         // }
