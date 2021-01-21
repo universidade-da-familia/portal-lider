@@ -95,8 +95,6 @@ export default [
             O boleto bancário é gerado no momento da finalização do pedido. Ele
             é enviado por e-mail e também fica disponível para download, a
             qualquer momento, no seu histórico de pedidos registrado no Portal.
-            Além disso, o boleto é enviado ao seu endereço juntamente com o seu
-            pedido.
             <br />
             Como o boleto é enviado pela plataforma de pagamentos PayU, procure,
             na sua caixa de e-mails, mensagem deste remetente.
@@ -180,7 +178,7 @@ export default [
           'Como funciona o envio dos certificados de conclusão de curso?',
         answer: (
           <p>
-            Desde 01/01/2020, a Universidade da Família emite certificados de
+            Desde 01/01/2021, a Universidade da Família emite certificados de
             conclusão de curso somente em formato digital. Após o líder
             cadastrar o grupo no Portal e respeitada a exigência mínima de
             frequência de cada curso, os certificados estarão disponíveis para
