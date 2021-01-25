@@ -618,9 +618,9 @@ export default function TrainingCreate({ className }) {
                                 Online
                               </option>
 
-                              <option key="misto" value="Misto">
+                              {/* <option key="misto" value="Misto">
                                 Misto
-                              </option>
+                              </option> */}
                             </Field>
                             {errors.modality && touched.modality ? (
                               <div className="invalid-feedback">
@@ -932,6 +932,8 @@ export default function TrainingCreate({ className }) {
                                 onClick={() =>
                                   push({
                                     date: '',
+                                    start_time: '',
+                                    end_time: '',
                                   })
                                 }
                               >
@@ -1077,97 +1079,37 @@ export default function TrainingCreate({ className }) {
                             </>
                           )}
                         </Row>
-
-                        {/* {values.country === '30' && (
+                        {values.country !== '30' && (
                           <Row>
-                            <Col sm="4">
+                            <Col lg="8" md="8" sm="12">
                               <FormGroup>
-                                <Label for="cep">CEP</Label>
-                                <div className="position-relative has-icon-right">
-                                  <CepFormat
-                                    autoComplete="cep"
-                                    id="cep"
-                                    name="cep"
-                                    placeholder="Ex: 17580-000"
-                                    value={values.cep}
+                                <Label for="address_name">
+                                  Local do evento
+                                </Label>
+                                <div className="position-relative">
+                                  <Field
+                                    type="text"
+                                    placeholder="Ex: Igreja do centro da cidade"
+                                    id="address_name"
+                                    name="address_name"
                                     className={`
-                                        form-control
-                                        ${errors &&
-                                          errors.cep &&
-                                          touched &&
-                                          touched.cep &&
-                                          'is-invalid'}
-                                      `}
-                                    onValueChange={val => {
-                                      setLoadCep(true);
-                                      handleCep(
-                                        val.value,
-                                        setFieldValue,
-                                        values
-                                      );
-                                    }}
+                                  form-control
+                                  ${errors.address_name &&
+                                    touched.address_name &&
+                                    'is-invalid'}
+                                `}
                                   />
-                                  {errors.cep && touched.cep ? (
+                                  {errors.address_name &&
+                                  touched.address_name ? (
                                     <div className="invalid-feedback">
-                                      {errors.cep}
+                                      {errors.address_name}
                                     </div>
                                   ) : null}
-                                  {cep_loading && (
-                                    <div className="form-control-position">
-                                      <RefreshCw
-                                        size={14}
-                                        color="#212529"
-                                        className="spinner"
-                                      />
-                                    </div>
-                                  )}
                                 </div>
                               </FormGroup>
                             </Col>
-                            <Col sm="3">
-                              <FormGroup>
-                                <Label for="uf">Estado</Label>
-                                <Field
-                                  type="text"
-                                  readOnly
-                                  id="uf"
-                                  name="uf"
-                                  // onChange={handleChange}
-                                  className={`
-                                  form-control
-                                  ${errors.uf && touched.uf && 'is-invalid'}
-                                `}
-                                />
-                                {errors.uf && touched.uf ? (
-                                  <div className="invalid-feedback">
-                                    {errors.uf}
-                                  </div>
-                                ) : null}
-                              </FormGroup>
-                            </Col>
-                            <Col sm="5">
-                              <FormGroup>
-                                <Label for="city">Cidade</Label>
-                                <Field
-                                  type="text"
-                                  readOnly
-                                  autoComplete="city"
-                                  id="city"
-                                  name="city"
-                                  className={`
-                                  form-control
-                                  ${errors.city && touched.city && 'is-invalid'}
-                                `}
-                                />
-                                {errors.city && touched.city ? (
-                                  <div className="invalid-feedback">
-                                    {errors.city}
-                                  </div>
-                                ) : null}
-                              </FormGroup>
-                            </Col>
                           </Row>
-                        )} */}
+                        )}
 
                         {values.country === '30' && (
                           <>
