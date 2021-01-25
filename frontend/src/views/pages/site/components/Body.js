@@ -263,7 +263,11 @@ export default function Body() {
                     />
                   </Col>
                   <Col sm="11" md="11" lg="11">
-                    <LocalEvent>{`${data.city}/${data.uf}`}</LocalEvent>
+                    {data.city !== null ? (
+                      <LocalEvent>{`${data.city}/${data.uf}`}</LocalEvent>
+                    ) : (
+                      <LocalEvent>Online</LocalEvent>
+                    )}
                   </Col>
                 </Row>
               </Col>
@@ -330,19 +334,21 @@ export default function Body() {
               </Col>
             </Row>
           </Col>
-          <Col sm="12" md="6" lg="6" className="p-5">
-            <Row className="flex-column">
-              <Col className="pb-4">
-                <TitleSection1>Local</TitleSection1>
-              </Col>
-              <Col>
-                <TextSection1>
-                  {`${data.street}, ${data.street_number} - ${data.neighborhood}`}
-                </TextSection1>
-                <TextSection1>{`${data.city} - ${data.uf}, ${data.cep}`}</TextSection1>
-              </Col>
-            </Row>
-          </Col>
+          {data.city !== null && (
+            <Col sm="12" md="6" lg="6" className="p-5">
+              <Row className="flex-column">
+                <Col className="pb-4">
+                  <TitleSection1>Local</TitleSection1>
+                </Col>
+                <Col>
+                  <TextSection1>
+                    {`${data.street}, ${data.street_number} - ${data.neighborhood}`}
+                  </TextSection1>
+                  <TextSection1>{`${data.city} - ${data.uf}, ${data.cep}`}</TextSection1>
+                </Col>
+              </Row>
+            </Col>
+          )}
         </Row>
 
         <Row className="px-5 mt-n5">

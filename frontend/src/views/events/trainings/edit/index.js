@@ -24,8 +24,9 @@ import {
   Navigation,
   Edit,
   Plus,
+  Link as FeatherLink,
 } from 'react-feather';
-// import { Datepicker } from 'react-formik-ui';
+import { Datepicker } from 'react-formik-ui';
 import { FaChurch } from 'react-icons/fa';
 import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector, useStore } from 'react-redux';
@@ -69,9 +70,9 @@ import { css } from '@emotion/core';
 import { BlobProvider } from '@react-pdf/renderer';
 import classnames from 'classnames';
 import CountryStateCity from 'country-state-city';
-import { format, subMonths } from 'date-fns';
+import { format, subMonths, addDays } from 'date-fns';
 import pt from 'date-fns/locale/pt';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Field, Form, getIn, FieldArray } from 'formik';
 import moment from 'moment';
 import randomstring from 'randomstring';
 import * as Yup from 'yup';
@@ -230,6 +231,16 @@ const formChurchSchema = Yup.object().shape({
   city: Yup.string().required('A cidade é obrigatória.'),
 });
 
+const schedulesSchema = Yup.object().shape({
+  schedules: Yup.array().of(
+    Yup.object().shape({
+      date: Yup.string().required('A data é obrigatória.'),
+      start_time: Yup.string().required('Horario início é obrigatório.'),
+      end_time: Yup.string().required('Horario fim é obrigatório.'),
+    })
+  ),
+});
+
 export default function UserProfile({ match, className }) {
   const [activeTab, setActiveTab] = useState('1');
   const [modalOrganizator, setModalOrganizator] = useState(false);
@@ -299,6 +310,15 @@ export default function UserProfile({ match, className }) {
     is_public: '',
     isAdminPrinted: false,
   });
+  const [eventSchedules, setEventSchedules] = useState([
+    {
+      id: null,
+      event_id: null,
+      date: '',
+      start_time: '',
+      end_time: '',
+    },
+  ]);
   const [loadCep, setLoadCep] = useState(false);
 
   const [checkBackground, setCheckBackground] = useState(false);
@@ -363,16 +383,16 @@ export default function UserProfile({ match, className }) {
   const churchs = useSelector(state => state.church.data);
   const loadingChurchs = useSelector(state => state.church.loading);
 
-  // const DatepickerButton = ({ value, onClick }) => (
-  //   <Button
-  //     outline
-  //     color="secondary"
-  //     className="form-control height-38"
-  //     onClick={onClick}
-  //   >
-  //     {value}
-  //   </Button>
-  // );
+  const DatepickerButton = ({ value, onClick }) => (
+    <Button
+      outline
+      color="secondary"
+      className="form-control height-38"
+      onClick={onClick}
+    >
+      {value}
+    </Button>
+  );
 
   const InputFeedback = ({ error }) =>
     error ? <div className={classnames('input-feedback')}>{error}</div> : null;
@@ -466,9 +486,9 @@ export default function UserProfile({ match, className }) {
     }
   }, [event_data]);
 
-  function handleGoToAddOrder() {
-    history.push('/pedidos/criar');
-  }
+  // function handleGoToAddOrder() {
+  //   history.push('/pedidos/criar');
+  // }
 
   // useEffect(() => {
   //   if (cep_data.cep) {
@@ -527,6 +547,8 @@ export default function UserProfile({ match, className }) {
         });
       }
 
+      setEventSchedules(event_data.schedules);
+
       setEventDetails({
         ...eventDetails,
         id: event_data.id,
@@ -555,6 +577,15 @@ export default function UserProfile({ match, className }) {
 
   const dispatch = useDispatch();
   const store = useStore();
+
+  function copyLink() {
+    const elem = document.createElement('textarea');
+    elem.value = `https://lider.udf.org.br/evento/${match.params.event_id}`;
+    document.body.appendChild(elem);
+    elem.select();
+    document.execCommand('copy');
+    document.body.removeChild(elem);
+  }
 
   function toggleModalChurch() {
     setModalChurch(!modalChurch);
@@ -769,6 +800,16 @@ export default function UserProfile({ match, className }) {
     );
   }
 
+  function handleChangeStartTime(event, index, setFieldValue) {
+    setFieldValue(`schedules[${index}].start_time`, event.target.value);
+  }
+
+  function handleChangeEndTime(event, index, setFieldValue) {
+    setFieldValue(`schedules[${index}].end_time`, event.target.value);
+  }
+
+  function handleUpdateSchedules() {}
+
   function confirmModalAddTrainingLeader(values) {
     const { name, cpf, email, sex } = values;
     const password = randomstring.generate(6);
@@ -835,6 +876,16 @@ export default function UserProfile({ match, className }) {
         )
       );
     }
+  }
+
+  function minScheduleDate(schedules, scheduleLength, index) {
+    if (scheduleLength === 1) {
+      return subMonths(new Date(), 12);
+    }
+    if (scheduleLength > 1 && index !== 0) {
+      return addDays(schedules[index - 1].date, 1);
+    }
+    return subMonths(new Date(), 12);
   }
 
   function handleOrganizatorType(event, setFieldValue) {
@@ -1635,9 +1686,9 @@ export default function UserProfile({ match, className }) {
                       <ChevronDown size={24} />
                     </DropdownToggle>
                     <DropdownMenu right>
-                      <DropdownItem onClick={() => handleGoToAddOrder()}>
+                      {/* <DropdownItem onClick={() => handleGoToAddOrder()}>
                         <i className="fa fa-plus mr-2" /> Solicitar material
-                      </DropdownItem>
+                      </DropdownItem> */}
 
                       {/* BOTAO QUE MOSTRA QUANDO QUANTIDADE MINIMA DE PARTICIPANTES NAO FOR ATINGIDA */}
                       {handleEnableNotFinishInscriptions() && (
@@ -1779,10 +1830,6 @@ export default function UserProfile({ match, className }) {
                     {event_data.defaultEvent.event_type}:{' '}
                     {event_data.defaultEvent.name}
                   </h1>
-                  <h4 className="text-center font-medium-4 text-white text-uppercase text-wrap">
-                    Inicio do grupo:{' '}
-                    {moment(event_data.start_date).format('DD/MM/YYYY')}
-                  </h4>
                 </div>
                 <div className="align-self-start mr-2">
                   <Row className="master">
@@ -1790,13 +1837,13 @@ export default function UserProfile({ match, className }) {
                       <div className="media-body halfway-fab align-self-end">
                         <div className="d-none d-sm-none d-md-none d-lg-block mt-3 ml-4">
                           <div className="d-flex flex-column">
-                            <Button
+                            {/* <Button
                               onClick={() => handleGoToAddOrder()}
                               color="success"
                               className="btn-raised mr-3"
                             >
                               <i className="fa fa-plus" /> Solicitar material
-                            </Button>
+                            </Button> */}
 
                             {/* BOTAO QUE MOSTRA QUANDO QUANTIDADE MINIMA DE PARTICIPANTES NAO FOR ATINGIDA */}
                             {handleEnableNotFinishInscriptions() && (
@@ -1975,10 +2022,6 @@ export default function UserProfile({ match, className }) {
                           Líderes
                         </NavLink>
                       </li>
-                    </ul>
-                  </Col>
-                  <Col lg="6" md="6" sm="6">
-                    <ul className="profile-menu no-list-style top-0 mb-0 pr-2">
                       <li className="text-center">
                         <NavLink
                           className={classnames(
@@ -1992,6 +2035,10 @@ export default function UserProfile({ match, className }) {
                           Participantes
                         </NavLink>
                       </li>
+                    </ul>
+                  </Col>
+                  <Col lg="6" md="6" sm="6">
+                    <ul className="profile-menu no-list-style top-0 mb-0 pr-2">
                       <li className="text-center">
                         <NavLink
                           className={classnames(
@@ -2003,6 +2050,32 @@ export default function UserProfile({ match, className }) {
                           onClick={() => toggle('4')}
                         >
                           Cronograma
+                        </NavLink>
+                      </li>
+                      <li className="text-center">
+                        <NavLink
+                          className={classnames(
+                            'font-medium-2 font-weight-600',
+                            {
+                              active: activeTab === '5',
+                            }
+                          )}
+                          onClick={() => toggle('5')}
+                        >
+                          Finalização
+                        </NavLink>
+                      </li>
+                      <li className="text-center">
+                        <NavLink
+                          className={classnames(
+                            'font-medium-2 font-weight-600',
+                            {
+                              active: activeTab === '6',
+                            }
+                          )}
+                          onClick={() => toggle('6')}
+                        >
+                          Financeiro
                         </NavLink>
                       </li>
                     </ul>
@@ -3155,12 +3228,12 @@ export default function UserProfile({ match, className }) {
                                 <>
                                   <div className="d-none d-sm-none d-md-none d-lg-block ml-auto">
                                     <Button
-                                      color="success"
+                                      color="primary"
                                       className="btn-raised mr-2 mb-0 font-small-3"
-                                      onClick={toggleModalParticipant}
+                                      onClick={copyLink}
                                     >
-                                      <i className="fa fa-user fa-xs" /> Inserir
-                                      participante
+                                      <FeatherLink size={16} /> Copiar link de
+                                      inscrição
                                     </Button>
                                   </div>
 
@@ -3241,42 +3314,245 @@ export default function UserProfile({ match, className }) {
 
           {/* CRONOGRAMA */}
           <TabPane tabId="4">
-            <Row>
-              <Col xs="12">
-                <Card>
-                  <CardBody>
-                    <div className="grid-hover p-0 py-4">
-                      <Row className="justify-content-around align-items-center">
-                        <Col>
-                          {event_data.schedules.map(schedule => {
-                            return (
-                              <>
-                                <Row className="flex-column">
-                                  <Col className="my-2">
-                                    <h4>
-                                      {moment(schedule.date).format(
-                                        'DD/MM/YYYY'
-                                      )}
-                                    </h4>
-                                  </Col>
-                                  <Col className="my-2">
-                                    <div>{`Início: ${schedule.start_time}`}</div>
-                                  </Col>
-                                  <Col className="border-bottom-grey border-bottom-lighten-4 mt-2 mb-4">
-                                    <div className="mb-3">{`Fim: ${schedule.end_time}`}</div>
-                                  </Col>
-                                </Row>
-                              </>
-                            );
-                          })}
-                        </Col>
-                      </Row>
-                    </div>
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
+            <>
+              <Row>
+                <Col xs="12">
+                  <Card>
+                    <CardBody>
+                      <div className="grid-hover p-0 py-4">
+                        <Row className="justify-content-around align-items-center">
+                          <Col>
+                            {event_data.schedules.map(schedule => {
+                              return (
+                                <>
+                                  <Row className="flex-column">
+                                    <Col className="my-2">
+                                      <h4>
+                                        {moment(schedule.date).format(
+                                          'DD/MM/YYYY'
+                                        )}
+                                      </h4>
+                                    </Col>
+                                    <Col className="my-2">
+                                      <div>{`Início: ${schedule.start_time}`}</div>
+                                    </Col>
+                                    <Col className="border-bottom-grey border-bottom-lighten-4 mt-2 mb-4">
+                                      <div className="mb-3">{`Fim: ${schedule.end_time}`}</div>
+                                    </Col>
+                                  </Row>
+                                </>
+                              );
+                            })}
+                          </Col>
+                        </Row>
+                      </div>
+                    </CardBody>
+                  </Card>
+                </Col>
+              </Row>
+
+              {/* <Formik
+                enableReinitialize
+                initialValues={{
+                  eventSchedules,
+                }}
+                validationSchema={schedulesSchema}
+                onSubmit={values => handleUpdateSchedules(values)}
+              >
+                {({ errors, touched, setFieldValue, values, handleChange }) => (
+                  <Form>
+                    <FieldArray
+                      name="schedules"
+                      render={({ remove, push }) => (
+                        <>
+                          {console.tron.log(values)}
+
+                          {values.eventSchedules.length > 0 &&
+                            values.eventSchedules.map((schedule, index) => {
+                              const scheduleDate = `eventSchedules[${index}].date`;
+                              const errorScheduleDate = getIn(
+                                errors,
+                                scheduleDate
+                              );
+                              const touchedScheduleDate = getIn(
+                                touched,
+                                scheduleDate
+                              );
+
+                              const startTime = `eventSchedules[${index}].start_time`;
+                              const errorStartTime = getIn(errors, startTime);
+                              const touchedStartTime = getIn(
+                                touched,
+                                startTime
+                              );
+
+                              const endTime = `eventSchedules[${index}].end_time`;
+                              const errorEndTime = getIn(errors, endTime);
+                              const touchedEndTime = getIn(touched, endTime);
+
+                              return (
+                                <div>
+                                  <Row className="justify-content-between ml-0 mr-0">
+                                    <h3>Dia {index + 1}</h3>
+                                    {values.eventSchedules.length > 1 && (
+                                      <Button
+                                        color="danger"
+                                        onClick={() => remove(index)}
+                                      >
+                                        <X size={18} color="#fff" />
+                                      </Button>
+                                    )}
+                                  </Row>
+                                  <Row>
+                                    <Col sm="12" md="12" lg="3">
+                                      <FormGroup>
+                                        <Label
+                                          for={`eventSchedules[${index}].date`}
+                                        >
+                                          Data
+                                        </Label>
+                                        <Datepicker
+                                          id={`eventSchedules[${index}].date`}
+                                          name={`eventSchedules[${index}].date`}
+                                          locale={pt}
+                                          selected={
+                                            values.eventSchedules[index].date
+                                          }
+                                          onChange={date =>
+                                            setFieldValue(
+                                              `eventSchedules[${index}].date`,
+                                              date
+                                            )
+                                          }
+                                          customInput={<DatepickerButton />}
+                                          minDate={minScheduleDate(
+                                            values.eventSchedules,
+                                            values.eventSchedules.length,
+                                            index
+                                          )}
+                                          withPortal
+                                          isClearable
+                                          dateFormat="dd/MM/yyyy"
+                                          showMonthDropdown
+                                          showYearDropdown
+                                          dropdownMode="select"
+                                          className={`
+                                            form-control
+                                            ${errorScheduleDate &&
+                                              touchedScheduleDate &&
+                                              'is-invalid'}
+                                          `}
+                                        />
+                                        {errorScheduleDate &&
+                                        touchedScheduleDate ? (
+                                          <div className="invalid-feedback">
+                                            {errorScheduleDate}
+                                          </div>
+                                        ) : null}
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+                                  <Row>
+                                    <Col sm="12" md="12" lg="2">
+                                      <FormGroup>
+                                        <Label
+                                          for={`eventSchedules[${index}].start_time`}
+                                        >
+                                          Horário início
+                                        </Label>
+                                        <Input
+                                          id={`eventSchedules[${index}].start_time`}
+                                          name={`eventSchedules[${index}].start_time`}
+                                          type="time"
+                                          onChange={e => {
+                                            handleChangeStartTime(
+                                              e,
+                                              index,
+                                              setFieldValue
+                                            );
+                                          }}
+                                          className={`
+                                            form-control
+                                            ${errorStartTime &&
+                                              touchedStartTime &&
+                                              'is-invalid'}
+                                          `}
+                                        />
+                                        {errorStartTime && touchedStartTime ? (
+                                          <div className="invalid-feedback">
+                                            {errorStartTime}
+                                          </div>
+                                        ) : null}
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+                                  <Row>
+                                    <Col sm="12" md="12" lg="2">
+                                      <FormGroup>
+                                        <Label
+                                          for={`eventSchedules[${index}].end_time`}
+                                        >
+                                          Horário fim
+                                        </Label>
+                                        <Input
+                                          id={`eventSchedules[${index}].end_time`}
+                                          name={`eventSchedules[${index}].end_time`}
+                                          type="time"
+                                          onChange={e => {
+                                            handleChangeEndTime(
+                                              e,
+                                              index,
+                                              setFieldValue
+                                            );
+                                          }}
+                                          className={`
+                                            form-control
+                                            ${errorEndTime &&
+                                              touchedEndTime &&
+                                              'is-invalid'}
+                                          `}
+                                        />
+                                        {errorEndTime && touchedEndTime ? (
+                                          <div className="invalid-feedback">
+                                            {errorEndTime}
+                                          </div>
+                                        ) : null}
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+                                  <div className="form-actions right" />
+                                </div>
+                              );
+                            })}
+
+                          <FormGroup>
+                            <Row className="pl-1">
+                              <Button
+                                outline
+                                color="success"
+                                onClick={() =>
+                                  push({
+                                    date: '',
+                                    start_time: '',
+                                    end_time: '',
+                                  })
+                                }
+                              >
+                                <Plus size={16} color="#0cc27e" /> Adicionar dia
+                              </Button>
+                            </Row>
+                          </FormGroup>
+                        </>
+                      )}
+                    />
+                  </Form>
+                )}
+              </Formik> */}
+            </>
           </TabPane>
+
+          <TabPane tabId="5"></TabPane>
+          <TabPane tabId="6"></TabPane>
         </TabContent>
 
         <Modal isOpen={modalOrganizator} toggle={toggleModalOrganizator}>
