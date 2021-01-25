@@ -741,8 +741,10 @@ export default function TrainingCreate({ className }) {
                             <optgroup label="Treinamento">
                               {defaultEventsOrganizer.map(
                                 event =>
-                                  event.event_type ===
-                                    'Treinamento de treinadores' && (
+                                  (event.event_type ===
+                                    'Treinamento de treinadores' ||
+                                    event.event_type ===
+                                      'Capacitação de líderes') && (
                                     <option key={event.id} value={event.id}>
                                       {event.event_type}: {event.name}
                                     </option>
