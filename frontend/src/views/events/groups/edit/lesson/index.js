@@ -170,7 +170,8 @@ export default function Lesson({ match }) {
             assistantsId,
             hierarchyName,
             participantWillBecome,
-            assistantWillBecome
+            assistantWillBecome,
+            'grupo'
           )
         );
       }

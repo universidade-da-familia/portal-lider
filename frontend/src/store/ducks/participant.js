@@ -404,7 +404,8 @@ export const Creators = {
     assistantsId,
     hierarchyName,
     participantWillBecome,
-    assistantWillBecome
+    assistantWillBecome,
+    eventType
   ) => ({
     type: Types.EDIT_HIERARCHY_REQUEST,
     payload: {
@@ -415,6 +416,7 @@ export const Creators = {
       hierarchyName,
       participantWillBecome,
       assistantWillBecome,
+      eventType,
     },
   }),
   editParticipantHierarchySuccess: () => ({
