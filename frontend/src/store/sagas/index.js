@@ -3322,6 +3322,7 @@ function* editParticipantHierarchy(action) {
       hierarchyName,
       participantWillBecome,
       assistantWillBecome,
+      eventType,
     } = action.payload;
 
     const response = yield call(
@@ -3352,10 +3353,18 @@ function* editParticipantHierarchy(action) {
 
     yield put(ParticipantActions.editParticipantHierarchySuccess());
 
-    toastr.confirm('Relatório confirmado.', {
-      onOk: yield put(push(`/eventos/grupo/${eventId}/editar`)),
-      disableCancel: true,
-    });
+    if (eventType === 'grupo') {
+      toastr.confirm('Relatório confirmado.', {
+        onOk: yield put(push(`/eventos/grupo/${eventId}/editar`)),
+        disableCancel: true,
+      });
+    }
+    if (eventType === 'treinamento') {
+      toastr.confirm('Relatório confirmado.', {
+        onOk: window.location.reload(),
+        disableCancel: true,
+      });
+    }
   } catch (err) {
     if (err.message === 'Network Error') {
       toastr.error('Falha!', 'Tente acessar novamente mais tarde.');

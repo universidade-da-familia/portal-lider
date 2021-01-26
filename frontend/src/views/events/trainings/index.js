@@ -26,10 +26,13 @@ export default function Trainings() {
 
   useEffect(() => {
     if (allData.id) {
-      const auxAllEvents = []
+      const auxAllEvents = [];
       allData.organizators.filter(event => {
-        if (event.defaultEvent.event_type === 'Treinamento de treinadores') {
-          return auxAllEvents.push(event)
+        if (
+          event.defaultEvent.event_type === 'Treinamento de treinadores' ||
+          event.defaultEvent.event_type === 'Capacitação de líderes'
+        ) {
+          return auxAllEvents.push(event);
         }
       });
       allData.participants.map(participant => {
@@ -59,9 +62,7 @@ export default function Trainings() {
   return (
     <>
       <ContentHeader>Treinamentos</ContentHeader>
-      <ContentSubHeader>
-        Visualize seus treinamentos.
-      </ContentSubHeader>
+      <ContentSubHeader>Visualize seus treinamentos.</ContentSubHeader>
       <Row className="row-eq-height">
         <Col sm="12">
           <Card>
@@ -93,13 +94,7 @@ export default function Trainings() {
                   </div>
                 </div>
               </div>
-              <CustomTabs
-                TabContent={
-                  <MyTrainingsTable
-                    data={allEvents}
-                  />
-                }
-              />
+              <CustomTabs TabContent={<MyTrainingsTable data={allEvents} />} />
             </CardBody>
           </Card>
           {/* <Card>

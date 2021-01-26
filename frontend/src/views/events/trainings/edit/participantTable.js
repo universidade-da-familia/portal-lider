@@ -194,9 +194,9 @@ function ParticipantTable({
         pageText="Página"
         ofText="de"
         rowsText="linhas"
-        pageSizeOptions={[5, 15, 30]}
         pageJumpText="pular para a página"
         rowsSelectorText="linhas por página"
+        pageSizeOptions={[5, 15, 30]}
         defaultFilterMethod={(filter, row) =>
           String(row[filter.id]) === filter.value
         }
@@ -329,7 +329,7 @@ function ParticipantTable({
             },
           },
         ]}
-        defaultPageSize={15}
+        defaultPageSize={10}
         getTdProps={(state, rowInfo, column) => {
           return {
             style: {
