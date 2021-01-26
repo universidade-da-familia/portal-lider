@@ -1,3 +1,7 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable react/no-unused-state */
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable array-callback-return */
 /* eslint-disable consistent-return */
@@ -6,9 +10,10 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Component } from 'react';
 import DatePicker from 'react-datepicker';
 import {
+  ChevronUp,
   ChevronDown,
   CheckSquare,
   Calendar,
@@ -89,6 +94,7 @@ import { Creators as CepActions } from '~/store/ducks/cep';
 import { Creators as ChurchActions } from '~/store/ducks/church';
 import { Creators as EventActions } from '~/store/ducks/event';
 import { Creators as InviteActions } from '~/store/ducks/invite';
+import { Creators as LessonReportActions } from '~/store/ducks/lessonReport';
 import { Creators as LogActions } from '~/store/ducks/log';
 import { Creators as OrganizatorActions } from '~/store/ducks/organizator';
 import { Creators as ParticipantActions } from '~/store/ducks/participant';
@@ -111,6 +117,10 @@ const options = [
     label: 'Líder em Treinamento',
   },
 ];
+
+const formLessonReport = Yup.object().shape({
+  prayRequest: Yup.string().max(700, 'Limite máximo de caracteres'),
+});
 
 const formDetails = Yup.object().shape({
   church: Yup.string().required('O sobrenome é obrigatório'),
@@ -241,6 +251,38 @@ const schedulesSchema = Yup.object().shape({
   ),
 });
 
+class CurrencyFormat extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      value: '',
+    };
+  }
+
+  render() {
+    const { currencyValue } = this.state;
+
+    return (
+      <NumberFormat
+        inputMode="decimal"
+        prefix="R$ "
+        thousandSeparator="."
+        decimalSeparator=","
+        fixedDecimalScale
+        decimalScale={2}
+        allowNegative={false}
+        defaultValue={0}
+        value={currencyValue}
+        onValueChange={vals => {
+          this.setState({ value: vals.formattedValue });
+        }}
+        {...this.props}
+      />
+    );
+  }
+}
+
 export default function UserProfile({ match, className }) {
   const [activeTab, setActiveTab] = useState('1');
   const [modalOrganizator, setModalOrganizator] = useState(false);
@@ -255,6 +297,9 @@ export default function UserProfile({ match, className }) {
   const [modalViewLeader, setModalViewLeader] = useState(false);
   const [modalRegisterNewAddress, setModalRegisterNewAddress] = useState(false);
   const [modalLogs, setModalLogs] = useState(false);
+  const [presenceList, setPresenceList] = useState(null);
+  const [openPrayRequest, setOpenPrayRequest] = useState(false);
+  const [confirmDisabled, setConfirmDisabled] = useState(true);
 
   const userId = localStorage.getItem('@dashboard/user');
   const [profileAddresses, setProfileAddresses] = useState([
@@ -363,6 +408,7 @@ export default function UserProfile({ match, className }) {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
 
+  const lesson_data = useSelector(state => state.lessonReport.data);
   const profile_data = useSelector(state => state.profile.data);
   const loading = useSelector(state => state.organizator.loadingSearch);
   const participant_loading_search = useSelector(
@@ -521,7 +567,56 @@ export default function UserProfile({ match, className }) {
   }, [participant_error]);
 
   useEffect(() => {
+    if (!!lesson_data.event && lesson_data.event.participants.length > 0) {
+      const participants = [];
+
+      if (lesson_data.is_finished === false) {
+        lesson_data.event.participants.map(participant => {
+          if (participant.pivot.is_quitter === false) {
+            participants.push({
+              id: participant.pivot.id,
+              name: participant.name,
+              birthday: participant.birthday,
+              is_present: false,
+            });
+          } else {
+            //
+          }
+        });
+
+        setPresenceList(participants);
+      } else {
+        lesson_data.event.participants.map(participant => {
+          const attendance = lesson_data.attendances.find(
+            attendanceFind => attendanceFind.id === participant.pivot.id
+          );
+          if (attendance !== undefined) {
+            participants.push({
+              id: participant.pivot.id,
+              name: participant.name,
+              birthday: participant.birthday,
+              is_present: attendance.pivot.is_present,
+            });
+
+            if (attendance.pivot.is_present) {
+              setConfirmDisabled(false);
+            }
+          }
+        });
+        setPresenceList(participants);
+
+        setOpenPrayRequest(true);
+      }
+    }
+  }, [lesson_data, event_data]);
+
+  useEffect(() => {
     if (event_data) {
+      // eslint-disable-next-line no-use-before-define
+      dispatch(
+        LessonReportActions.lessonReportRequest(event_data.lessonReports[0].id)
+      );
+
       let countryData = '30';
       if (event_data.country === 'BRASIL' || event_data.country === null) {
         countryData = '30';
@@ -834,6 +929,39 @@ export default function UserProfile({ match, className }) {
     );
   }
 
+  function handleCheck(setFieldValue) {
+    const participants = document.getElementsByClassName('childCheck').length;
+
+    if (document.getElementById('checkAll').checked === true) {
+      for (let index = 0; index < participants; index += 1) {
+        document.getElementsByClassName('childCheck')[index].checked = true;
+        setFieldValue(`selecteds.${index}.is_present`, true);
+      }
+
+      setConfirmDisabled(false);
+    } else {
+      for (let index = 0; index < participants; index += 1) {
+        document.getElementsByClassName('childCheck')[index].checked = false;
+        setFieldValue(`selecteds.${index}.is_present`, false);
+      }
+
+      setConfirmDisabled(true);
+    }
+  }
+
+  function handleCheckChild(e, setFieldValue, id) {
+    setFieldValue(`selecteds.${id}.is_present`, e.target.checked);
+
+    if (e.target.checked) {
+      setConfirmDisabled(false);
+    }
+  }
+
+  function prayRequest(event) {
+    event.preventDefault();
+    setOpenPrayRequest(!openPrayRequest);
+  }
+
   function handleSearchChurchs(values) {
     dispatch(ChurchActions.churchRequest(values));
   }
@@ -922,7 +1050,7 @@ export default function UserProfile({ match, className }) {
   }
 
   function handleDeleteOrganizator(entity_id) {
-    toastr.confirm('Deseja deletar o líder', {
+    toastr.confirm('Deseja deletar o treinador', {
       onOk: () =>
         dispatch(
           OrganizatorActions.deleteOrganizatorRequest(
@@ -1289,6 +1417,64 @@ export default function UserProfile({ match, className }) {
   //   }
   // }
 
+  function handleSubmitReport(values) {
+    const participants = [];
+    const participantsId = [];
+    const assistantsId = [];
+
+    event_data.participants.map(participant => {
+      if (participant.pivot.assistant === false) {
+        participantsId.push(participant.id);
+      } else {
+        assistantsId.push(participant.id);
+      }
+    });
+
+    values.selecteds.map(selected => {
+      participants.push({
+        id: selected.id,
+        is_present: selected.is_present,
+      });
+    });
+
+    const payload = {
+      lesson_report_id: lesson_data.id,
+      date: new Date(),
+      participants,
+      offer: values.offer || 0,
+      pray_request: values.prayRequest,
+      // testimony: values.testimony,
+      // doubts: values.doubts,
+    };
+
+    const participantWillBecome =
+      event_data.defaultEvent.participant_will_become_id;
+    const assistantWillBecome =
+      event_data.defaultEvent.assistant_will_become_id;
+
+    const hierarchyName = event_data.defaultEvent.ministery.tag;
+
+    const payloadEvent = {
+      is_finished: true,
+    };
+
+    dispatch(
+      EventActions.eventEditRequest(match.params.event_id, payloadEvent)
+    );
+    dispatch(
+      ParticipantActions.editParticipantHierarchyRequest(
+        payload,
+        event_data.id,
+        participantsId,
+        assistantsId,
+        hierarchyName,
+        participantWillBecome,
+        assistantWillBecome,
+        'treinamento'
+      )
+    );
+  }
+
   function handleSubmitDetails(values) {
     if (values.country === '30') {
       values.cep = values.cep.replace('-', '');
@@ -1549,7 +1735,7 @@ export default function UserProfile({ match, className }) {
 
       if (!verify_user) {
         verify_user = true;
-        history.push('/eventos/grupos');
+        history.push('/eventos/treinamentos');
         toastr.confirm('Sem permissão para editar o evento.', {
           onOk: () => {
             window.location.reload();
@@ -2019,7 +2205,7 @@ export default function UserProfile({ match, className }) {
                           )}
                           onClick={() => toggle('2')}
                         >
-                          Líderes
+                          Treinadores
                         </NavLink>
                       </li>
                       <li className="text-center">
@@ -2124,7 +2310,7 @@ export default function UserProfile({ match, className }) {
         {event_data.defaultEvent.max_organizators <=
           event_data.organizators.length && (
           <Badge color="warning" className="text-wrap mr-2 mb-2">
-            Quantidade máxima de líderes atingida
+            Quantidade máxima de treinadores atingida
           </Badge>
         )}
 
@@ -2805,7 +2991,7 @@ export default function UserProfile({ match, className }) {
                       ) {
                         return (
                           <h6 className="p-2 text-danger text-center">
-                            A quantidade máxima de líderes e líderes em
+                            A quantidade máxima de treinadores e líderes em
                             treinamento foi atingida
                           </h6>
                         );
@@ -2819,7 +3005,7 @@ export default function UserProfile({ match, className }) {
                       }
                       return (
                         <h6 className="p-2 text-danger text-center">
-                          A quantidade máxima de participantes, líderes em
+                          A quantidade máxima de participantes, treinadores em
                           treinamento ou líderes foi atingida
                         </h6>
                       );
@@ -2889,7 +3075,7 @@ export default function UserProfile({ match, className }) {
                                     placement="right"
                                     target={`remove-leader-${organizator.id}`}
                                   >
-                                    Remover líder
+                                    Remover treinador
                                   </UncontrolledTooltip>
                                 </NavLink>
                               );
@@ -2974,7 +3160,7 @@ export default function UserProfile({ match, className }) {
                           </Row>
                         </CardText>
                         <Badge className="float-right mr-1" color="success">
-                          Líder
+                          Treinador
                         </Badge>
                       </CardBody>
                     </Card>
@@ -3119,7 +3305,7 @@ export default function UserProfile({ match, className }) {
           </TabPane>
 
           <Modal isOpen={modalViewLeader} toggle={toggleCloseModalViewLeader}>
-            <ModalHeader>Visualizar dados do líder</ModalHeader>
+            <ModalHeader>Visualizar dados do treinador</ModalHeader>
             <Formik enableReinitialize initialValues={leaderViewData}>
               {() => (
                 <Form>
@@ -3219,7 +3405,7 @@ export default function UserProfile({ match, className }) {
                     <CardBody>
                       <div className="d-flex justify-content-between">
                         <Badge color="success" className="align-self-center">
-                          Participantes inscritos: {totalParticipants}
+                          Participantes pagamento confirmado
                         </Badge>
                         <Row className="master">
                           <div className="profile-cover-buttons">
@@ -3261,7 +3447,9 @@ export default function UserProfile({ match, className }) {
                               participant => {
                                 return (
                                   participant.pivot.assistant === false &&
-                                  participant.pivot.is_quitter === false
+                                  participant.pivot.is_quitter === false &&
+                                  participant.participant_order.order
+                                    .status_id === 2
                                 );
                               }
                             )}
@@ -3273,6 +3461,65 @@ export default function UserProfile({ match, className }) {
                       />
                     </CardBody>
                   </Card>
+
+                  <Card>
+                    <CardBody>
+                      <div className="d-flex justify-content-between">
+                        <Badge color="success" className="align-self-center">
+                          Participantes aguardando pagamento
+                        </Badge>
+                      </div>
+                      <CustomTabs
+                        TabContent={
+                          <ParticipantTable
+                            data={event_data.participants.filter(
+                              participant => {
+                                return (
+                                  participant.pivot.assistant === false &&
+                                  participant.pivot.is_quitter === false &&
+                                  participant.participant_order.order
+                                    .status_id === 1
+                                );
+                              }
+                            )}
+                            eventData={event_data}
+                            finishedLessons={finishedLessons}
+                            isAdmin={profile_data.admin}
+                          />
+                        }
+                      />
+                    </CardBody>
+                  </Card>
+
+                  <Card>
+                    <CardBody>
+                      <div className="d-flex justify-content-between">
+                        <Badge color="danger" className="align-self-center">
+                          Participantes pagamento cancelado
+                        </Badge>
+                      </div>
+                      <CustomTabs
+                        TabContent={
+                          <ParticipantTable
+                            data={event_data.participants.filter(
+                              participant => {
+                                return (
+                                  participant.pivot.assistant === false &&
+                                  participant.pivot.is_quitter === false &&
+                                  participant.participant_order.order
+                                    .status_id === 3
+                                );
+                              }
+                            )}
+                            eventData={event_data}
+                            finishedLessons={finishedLessons}
+                            isAdmin={profile_data.admin}
+                          />
+                        }
+                      />
+                    </CardBody>
+                  </Card>
+
                   <Card>
                     <CardBody>
                       <div className="d-flex justify-content-between">
@@ -3365,7 +3612,6 @@ export default function UserProfile({ match, className }) {
                       name="schedules"
                       render={({ remove, push }) => (
                         <>
-                          {console.tron.log(values)}
 
                           {values.eventSchedules.length > 0 &&
                             values.eventSchedules.map((schedule, index) => {
@@ -3551,12 +3797,206 @@ export default function UserProfile({ match, className }) {
             </>
           </TabPane>
 
-          <TabPane tabId="5"></TabPane>
-          <TabPane tabId="6"></TabPane>
+          <TabPane tabId="5">
+            <>
+              <Row className="row-eq-height">
+                <Col sm="12">
+                  <Card className="white text-center p-4">
+                    <CardBody className="d-flex flex-column justify-content-center align-items-center p-0">
+                      <Formik
+                        enableReinitialize
+                        initialValues={{
+                          checkAll: false,
+                          selecteds: presenceList !== null ? presenceList : [],
+                          offer: lesson_data.offer ? lesson_data.offer : '',
+                          prayRequest: lesson_data.pray_request
+                            ? lesson_data.pray_request
+                            : '',
+                        }}
+                        validationSchema={formLessonReport}
+                        onSubmit={values => handleSubmitReport(values)}
+                      >
+                        {({ values, setFieldValue, errors, touched }) => (
+                          <Form className="w-100 d-flex flex-column justify-content-center align-items-center">
+                            <Col lg="8" md="12" xs="12">
+                              <h2 className="black mt-4">Chamada</h2>
+                              <h6 className="black">
+                                <em>Marque os participantes presentes</em>
+                              </h6>
+                              <h6 className="red">
+                                <em>
+                                  *Ao menos um participante deve estar presente
+                                </em>
+                              </h6>
+
+                              <Table bordered responsive>
+                                <thead>
+                                  <tr>
+                                    <th width="20%">
+                                      <Field
+                                        disabled={
+                                          lesson_data.is_finished &&
+                                          !profile_data.admin
+                                        }
+                                        type="checkbox"
+                                        className="ml-0"
+                                        id="checkAll"
+                                        name="checkAll"
+                                        onClick={() =>
+                                          handleCheck(setFieldValue)
+                                        }
+                                      />
+                                      <Label for="checkAll" className="pl-3">
+                                        Todos
+                                      </Label>
+                                    </th>
+                                    <th width="80%">Participantes</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <FieldArray
+                                    name="selecteds"
+                                    render={arrayHelpers => (
+                                      <>
+                                        {values.selecteds.map(
+                                          (selecteds, index) => (
+                                            <tr
+                                              key={index}
+                                              className={`${!selecteds.is_present &&
+                                                'table-danger'}`}
+                                            >
+                                              <td>
+                                                <Field
+                                                  disabled={
+                                                    lesson_data.is_finished &&
+                                                    !profile_data.admin
+                                                  }
+                                                  type="checkbox"
+                                                  checked={selecteds.is_present}
+                                                  className="ml-0 childCheck"
+                                                  id={`selecteds.${index}.checked`}
+                                                  name={`selecteds.${index}.checked`}
+                                                  onClick={e =>
+                                                    handleCheckChild(
+                                                      e,
+                                                      setFieldValue,
+                                                      index
+                                                    )
+                                                  }
+                                                />
+                                              </td>
+                                              <td>
+                                                <Label>{selecteds.name}</Label>
+                                              </td>
+                                            </tr>
+                                          )
+                                        )}
+                                      </>
+                                    )}
+                                  />
+                                </tbody>
+                              </Table>
+                            </Col>
+
+                            <Col lg="8" md="12" xs="12">
+                              <h2
+                                className="black mt-4"
+                                style={{ cursor: 'pointer' }}
+                                onClick={event => prayRequest(event)}
+                              >
+                                Comentários e pedidos de oração{' '}
+                                {openPrayRequest === true ? (
+                                  <ChevronUp size={30} color="#212529" />
+                                ) : (
+                                  <ChevronDown size={30} color="#212529" />
+                                )}
+                              </h2>
+                              {openPrayRequest === true && (
+                                <Field
+                                  component="textarea"
+                                  disabled={
+                                    lesson_data.is_finished &&
+                                    !profile_data.admin
+                                  }
+                                  type="textarea"
+                                  id="prayRequest"
+                                  rows="5"
+                                  name="prayRequest"
+                                  className={`
+                          form-control
+                          ${errors &&
+                            errors.prayRequest &&
+                            touched &&
+                            touched.prayRequest &&
+                            'is-invalid'}
+                        `}
+                                  value={values.prayRequest}
+                                  style={{
+                                    minHeight: '70px',
+                                    maxHeight: '350px',
+                                  }}
+                                />
+                              )}
+                              {errors.prayRequest && touched.prayRequest ? (
+                                <div className="invalid-feedback">
+                                  {errors.prayRequest}
+                                </div>
+                              ) : null}
+                            </Col>
+                            <Col lg="8" md="12" xs="12">
+                              <h2 className="black mt-4">Oferta</h2>
+                              <CurrencyFormat
+                                disabled={
+                                  lesson_data.is_finished && !profile_data.admin
+                                }
+                                id="offer"
+                                name="offer"
+                                className="form-control"
+                                value={values.offer}
+                                onValueChange={val =>
+                                  setFieldValue('offer', val.floatValue)
+                                }
+                              />
+                            </Col>
+                            <Col lg="2" md="2" xs="2">
+                              {profile_data.admin ? (
+                                <Button
+                                  disabled={confirmDisabled}
+                                  className="mt-4 btn-success"
+                                  type="submit"
+                                >
+                                  {lesson_data.is_finished
+                                    ? 'Alterar relatório'
+                                    : 'Confirmar relatório'}
+                                </Button>
+                              ) : (
+                                <Button
+                                  disabled={
+                                    lesson_data.is_finished || confirmDisabled
+                                  }
+                                  className="mt-4 btn-success"
+                                  type="submit"
+                                >
+                                  {lesson_data.is_finished
+                                    ? 'Alterar relatório'
+                                    : 'Confirmar relatório'}
+                                </Button>
+                              )}
+                            </Col>
+                          </Form>
+                        )}
+                      </Formik>
+                    </CardBody>
+                  </Card>
+                </Col>
+              </Row>
+            </>
+          </TabPane>
+          <TabPane tabId="6">teste</TabPane>
         </TabContent>
 
         <Modal isOpen={modalOrganizator} toggle={toggleModalOrganizator}>
-          <ModalHeader>Pequisar líder/líder em treinamento</ModalHeader>
+          <ModalHeader>Pequisar treinador/líder em treinamento</ModalHeader>
           <Formik
             initialValues={{
               organizator_type: '',
@@ -3836,7 +4276,7 @@ export default function UserProfile({ match, className }) {
           isOpen={modalChangeOrganizator}
           toggle={toggleModalChangeOrganizator}
         >
-          <ModalHeader>Pesquisar líder para substitui-lo</ModalHeader>
+          <ModalHeader>Pesquisar treinador para substitui-lo</ModalHeader>
           <Formik
             initialValues={{
               organizator_type: 'leader',
@@ -3970,7 +4410,7 @@ export default function UserProfile({ match, className }) {
                         `}
                       />
                     ) : (
-                      'Trocar líder principal'
+                      'Trocar treinador principal'
                     )}
                   </Button>
                 </ModalFooter>
@@ -4298,7 +4738,7 @@ export default function UserProfile({ match, className }) {
           isOpen={modalAddTrainingLeader}
           toggle={toggleModalAddTrainingLeader}
         >
-          <ModalHeader>Cadastrar líder em treinamento2</ModalHeader>
+          <ModalHeader>Cadastrar líder em treinamento</ModalHeader>
           <Formik
             initialValues={{
               admin: profile_data.admin || false,
@@ -4905,7 +5345,7 @@ export default function UserProfile({ match, className }) {
                           name={`selected.${index}.name`}
                           value={(() => {
                             if (selected.participant_id === undefined) {
-                              return 'Líder';
+                              return 'Treinador';
                             }
                             if (selected.print_date) {
                               return moment(selected.print_date).format(
