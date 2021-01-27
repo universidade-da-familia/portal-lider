@@ -427,13 +427,39 @@ export default function TrainingInviteConfirmation({ match }) {
     }
   }
 
+  const subTotalPriceCouple = useMemo(() => {
+    let total_couple = 0;
+    if (kitProducts.length > 0) {
+      // eslint-disable-next-line array-callback-return
+      kitProducts.map(product => {
+        if (product.isSelected === true) {
+          total_couple += product.training_price * product.quantity_couple;
+        }
+      });
+    }
+    return total_couple;
+  }, [kitProducts.length, kitProducts.map(product => product.isSelected)]);
+
+  const totalPriceCouple = useMemo(() => {
+    let total = 0;
+    if (shippingSelected !== null && shippingSelected.free_shipping) {
+      total = subTotalPriceCouple;
+    }
+
+    if (shippingSelected !== null && !shippingSelected.free_shipping) {
+      total = subTotalPriceCouple + shippingSelected.final_shipping_cost;
+    }
+
+    return total;
+  }, [subTotalPriceCouple, shippingSelected]);
+
   const subTotalPrice = useMemo(() => {
     let total = 0;
     if (kitProducts.length > 0) {
       // eslint-disable-next-line array-callback-return
       kitProducts.map(product => {
         if (product.isSelected === true) {
-          total += product.group_price * 1;
+          total += product.training_price * product.quantity;
         }
       });
     }
@@ -462,7 +488,7 @@ export default function TrainingInviteConfirmation({ match }) {
           id: product.id,
           netsuite_id: product.netsuite_id,
           name: product.name,
-          cost_of_goods: product.group_price,
+          cost_of_goods: product.training_price,
           quantity: product.quantity,
           weight: product.weight,
           width: product.width,
@@ -501,11 +527,12 @@ export default function TrainingInviteConfirmation({ match }) {
         shipping_option: shippingSelected,
         order_details: {
           order_type: 'Curso',
-          subtotal: subTotalPrice,
+          subtotal:
+            inscriptionType === 'single' ? subTotalPrice : subTotalPriceCouple,
           shipping_amount: shippingSelected.free_shipping
             ? 0
             : shippingSelected.final_shipping_cost,
-          amount: totalPrice,
+          amount: inscriptionType === 'single' ? totalPrice : totalPriceCouple,
           installments: parseInt(values.installments, 10),
         },
       };
@@ -541,11 +568,12 @@ export default function TrainingInviteConfirmation({ match }) {
         shipping_option: shippingSelected,
         order_details: {
           order_type: 'Curso',
-          subtotal: subTotalPrice,
+          subtotal:
+            inscriptionType === 'single' ? subTotalPrice : subTotalPriceCouple,
           shipping_amount: shippingSelected.free_shipping
             ? 0
             : shippingSelected.final_shipping_cost,
-          amount: totalPrice,
+          amount: inscriptionType === 'single' ? totalPrice : totalPriceCouple,
           installments: parseInt(values.installments, 10),
         },
       };
@@ -597,11 +625,12 @@ export default function TrainingInviteConfirmation({ match }) {
         shipping_option: shippingSelected,
         order_details: {
           order_type: 'Curso',
-          subtotal: subTotalPrice,
+          subtotal:
+            inscriptionType === 'single' ? subTotalPrice : subTotalPriceCouple,
           shipping_amount: shippingSelected.free_shipping
             ? 0
             : shippingSelected.final_shipping_cost,
-          amount: totalPrice,
+          amount: inscriptionType === 'single' ? totalPrice : totalPriceCouple,
           installments: parseInt(values.installments, 10),
         },
       };
@@ -623,11 +652,12 @@ export default function TrainingInviteConfirmation({ match }) {
         shipping_option: shippingSelected,
         order_details: {
           order_type: 'Curso',
-          subtotal: subTotalPrice,
+          subtotal:
+            inscriptionType === 'single' ? subTotalPrice : subTotalPriceCouple,
           shipping_amount: shippingSelected.free_shipping
             ? 0
             : shippingSelected.final_shipping_cost,
-          amount: totalPrice,
+          amount: inscriptionType === 'single' ? totalPrice : totalPriceCouple,
           installments: parseInt(values.installments, 10),
         },
       };
@@ -729,41 +759,37 @@ export default function TrainingInviteConfirmation({ match }) {
   function handleInscriptionType(selected, setFieldValue) {
     setFieldValue('inscription_type', selected);
     setInscriptionType(selected);
-
-    if (selected === 'single') {
-      setInitialState({
-        ...initialState,
-        couple_cpf: '',
-        couple_name: '',
-        couple_email: '',
-        couple_sex: '',
-      });
-    }
   }
 
   useEffect(() => {
     if (event !== null) {
-      if (event.default_event_id === 50) {
+      if (event.default_event_id === 66) {
         setInscriptionCouple(true);
         setInscriptionSingle(false);
       }
 
       // financas crown
-      if (event.default_event_id === 54) {
+      if (event.default_event_id === 53) {
         setInscriptionSingle(true);
         setInscriptionCouple(true);
       }
 
       // yes
-      if (event.default_event_id === 64) {
+      if (event.default_event_id === 52) {
         setInscriptionSingle(true);
         setInscriptionCouple(true);
       }
 
       // habitudes
-      if (event.default_event_id === 63) {
+      if (event.default_event_id === 51) {
         setInscriptionSingle(true);
         setInscriptionCouple(true);
+      }
+
+      // coragem
+      if (event.default_event_id === 69) {
+        setInscriptionSingle(true);
+        setInscriptionCouple(false);
       }
 
       // hombridade
@@ -778,14 +804,8 @@ export default function TrainingInviteConfirmation({ match }) {
         setInscriptionCouple(false);
       }
 
-      // mulher unica
-      if (event.default_event_id === 60) {
-        setInscriptionSingle(true);
-        setInscriptionCouple(false);
-      }
-
       // mulher prospera
-      if (event.default_event_id === 59) {
+      if (event.default_event_id === 58) {
         setInscriptionSingle(true);
         setInscriptionCouple(false);
       }
@@ -814,8 +834,15 @@ export default function TrainingInviteConfirmation({ match }) {
           product.product_category === 'book' ||
           product.product_category === 'guide'
         ) {
-          product.isSelected = true;
-          product.quantity = 1;
+          if (product.id === 316 || product.id === 219) {
+            product.isSelected = true;
+            product.quantity = 1;
+            product.quantity_couple = 2;
+          } else {
+            product.isSelected = true;
+            product.quantity = 1;
+            product.quantity_couple = 1;
+          }
 
           products.push(product);
         }
@@ -1019,6 +1046,18 @@ export default function TrainingInviteConfirmation({ match }) {
   }, [emailDebounce]);
 
   useEffect(() => {
+    if (inscriptionType === 'single') {
+      setInitialState({
+        ...initialState,
+        couple_cpf: '',
+        couple_name: '',
+        couple_email: '',
+        couple_sex: '',
+      });
+    }
+  }, [inscriptionType]);
+
+  useEffect(() => {
     dispatch(EventActions.eventRequest(match.params.event_id));
 
     setInitialState({
@@ -1127,7 +1166,6 @@ export default function TrainingInviteConfirmation({ match }) {
               Confirme sua inscrição ao lado!
             </Label>
           </div>
-
           <Motion
             defaultStyle={{ x: +200, opacity: 0 }}
             style={{ x: spring(0), opacity: spring(1) }}
@@ -2166,9 +2204,13 @@ export default function TrainingInviteConfirmation({ match }) {
                                               <b className="font-medium-2 text-dark text-bold-600">
                                                 (OPCIONAL)
                                               </b>{' '}
-                                              {`1 X ${
+                                              {`${
+                                                inscriptionType === 'couple'
+                                                  ? product.quantity_couple
+                                                  : product.quantity
+                                              } X ${
                                                 product.name
-                                              } - ${product.group_price.toLocaleString(
+                                              } - ${product.training_price.toLocaleString(
                                                 'pt-BR',
                                                 {
                                                   style: 'currency',
@@ -2192,9 +2234,13 @@ export default function TrainingInviteConfirmation({ match }) {
                                           }
                                         />
                                         <Label for={`product-${product.id}`}>
-                                          <h6>{`1 X ${
+                                          <h6>{`${
+                                            inscriptionType === 'couple'
+                                              ? product.quantity_couple
+                                              : product.quantity
+                                          } X ${
                                             product.name
-                                          } - ${product.group_price.toLocaleString(
+                                          } - ${product.training_price.toLocaleString(
                                             'pt-BR',
                                             {
                                               style: 'currency',
@@ -2862,13 +2908,17 @@ export default function TrainingInviteConfirmation({ match }) {
                                               className="font-medium-2"
                                             >
                                               <span className="black font-weight-bold">
-                                                1 x{' '}
+                                                $
+                                                {inscriptionType === 'couple'
+                                                  ? product.quantity_couple
+                                                  : product.quantity}{' '}
+                                                x{' '}
                                               </span>
                                               <span className="black">
                                                 {product.name} por{' '}
                                               </span>
                                               <span className="black font-weight-bold">
-                                                {product.group_price.toLocaleString(
+                                                {product.training_price.toLocaleString(
                                                   'pt-BR',
                                                   {
                                                     style: 'currency',
@@ -2939,10 +2989,18 @@ export default function TrainingInviteConfirmation({ match }) {
                                       )}
                                       <Label className="mt-3 mb-0 black font-medium-5">
                                         Total:{' '}
-                                        {totalPrice.toLocaleString('pt-BR', {
-                                          style: 'currency',
-                                          currency: 'BRL',
-                                        })}
+                                        {inscriptionType === 'single'
+                                          ? totalPrice.toLocaleString('pt-BR', {
+                                              style: 'currency',
+                                              currency: 'BRL',
+                                            })
+                                          : totalPriceCouple.toLocaleString(
+                                              'pt-BR',
+                                              {
+                                                style: 'currency',
+                                                currency: 'BRL',
+                                              }
+                                            )}
                                       </Label>
 
                                       <h4 className="form-section mt-3">
@@ -3189,38 +3247,86 @@ export default function TrainingInviteConfirmation({ match }) {
                                                   id="installments"
                                                   className="form-control"
                                                 >
-                                                  <option value="1">
-                                                    Parcelar em 1x de{' '}
-                                                    {totalPrice.toLocaleString(
-                                                      'pt-BR',
-                                                      {
-                                                        style: 'currency',
-                                                        currency: 'BRL',
-                                                      }
-                                                    )}
-                                                  </option>
-                                                  <option value="2">
-                                                    Parcelar em 2x de{' '}
-                                                    {(
-                                                      totalPrice / 2
-                                                    ).toLocaleString('pt-BR', {
-                                                      style: 'currency',
-                                                      currency: 'BRL',
-                                                    })}
-                                                  </option>
-                                                  {totalPrice >= 250 && (
-                                                    <option value="3">
-                                                      Parcelar em 3x de{' '}
-                                                      {(
-                                                        totalPrice / 3
-                                                      ).toLocaleString(
-                                                        'pt-BR',
-                                                        {
-                                                          style: 'currency',
-                                                          currency: 'BRL',
-                                                        }
+                                                  {inscriptionType ===
+                                                  'single' ? (
+                                                    <>
+                                                      <option value="1">
+                                                        Parcelar em 1x de{' '}
+                                                        {totalPrice.toLocaleString(
+                                                          'pt-BR',
+                                                          {
+                                                            style: 'currency',
+                                                            currency: 'BRL',
+                                                          }
+                                                        )}
+                                                      </option>
+                                                      <option value="2">
+                                                        Parcelar em 2x de{' '}
+                                                        {(
+                                                          totalPrice / 2
+                                                        ).toLocaleString(
+                                                          'pt-BR',
+                                                          {
+                                                            style: 'currency',
+                                                            currency: 'BRL',
+                                                          }
+                                                        )}
+                                                      </option>
+                                                      {totalPrice >= 250 && (
+                                                        <option value="3">
+                                                          Parcelar em 3x de{' '}
+                                                          {(
+                                                            totalPrice / 3
+                                                          ).toLocaleString(
+                                                            'pt-BR',
+                                                            {
+                                                              style: 'currency',
+                                                              currency: 'BRL',
+                                                            }
+                                                          )}
+                                                        </option>
                                                       )}
-                                                    </option>
+                                                    </>
+                                                  ) : (
+                                                    <>
+                                                      <option value="1">
+                                                        Parcelar em 1x de{' '}
+                                                        {totalPriceCouple.toLocaleString(
+                                                          'pt-BR',
+                                                          {
+                                                            style: 'currency',
+                                                            currency: 'BRL',
+                                                          }
+                                                        )}
+                                                      </option>
+                                                      <option value="2">
+                                                        Parcelar em 2x de{' '}
+                                                        {(
+                                                          totalPriceCouple / 2
+                                                        ).toLocaleString(
+                                                          'pt-BR',
+                                                          {
+                                                            style: 'currency',
+                                                            currency: 'BRL',
+                                                          }
+                                                        )}
+                                                      </option>
+                                                      {totalPriceCouple >=
+                                                        250 && (
+                                                        <option value="3">
+                                                          Parcelar em 3x de{' '}
+                                                          {(
+                                                            totalPriceCouple / 3
+                                                          ).toLocaleString(
+                                                            'pt-BR',
+                                                            {
+                                                              style: 'currency',
+                                                              currency: 'BRL',
+                                                            }
+                                                          )}
+                                                        </option>
+                                                      )}
+                                                    </>
                                                   )}
                                                 </Field>
                                                 <div className="form-control-position">

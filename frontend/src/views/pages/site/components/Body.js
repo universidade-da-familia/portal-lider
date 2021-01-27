@@ -176,26 +176,32 @@ export default function Body() {
           product.product_category === 'guide'
         ) {
           // alianca romance
-          if (data.default_event_id === 50) {
+          if (data.default_event_id === 66) {
             auxSumCouple += product.training_price;
           }
 
           // financas crown
-          if (data.default_event_id === 54) {
+          if (data.default_event_id === 53) {
             auxSumSingle += product.training_price;
             auxSumCouple += product.training_price;
           }
 
           // yes
-          if (data.default_event_id === 64) {
+          if (data.default_event_id === 52) {
             auxSumSingle += product.training_price;
             auxSumCouple = 215;
           }
 
           // habitudes
-          if (data.default_event_id === 63) {
+          if (data.default_event_id === 51) {
             auxSumSingle += product.training_price;
             auxSumCouple = 200;
+          }
+
+          // coragem
+          if (data.default_event_id === 69) {
+            auxSumSingle += product.training_price;
+            auxSumCouple += product.training_price;
           }
 
           // hombridade
@@ -208,13 +214,8 @@ export default function Body() {
             auxSumSingle += product.training_price;
           }
 
-          // mulher unica
-          if (data.default_event_id === 60) {
-            auxSumSingle += product.training_price;
-          }
-
           // mulher prospera
-          if (data.default_event_id === 59) {
+          if (data.default_event_id === 58) {
             auxSumSingle += product.training_price;
           }
 
