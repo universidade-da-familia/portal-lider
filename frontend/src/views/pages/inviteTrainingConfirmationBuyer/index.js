@@ -232,6 +232,9 @@ export default function TrainingInviteConfirmation({ match }) {
   const [paymentSelected, setPaymentSelected] = useState(null);
   const [shippingOptions, setShippingOptions] = useState(null);
   const [inscriptionType, setInscriptionType] = useState(null);
+  const [inscriptionSingle, setInscriptionSingle] = useState(true);
+  const [inscriptionCouple, setInscriptionCouple] = useState(true);
+
   const [addresses, setAddresses] = useState([
     {
       id: null,
@@ -740,6 +743,59 @@ export default function TrainingInviteConfirmation({ match }) {
 
   useEffect(() => {
     if (event !== null) {
+      if (event.default_event_id === 50) {
+        setInscriptionCouple(true);
+        setInscriptionSingle(false);
+      }
+
+      // financas crown
+      if (event.default_event_id === 54) {
+        setInscriptionSingle(true);
+        setInscriptionCouple(true);
+      }
+
+      // yes
+      if (event.default_event_id === 64) {
+        setInscriptionSingle(true);
+        setInscriptionCouple(true);
+      }
+
+      // habitudes
+      if (event.default_event_id === 63) {
+        setInscriptionSingle(true);
+        setInscriptionCouple(true);
+      }
+
+      // hombridade
+      if (event.default_event_id === 56) {
+        setInscriptionSingle(true);
+        setInscriptionCouple(false);
+      }
+
+      // mulher unica
+      if (event.default_event_id === 60) {
+        setInscriptionSingle(true);
+        setInscriptionCouple(false);
+      }
+
+      // mulher unica
+      if (event.default_event_id === 60) {
+        setInscriptionSingle(true);
+        setInscriptionCouple(false);
+      }
+
+      // mulher prospera
+      if (event.default_event_id === 59) {
+        setInscriptionSingle(true);
+        setInscriptionCouple(false);
+      }
+
+      // paternidade biblica
+      if (event.default_event_id === 65) {
+        setInscriptionSingle(true);
+        setInscriptionCouple(true);
+      }
+
       const products = [];
 
       // const invite = event.invites.find(
@@ -1118,75 +1174,79 @@ export default function TrainingInviteConfirmation({ match }) {
                                 <Step id="type">
                                   <FormGroup className="mb-0">
                                     <ButtonGroup className="d-flex flex-column">
-                                      <Button
-                                        key={1}
-                                        outline
-                                        className={`shipping-selected ${inscriptionType !==
-                                          null &&
-                                          inscriptionType === 'single' &&
-                                          'shipping-selected-active'}`}
-                                        onClick={() =>
-                                          handleInscriptionType(
-                                            'single',
-                                            setFieldValue
-                                          )
-                                        }
-                                        active={
-                                          inscriptionType !== null &&
-                                          inscriptionType === 'single'
-                                        }
-                                      >
-                                        <Label className="mb-0 black font-medium-2">
-                                          {inscriptionType !== null &&
-                                            inscriptionType === 'single' && (
-                                              <Check
-                                                size={24}
-                                                color="#0cc27e"
-                                              />
-                                            )}
-                                          Individual
-                                          <User
-                                            size={24}
-                                            color="#000"
-                                            className="ml-2"
-                                          />
-                                        </Label>
-                                      </Button>
+                                      {inscriptionSingle === true && (
+                                        <Button
+                                          key={1}
+                                          outline
+                                          className={`shipping-selected ${inscriptionType !==
+                                            null &&
+                                            inscriptionType === 'single' &&
+                                            'shipping-selected-active'}`}
+                                          onClick={() =>
+                                            handleInscriptionType(
+                                              'single',
+                                              setFieldValue
+                                            )
+                                          }
+                                          active={
+                                            inscriptionType !== null &&
+                                            inscriptionType === 'single'
+                                          }
+                                        >
+                                          <Label className="mb-0 black font-medium-2">
+                                            {inscriptionType !== null &&
+                                              inscriptionType === 'single' && (
+                                                <Check
+                                                  size={24}
+                                                  color="#0cc27e"
+                                                />
+                                              )}
+                                            Individual
+                                            <User
+                                              size={24}
+                                              color="#000"
+                                              className="ml-2"
+                                            />
+                                          </Label>
+                                        </Button>
+                                      )}
 
-                                      <Button
-                                        key={2}
-                                        outline
-                                        className={`shipping-selected ${inscriptionType !==
-                                          null &&
-                                          inscriptionType === 'couple' &&
-                                          'shipping-selected-active'}`}
-                                        onClick={() =>
-                                          handleInscriptionType(
-                                            'couple',
-                                            setFieldValue
-                                          )
-                                        }
-                                        active={
-                                          inscriptionType !== null &&
-                                          inscriptionType === 'couple'
-                                        }
-                                      >
-                                        <Label className="mb-0 black font-medium-2">
-                                          {inscriptionType !== null &&
-                                            inscriptionType === 'couple' && (
-                                              <Check
-                                                size={24}
-                                                color="#0cc27e"
-                                              />
-                                            )}
-                                          Casal
-                                          <Users
-                                            size={24}
-                                            color="#000"
-                                            className="ml-2"
-                                          />
-                                        </Label>
-                                      </Button>
+                                      {inscriptionCouple === true && (
+                                        <Button
+                                          key={2}
+                                          outline
+                                          className={`shipping-selected ${inscriptionType !==
+                                            null &&
+                                            inscriptionType === 'couple' &&
+                                            'shipping-selected-active'}`}
+                                          onClick={() =>
+                                            handleInscriptionType(
+                                              'couple',
+                                              setFieldValue
+                                            )
+                                          }
+                                          active={
+                                            inscriptionType !== null &&
+                                            inscriptionType === 'couple'
+                                          }
+                                        >
+                                          <Label className="mb-0 black font-medium-2">
+                                            {inscriptionType !== null &&
+                                              inscriptionType === 'couple' && (
+                                                <Check
+                                                  size={24}
+                                                  color="#0cc27e"
+                                                />
+                                              )}
+                                            Casal
+                                            <Users
+                                              size={24}
+                                              color="#000"
+                                              className="ml-2"
+                                            />
+                                          </Label>
+                                        </Button>
+                                      )}
                                     </ButtonGroup>
                                   </FormGroup>
                                 </Step>

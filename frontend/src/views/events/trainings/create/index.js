@@ -163,6 +163,7 @@ export default function TrainingCreate({ className }) {
     modality: '',
     ministery: '',
     default_event_id: '',
+    additional_information: '',
     organizator_id: null,
     organizator_name: '',
     aux_organizator_id: '',
@@ -306,6 +307,7 @@ export default function TrainingCreate({ className }) {
       modality: values.modality,
       is_online_payment: values.is_online_payment === 'true',
       default_event_id: parseInt(values.default_event_id, 10),
+      additional_information: values.additional_information,
       organizator_id: values.organizator_id,
       schedules: values.schedules,
       img_address_url:
@@ -761,7 +763,23 @@ export default function TrainingCreate({ className }) {
                         </FormGroup>
                       </Col>
                     </Row>
-
+                    <Row>
+                      <Col lg="12" md="12" sm="12">
+                        <FormGroup>
+                          <Label for="additional_information">
+                            Informações adicinais
+                          </Label>
+                          <Field
+                            component="textarea"
+                            type="textarea"
+                            id="additional_information"
+                            name="additional_information"
+                            rows="5"
+                            className="form-control"
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
                     <h4 className="form-section">
                       <i className="fa fa-home" size={20} color="#212529" />{' '}
                       Cronograma
