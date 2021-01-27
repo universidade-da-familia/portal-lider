@@ -160,8 +160,8 @@ const ButtonInscription = styled.button`
 `;
 
 export default function Body() {
-  const [singlePrice, setSinglePrice] = useState(null);
-  const [couplePrice, setCouplePrice] = useState(null);
+  const [singlePrice, setSinglePrice] = useState(0);
+  const [couplePrice, setCouplePrice] = useState(0);
 
   const data = useSelector(state => state.event.data);
 
@@ -189,13 +189,13 @@ export default function Body() {
           // yes
           if (data.default_event_id === 64) {
             auxSumSingle += product.training_price;
-            auxSumCouple += product.training_price;
+            auxSumCouple = 215;
           }
 
           // habitudes
           if (data.default_event_id === 63) {
             auxSumSingle += product.training_price;
-            auxSumCouple += product.training_price;
+            auxSumCouple = 200;
           }
 
           // hombridade
@@ -470,25 +470,25 @@ export default function Body() {
               </Col>
             </Row>
           </Col>
-          <Col sm="12" md="6" lg="6" className="p-5">
-            <Row className="flex-column">
-              <Col>
-                <CardImg
-                  alt="informacoes"
-                  className="ml-3 mb-4 width-125 img-fluid"
-                  src={informacoes}
-                />
-              </Col>
-              <Col className="px-4 pb-5">
-                <TitleSection2>Informações adicionais</TitleSection2>
-              </Col>
-              <Col className="px-4">
-                <TextSection2>
-                  Essa parte é onde poe informações adicionais
-                </TextSection2>
-              </Col>
-            </Row>
-          </Col>
+          {data.additional_information && (
+            <Col sm="12" md="6" lg="6" className="p-5">
+              <Row className="flex-column">
+                <Col>
+                  <CardImg
+                    alt="informacoes"
+                    className="ml-3 mb-4 width-125 img-fluid"
+                    src={informacoes}
+                  />
+                </Col>
+                <Col className="px-4 pb-5">
+                  <TitleSection2>Informações adicionais</TitleSection2>
+                </Col>
+                <Col className="px-4">
+                  <TextSection2>{data.additional_information}</TextSection2>
+                </Col>
+              </Row>
+            </Col>
+          )}
         </Row>
 
         <Row style={{ backgroundColor: '#ffffff' }}>
@@ -504,9 +504,45 @@ export default function Body() {
               <Col>
                 <TitleSection3>Investimento</TitleSection3>
               </Col>
-              <Col>
-                <Row className="flex-1 justify-content-center">
-                  {singlePrice > 0 && (
+              {singlePrice > 0 && couplePrice === 0 && (
+                <Col className="align-self-center" sm="4" md="4" lg="4">
+                  <Row
+                    className="flex-column"
+                    style={{
+                      border: '1px solid #999999',
+                      borderRadius: '10px',
+                    }}
+                  >
+                    <Col>
+                      <Section3BoxTitle>Individual</Section3BoxTitle>
+                    </Col>
+                    <Col>
+                      <Section3BoxPrice>{`R$ ${singlePrice}`}</Section3BoxPrice>
+                    </Col>
+                  </Row>
+                </Col>
+              )}
+              {singlePrice === 0 && couplePrice > 0 && (
+                <Col className="align-self-center" sm="4" md="4" lg="4">
+                  <Row
+                    className="flex-column"
+                    style={{
+                      border: '1px solid #999999',
+                      borderRadius: '10px',
+                    }}
+                  >
+                    <Col>
+                      <Section3BoxTitle>Individual</Section3BoxTitle>
+                    </Col>
+                    <Col>
+                      <Section3BoxPrice>{`R$ ${couplePrice}`}</Section3BoxPrice>
+                    </Col>
+                  </Row>
+                </Col>
+              )}
+              {singlePrice > 0 && couplePrice > 0 && (
+                <Col>
+                  <Row className="flex-1 justify-content-center">
                     <Col>
                       <Row
                         className="flex-column m-4 w3-row"
@@ -520,12 +556,10 @@ export default function Body() {
                           <Section3BoxTitle>Individual</Section3BoxTitle>
                         </Col>
                         <Col>
-                          <Section3BoxPrice>R$ 150,00</Section3BoxPrice>
+                          <Section3BoxPrice>{`R$ ${singlePrice}`}</Section3BoxPrice>
                         </Col>
                       </Row>
                     </Col>
-                  )}
-                  {couplePrice > 0 && (
                     <Col sm="12" md="6" lg="4">
                       <Row
                         className="flex-column m-4"
@@ -538,13 +572,13 @@ export default function Body() {
                           <Section3BoxTitle>Casal</Section3BoxTitle>
                         </Col>
                         <Col>
-                          <Section3BoxPrice>R$ 200,00</Section3BoxPrice>
+                          <Section3BoxPrice>{`R$ ${couplePrice}`}</Section3BoxPrice>
                         </Col>
                       </Row>
                     </Col>
-                  )}
-                </Row>
-              </Col>
+                  </Row>
+                </Col>
+              )}
               <Col>
                 <TextSection3>
                   Incluir somente material didádico e participação no evento
