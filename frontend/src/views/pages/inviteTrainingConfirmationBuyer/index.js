@@ -101,14 +101,14 @@ const formSchema = Yup.object().shape({
       'Digite um email válido'
     )
     .required('O email é obrigatório'),
-  church_name: Yup.string().required('Nome da igreja é obrigatório'),
-  pastor_name: Yup.string().required('O nome do pastor é obrigatório'),
-  pastor_email: Yup.string()
-    .matches(
-      /^[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}$/i,
-      'Digite um email válido'
-    )
-    .required('O email é obrigatório'),
+  // church_name: Yup.string().required('Nome da igreja é obrigatório'),
+  // pastor_name: Yup.string().required('O nome do pastor é obrigatório'),
+  // pastor_email: Yup.string()
+  //   .matches(
+  //     /^[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}$/i,
+  //     'Digite um email válido'
+  //   )
+  //   .required('O email é obrigatório'),
   type: Yup.string().required('O tipo é obrigatório'),
   address_type: Yup.string().required('O tipo é obrigatório'),
   address_other_type_name: Yup.string().when('address_type', {
@@ -262,9 +262,9 @@ export default function TrainingInviteConfirmation({ match }) {
     couple_name: '',
     couple_email: '',
     couple_sex: '',
-    church_name: '',
-    pastor_name: '',
-    pastor_email: '',
+    // church_name: '',
+    // pastor_name: '',
+    // pastor_email: '',
     type: '',
     address_type: '',
     address_other_type_name: '',
@@ -2107,7 +2107,7 @@ export default function TrainingInviteConfirmation({ match }) {
                                     </>
                                   )}
                                 </Step>
-                                <Step id="authorization">
+                                {/* <Step id="authorization">
                                   <FormGroup>
                                     <Col sm="12" className="mt-2">
                                       <Label>Nome da igreja</Label>
@@ -2182,7 +2182,7 @@ export default function TrainingInviteConfirmation({ match }) {
                                       </div>
                                     </Col>
                                   </FormGroup>
-                                </Step>
+                                </Step> */}
                                 <Step id="products">
                                   <Label className="mt-3 pl-2 font-medium-3 text-dark text-bold-400 text-center">
                                     Selecione os produtos
@@ -3402,17 +3402,19 @@ export default function TrainingInviteConfirmation({ match }) {
                                     } else {
                                       error = false;
                                     }
-                                  } else if (step.id === 'authorization') {
-                                    if (
-                                      errors.church_name ||
-                                      errors.pastor_email ||
-                                      errors.pastor_name
-                                    ) {
-                                      error = true;
-                                    } else {
-                                      error = false;
-                                    }
-                                  } else if (step.id === 'entity') {
+                                  }
+                                  // else if (step.id === 'authorization') {
+                                  //   if (
+                                  //     errors.church_name ||
+                                  //     errors.pastor_email ||
+                                  //     errors.pastor_name
+                                  //   ) {
+                                  //     error = true;
+                                  //   } else {
+                                  //     error = false;
+                                  //   }
+                                  // }
+                                  else if (step.id === 'entity') {
                                     if (values.cpf === '' || errors.cpf) {
                                       error = true;
                                     } else if (!isValidEmail) {
