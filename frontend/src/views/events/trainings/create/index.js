@@ -14,6 +14,7 @@ import {
   Edit,
   Navigation,
   X,
+  Smartphone,
 } from 'react-feather';
 import { Datepicker } from 'react-formik-ui';
 // import NumberFormat from 'react-number-format';
@@ -54,6 +55,7 @@ import ContentHeader from '~/components/contentHead/contentHeader';
 import CepFormat from '~/components/fields/CepFormat';
 import CNPJFormat from '~/components/fields/CNPJFormat';
 import CPFFormat from '~/components/fields/CPFFormat';
+import PhoneFormat from '~/components/fields/PhoneFormat';
 import { validateCNPJ } from '~/services/validateCNPJ';
 import { validateCPF } from '~/services/validateCPF';
 import { Creators as BankActions } from '~/store/ducks/bank';
@@ -64,9 +66,33 @@ import { Creators as EventActions } from '~/store/ducks/event';
 
 const formDetails = Yup.object().shape({
   modality: Yup.string().required('A modalidade é obrigatória'),
-  organizator_name: Yup.string().required('O líder é obrigatório'),
-  default_event_id: Yup.string().required('Tipo do grupo é obrigatório'),
+  organizator_name: Yup.string().required('O treinador é obrigatório'),
+  default_event_id: Yup.string().required('Tipo do treinamento é obrigatório'),
+  default_event_max_participants: Yup.number(),
+  inscriptions_limit: Yup.number().when(
+    'default_event_max_participants',
+    default_event_max_participants => {
+      return default_event_max_participants
+        ? Yup.number()
+            .max(
+              default_event_max_participants,
+              `O limite de inscrições deve ser menor ou igual a ${default_event_max_participants}.`
+            )
+            .required('O limite de inscrições é obrigatório.')
+        : Yup.number()
+            .max(0)
+            .required('O limite de inscrições é obrigatório.');
+    }
+  ),
   ministery: Yup.string().required('Ministério é obrigatório'),
+  contact_name: Yup.string().required('Nome do contato é obrigatório'),
+  contact_email: Yup.string()
+    .matches(
+      /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+      'Digite um email válido'
+    )
+    .required('O email do contato é obrigatório'),
+  contact_phone: Yup.string().required('Telefone do contato é obrigatório'),
   schedules: Yup.array().of(
     Yup.object().shape({
       date: Yup.string().required('A data é obrigatória.'),
@@ -163,11 +189,16 @@ export default function TrainingCreate({ className }) {
     modality: '',
     ministery: '',
     default_event_id: '',
+    default_event_max_participants: 0,
+    inscriptions_limit: 0,
     additional_information: '',
     organizator_id: null,
     organizator_name: '',
     aux_organizator_id: '',
     aux_organizator_name: '',
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
     schedules: [
       {
         date: '',
@@ -291,6 +322,11 @@ export default function TrainingCreate({ className }) {
   }
 
   function handleSubmit(values) {
+    const formattedContactPhone = values.contact_phone
+      .replace('(', '')
+      .replace(')', '')
+      .replace('-', '');
+
     if (values.country === '30') {
       values.cep = values.cep.replace('-', '');
       values.country = 'BRASIL';
@@ -307,8 +343,12 @@ export default function TrainingCreate({ className }) {
       modality: values.modality,
       is_online_payment: values.is_online_payment === 'true',
       default_event_id: parseInt(values.default_event_id, 10),
+      inscriptions_limit: parseInt(values.inscriptions_limit, 10),
       additional_information: values.additional_information,
       organizator_id: values.organizator_id,
+      contact_name: values.contact_name,
+      contact_email: values.contact_email,
+      contact_phone: formattedContactPhone,
       schedules: values.schedules,
       img_address_url:
         'https://arcowebarquivos-us.s3.amazonaws.com/imagens/52/21/arq_85221.jpg',
@@ -339,9 +379,23 @@ export default function TrainingCreate({ className }) {
 
   function handleEvent(event, setFieldValue) {
     const { value } = event.target;
+
+    const defaultEventFinded = defaultData.find(
+      defaultEvent => defaultEvent.id === parseInt(value, 10)
+    );
+
     setFieldValue('default_event_id', value);
 
-    dispatch(DefaultEventScheduleActions.allDefaultEventScheduleRequest(value));
+    if (defaultEventFinded) {
+      setFieldValue(
+        'default_event_max_participants',
+        defaultEventFinded.max_participants
+      );
+      setFieldValue('inscriptions_limit', defaultEventFinded.max_participants);
+      dispatch(
+        DefaultEventScheduleActions.allDefaultEventScheduleRequest(value)
+      );
+    }
   }
 
   function handleMinistery(event, setFieldValue) {
@@ -383,6 +437,25 @@ export default function TrainingCreate({ className }) {
         cpf_cnpj: values.cpf_cnpj,
       });
       dispatch(CepActions.cepRequest(cep, 0));
+    }
+  }
+
+  function handleModalityChange(event, setFieldValue) {
+    const newModality = event.target.value;
+
+    setFieldValue('modality', newModality);
+    if (newModality === 'Online') {
+      setFieldValue('cep', '');
+      setFieldValue('country', '');
+      setFieldValue('apiUf', '');
+      setFieldValue('apiCity', '');
+      setFieldValue('address_name', '');
+      setFieldValue('street', '');
+      setFieldValue('street_number', '');
+      setFieldValue('neighborhood', '');
+      setFieldValue('complement', '');
+    } else {
+      setFieldValue('country', '30');
     }
   }
 
@@ -601,6 +674,9 @@ export default function TrainingCreate({ className }) {
                               component="select"
                               id="modality"
                               name="modality"
+                              onChange={e =>
+                                handleModalityChange(e, setFieldValue)
+                              }
                               className={`
                                     form-control
                                     ${errors.modality &&
@@ -720,7 +796,7 @@ export default function TrainingCreate({ className }) {
                         </FormGroup>
                       </Col>
 
-                      <Col lg="8" md="12" sm="12">
+                      <Col lg="4" md="12" sm="12">
                         <FormGroup>
                           <Label for="default_event_id">Treinamento</Label>
                           <Field
@@ -762,6 +838,37 @@ export default function TrainingCreate({ className }) {
                           ) : null}
                         </FormGroup>
                       </Col>
+                      <Field
+                        type="hidden"
+                        name="default_event_max_participants"
+                        id="default_event_max_participants"
+                      />
+                      {values.default_event_id && (
+                        <Col sm="12" md="12" lg="4" className="mb-2">
+                          <FormGroup>
+                            <Label for="inscriptions_limit">
+                              Limite de inscrições
+                            </Label>
+                            <Field
+                              type="number"
+                              name="inscriptions_limit"
+                              id="inscriptions_limit"
+                              className={`
+                              form-control
+                              ${errors.inscriptions_limit &&
+                                touched.inscriptions_limit &&
+                                'is-invalid'}
+                            `}
+                            />
+                            {errors.inscriptions_limit &&
+                            touched.inscriptions_limit ? (
+                              <div className="invalid-feedback">
+                                {errors.inscriptions_limit}
+                              </div>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                      )}
                     </Row>
                     <Row>
                       <Col lg="12" md="12" sm="12">
@@ -994,6 +1101,105 @@ export default function TrainingCreate({ className }) {
                               {errors.organizator_name}
                             </div>
                           ) : null}
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <h4 className="form-section">
+                      <i
+                        className="fa fa-address-card"
+                        size={20}
+                        color="#212529"
+                      />{' '}
+                      Contato do treinamento
+                    </h4>
+                    <Row className="align-items-center">
+                      <Col sm="12" md="6" lg="4" className="mb-2">
+                        <FormGroup>
+                          <Label for="contact_name">Nome do contato</Label>
+                          <Field
+                            type="text"
+                            name="contact_name"
+                            id="contact_name"
+                            className={`
+                              form-control
+                              ${errors.contact_name &&
+                                touched.contact_name &&
+                                'is-invalid'}
+                            `}
+                          />
+                          {errors.contact_name && touched.contact_name ? (
+                            <div className="invalid-feedback">
+                              {errors.contact_name}
+                            </div>
+                          ) : null}
+                        </FormGroup>
+                      </Col>
+                      <Col sm="12" md="6" lg="4" className="mb-2">
+                        <FormGroup>
+                          <Label for="contact_email">Email do contato</Label>
+                          <Field
+                            type="text"
+                            name="contact_email"
+                            id="contact_email"
+                            className={`
+                              form-control
+                              ${errors.contact_email &&
+                                touched.contact_email &&
+                                'is-invalid'}
+                            `}
+                          />
+                          {errors.contact_email && touched.contact_email ? (
+                            <div className="invalid-feedback">
+                              {errors.contact_email}
+                            </div>
+                          ) : null}
+                        </FormGroup>
+                      </Col>
+                      <Col
+                        sm="12"
+                        md="6"
+                        lg="4"
+                        xl="4"
+                        className="has-icon-left mb-2"
+                      >
+                        <FormGroup>
+                          <Label>Telefone do contato</Label>
+                          <div className="position-relative has-icon-left">
+                            <Field
+                              name="contact_phone"
+                              id="contact_phone"
+                              className={`
+                                    form-control
+                                    ${errors.contact_phone &&
+                                      touched.contact_phone &&
+                                      'is-invalid'}
+                                  `}
+                              render={({ field }) => (
+                                <PhoneFormat
+                                  // eslint-disable-next-line react/jsx-props-no-spreading
+                                  {...field}
+                                  id="contact_phone"
+                                  name="contact_phone"
+                                  className={`
+                                        form-control
+                                        ${errors.contact_phone &&
+                                          touched.contact_phone &&
+                                          'is-invalid'}
+                                      `}
+                                  value={values.contact_phone}
+                                />
+                              )}
+                            />
+                            {errors.contact_phone && touched.contact_phone ? (
+                              <div className="invalid-feedback">
+                                {errors.contact_phone}
+                              </div>
+                            ) : null}
+                            <div className="form-control-position">
+                              <Smartphone size={14} color="#212529" />
+                            </div>
+                          </div>
                         </FormGroup>
                       </Col>
                     </Row>

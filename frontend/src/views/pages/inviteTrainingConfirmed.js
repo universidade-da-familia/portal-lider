@@ -109,7 +109,9 @@ export default function InviteConfirmed({ match }) {
               >
                 <CardBody className="d-flex flex-column justify-content-center">
                   <Label className="mb-4 font-medium-3 text-dark text-bold-400 text-center text-uppercase">
-                    Parabéns! Você está inscrito no evento.
+                    Parabéns! Você concluiu sua inscrição.
+                    <br />
+                    Ela será confirmada após o processamento do pagamento.
                   </Label>
 
                   <CheckCircle

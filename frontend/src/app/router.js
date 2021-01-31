@@ -111,6 +111,9 @@ const LazyInviteTrainingConfirmationBuyer = lazy(() =>
   import('~/views/pages/inviteTrainingConfirmationBuyer/index')
 );
 const LazyInviteConfirmed = lazy(() => import('~/views/pages/inviteConfirmed'));
+const LazyInviteTrainingConfirmed = lazy(() =>
+  import('~/views/pages/inviteTrainingConfirmed')
+);
 
 const LazyInviteExpired = lazy(() => import('~/views/pages/inviteExpired'));
 
@@ -592,6 +595,16 @@ export default function Router() {
           render={matchprops => (
             <Suspense fallback={<Spinner />}>
               <LazyInviteConfirmed {...matchprops} />
+            </Suspense>
+          )}
+        />
+
+        <FullPageLayout
+          exact
+          path="/evento/:event_id/convite/:id/confirmacao/treinamento/sucesso"
+          render={matchprops => (
+            <Suspense fallback={<Spinner />}>
+              <LazyInviteTrainingConfirmed {...matchprops} />
             </Suspense>
           )}
         />

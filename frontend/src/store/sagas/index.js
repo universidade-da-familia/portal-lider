@@ -2057,7 +2057,7 @@ function* createParticipantSeminary(action) {
 
           yield put(
             push(
-              `/evento/${data.event_id}/convite/${user.id}/confirmacao/sucesso`
+              `/evento/${data.event_id}/convite/${user.id}/confirmacao/treinamento/sucesso`
             )
           );
         }
