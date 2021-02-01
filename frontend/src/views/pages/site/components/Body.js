@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Row, Col, CardImg } from 'reactstrap';
 
+import moment from 'moment';
 import styled from 'styled-components';
 
 import contato from '~/assets/img/contato.svg';
@@ -19,6 +20,7 @@ import treinador from '~/assets/img/treinador.svg';
 
 // import * as moment from 'moment';
 import 'moment/locale/pt-br';
+import LeaderTableGroups from '~/views/admin/configurations/ministery/table';
 
 const EventType = styled.p`
   @font-face {
@@ -162,6 +164,7 @@ const ButtonInscription = styled.button`
 export default function Body() {
   const [singlePrice, setSinglePrice] = useState(0);
   const [couplePrice, setCouplePrice] = useState(0);
+  const [mounthNames, setMounthNames] = useState([]);
 
   const data = useSelector(state => state.event.data);
 
@@ -229,6 +232,49 @@ export default function Body() {
 
       setSinglePrice(auxSumSingle);
       setCouplePrice(auxSumCouple);
+
+      const mounths = [];
+      const mounthNamesAux = [];
+
+      moment(data.schedules[0].date).date();
+
+      data.schedules.forEach(schedule => {
+        mounths.push(moment(schedule.date).month());
+      });
+
+      const mounthsFilter = mounths.filter((este, i) => {
+        return mounths.indexOf(este) === i;
+      });
+
+      mounthsFilter.forEach(mounth => {
+        if (mounth === 1) {
+          mounthNamesAux.push('Janeiro');
+        } else if (mounth === 2) {
+          mounthNamesAux.push('Fevereiro');
+        } else if (mounth === 3) {
+          mounthNamesAux.push('Março');
+        } else if (mounth === 4) {
+          mounthNamesAux.push('Abril');
+        } else if (mounth === 5) {
+          mounthNamesAux.push('Maio');
+        } else if (mounth === 6) {
+          mounthNamesAux.push('Junho');
+        } else if (mounth === 7) {
+          mounthNamesAux.push('Julho');
+        } else if (mounth === 8) {
+          mounthNamesAux.push('Agosto');
+        } else if (mounth === 9) {
+          mounthNamesAux.push('Setembro');
+        } else if (mounth === 10) {
+          mounthNamesAux.push('Outubro');
+        } else if (mounth === 11) {
+          mounthNamesAux.push('Novembro');
+        } else if (mounth === 12) {
+          mounthNamesAux.push('Dezembro');
+        }
+      });
+
+      setMounthNames(mounthNamesAux);
     }
   }, [data]);
 
@@ -282,7 +328,13 @@ export default function Body() {
                     />
                   </Col>
                   <Col sm="11" md="11" lg="11">
+                    {/* {console.tron.log(data)}
                     <LocalEvent>12 a 13 de Dezembro de 2020</LocalEvent>
+                    {mounthNames.length > 0 ? (
+                      
+                    ) : (
+                      data.schedules
+                    )} */}
                   </Col>
                 </Row>
               </Col>
