@@ -22,6 +22,7 @@ import treinador from '~/assets/img/treinador.svg';
 
 // import * as moment from 'moment';
 import 'moment/locale/pt-br';
+import LeaderTableGroups from '~/views/admin/configurations/ministery/table';
 
 const EventType = styled.p`
   @font-face {

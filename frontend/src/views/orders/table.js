@@ -102,25 +102,6 @@ export default function OrderTable({ data, rows = 5 }) {
           },
         },
         {
-          Header: 'Vcto boleto',
-          id: 'created_at',
-          width: 190,
-          accessor: d => d.created_at,
-          Cell: row => {
-            if (row.row.payment_name === 'Boleto') {
-              return format(
-                addDays(new Date(row.row.created_at), 30),
-                'dd/MM/yyyy',
-                {
-                  locale: ptBR,
-                }
-              );
-            } else {
-              return ''
-            }
-          },
-        },
-        {
           Header: 'Total',
           id: 'total',
           accessor: d => d.total,
@@ -152,7 +133,10 @@ export default function OrderTable({ data, rows = 5 }) {
           style: {
             cursor: 'pointer',
             overflow: column.id === 'actions' ? 'visible' : 'hidden',
-            background : rowInfo !== undefined && rowInfo.original.status_id === 10 && '#FFCDD3'
+            background:
+              rowInfo !== undefined &&
+              rowInfo.original.status_id === 10 &&
+              '#FFCDD3',
           },
 
           onClick: () => handleEdit(rowInfo, column.Header),
