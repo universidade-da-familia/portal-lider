@@ -335,7 +335,10 @@ export default function Body() {
         if (
           !isAssistant &&
           !isQuitter &&
-          (paymentStatus === 1 || paymentStatus === 2 || paymentStatus === 3)
+          (paymentStatus === 1 ||
+            paymentStatus === 2 ||
+            paymentStatus === 3 ||
+            participant.participant_order === null)
         ) {
           return participant;
         }
