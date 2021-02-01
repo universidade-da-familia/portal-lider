@@ -23,6 +23,7 @@ import {
   CreditCard,
   RefreshCw,
   Mail,
+  ShoppingCart,
   Phone,
   ArrowRightCircle,
   Map,
@@ -671,6 +672,7 @@ export default function UserProfile({ match, className }) {
     elem.select();
     document.execCommand('copy');
     document.body.removeChild(elem);
+    toastr.success('', 'O link foi copiado com sucesso.');
   }
 
   function toggleModalOrganizator() {
@@ -1206,37 +1208,13 @@ export default function UserProfile({ match, className }) {
     }
   }
 
-  function finishInscriptions(digital_certificate = false) {
+  function finishInscriptions(digital_certificate = true) {
     const eventData = {
       is_inscription_finished: true,
       digital_certificate,
     };
 
     dispatch(EventActions.eventEditRequest(match.params.event_id, eventData));
-  }
-
-  function sendDigitalCertificates() {
-    const all_organizators = event_data.organizators.map(
-      organizator => organizator.pivot.entity_id
-    );
-    const all_participants = event_data.participants.map(
-      participant => participant.pivot.id
-    );
-
-    const reload = false;
-
-    dispatch(
-      ParticipantActions.editPrintDateRequest(
-        all_organizators,
-        all_participants,
-        event_data.id,
-        reload
-      )
-    );
-
-    const digital_certificate = true;
-
-    finishInscriptions(digital_certificate);
   }
 
   function reopenInscriptions() {
@@ -1510,7 +1488,8 @@ export default function UserProfile({ match, className }) {
   // eslint-disable-next-line consistent-return
   function handleEnableAddParticipantButton() {
     if (event_data !== null) {
-      if (event_data.is_finished) return false;
+      if (event_data.is_inscription_finished || event_data.is_finished)
+        return false;
 
       if (
         event_data.defaultEvent.max_participants +
@@ -1900,38 +1879,13 @@ export default function UserProfile({ match, className }) {
                                 </h5>
                                 <br />
                                 <div>
-                                  De qual forma você prefere receber os
-                                  certificados?
-                                </div>
-                                <br />
-                                <div>
-                                  <b>Impresso:</b> enviaremos os certificados
-                                  para o endereço que você informar no próximo
-                                  passo.
-                                </div>
-                                <br />
-
-                                <div>
-                                  <b>Digital:</b> Você poderá "Emitir
-                                  certificados" no próximo passo, clicando no
-                                  botão "Emitir certificados" abaixo do botão
-                                  "finalizar inscrições"
+                                  Ao finalizar as inscrições não será possível
+                                  incluir novos participantes.
                                 </div>
                               </>,
                               {
-                                onOk: () => sendDigitalCertificates(),
-                                okText: 'Digital',
+                                onOk: () => finishInscriptions(),
                                 onCancel: () => {},
-                                buttons: [
-                                  {
-                                    text: 'Impresso',
-                                    handler: () =>
-                                      toggleModalRegisterNewAddress(),
-                                  },
-                                  {
-                                    cancel: true,
-                                  },
-                                ],
                               }
                             );
 
@@ -2055,38 +2009,13 @@ export default function UserProfile({ match, className }) {
                                       </h5>
                                       <br />
                                       <div>
-                                        De qual forma você prefere receber os
-                                        certificados?
-                                      </div>
-                                      <br />
-                                      <div>
-                                        <b>Impresso:</b> enviaremos os
-                                        certificados para o endereço que você
-                                        informar no próximo passo.
-                                      </div>
-                                      <br />
-
-                                      <div>
-                                        <b>Digital:</b> Você poderá "Emitir
-                                        certificados" no próximo passo, clicando
-                                        no botão "Emitir certificados" abaixo do
-                                        botão "finalizar inscrições"
+                                        Ao finalizar as inscrições não será
+                                        possível incluir novos participantes.
                                       </div>
                                     </>,
                                     {
-                                      onOk: () => sendDigitalCertificates(),
-                                      okText: 'Digital',
+                                      onOk: () => finishInscriptions(),
                                       onCancel: () => {},
-                                      buttons: [
-                                        {
-                                          text: 'Impresso',
-                                          handler: () =>
-                                            toggleModalRegisterNewAddress(),
-                                        },
-                                        {
-                                          cancel: true,
-                                        },
-                                      ],
                                     }
                                   );
 
@@ -3495,32 +3424,43 @@ export default function UserProfile({ match, className }) {
                         <Row className="master">
                           <div className="profile-cover-buttons">
                             <div className="media-body halfway-fab">
-                              {handleEnableAddParticipantButton() ? (
-                                <>
-                                  <div className="d-none d-sm-none d-md-none d-lg-block ml-auto">
-                                    <Button
-                                      color="primary"
-                                      className="btn-raised mr-2 mb-0 font-small-3"
-                                      onClick={copyLink}
-                                    >
-                                      <FeatherLink size={16} /> Copiar link de
-                                      inscrição
-                                    </Button>
-                                  </div>
+                              <div className="d-flex flex-row">
+                                <div className="d-none d-sm-none d-md-none d-lg-block ml-auto">
+                                  <Button
+                                    color="primary"
+                                    className="btn-raised mr-2 mb-0 font-small-3"
+                                    onClick={copyLink}
+                                  >
+                                    <FeatherLink size={16} /> Copiar link do
+                                    evento
+                                  </Button>
+                                </div>
 
-                                  <div className="ml-2">
-                                    <Button
-                                      color="success"
-                                      className="btn-raised mr-3 d-lg-none"
-                                      onClick={toggleModalParticipant}
-                                    >
-                                      <i className="fa fa-plus" />
-                                    </Button>
-                                  </div>
-                                </>
-                              ) : (
-                                <div />
-                              )}
+                                {handleEnableAddParticipantButton() && (
+                                  <>
+                                    <div className="d-none d-sm-none d-md-none d-lg-block ml-auto">
+                                      <Button
+                                        color="success"
+                                        className="btn-raised mr-2 mb-0 font-small-3"
+                                        onClick={toggleModalParticipant}
+                                      >
+                                        <i className="fa fa-user fa-xs" />{' '}
+                                        Inserir participante
+                                      </Button>
+                                    </div>
+
+                                    <div className="ml-2">
+                                      <Button
+                                        color="success"
+                                        className="btn-raised mr-3 d-lg-none"
+                                        onClick={toggleModalParticipant}
+                                      >
+                                        <i className="fa fa-plus" />
+                                      </Button>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </Row>
@@ -3533,8 +3473,9 @@ export default function UserProfile({ match, className }) {
                                 return (
                                   participant.pivot.assistant === false &&
                                   participant.pivot.is_quitter === false &&
-                                  participant.participant_order.order
-                                    .status_id === 2
+                                  (participant.participant_order?.order
+                                    .status_id === 2 ||
+                                    participant.participant_order === null)
                                 );
                               }
                             )}
@@ -3562,7 +3503,7 @@ export default function UserProfile({ match, className }) {
                                 return (
                                   participant.pivot.assistant === false &&
                                   participant.pivot.is_quitter === false &&
-                                  participant.participant_order.order
+                                  participant.participant_order?.order
                                     .status_id === 1
                                 );
                               }
@@ -3591,7 +3532,7 @@ export default function UserProfile({ match, className }) {
                                 return (
                                   participant.pivot.assistant === false &&
                                   participant.pivot.is_quitter === false &&
-                                  participant.participant_order.order
+                                  participant.participant_order?.order
                                     .status_id === 3
                                 );
                               }
@@ -4043,7 +3984,7 @@ export default function UserProfile({ match, className }) {
                                 }
                               />
                             </Col>
-                            <Col lg="2" md="2" xs="2">
+                            <Col lg="3" md="3" xs="4">
                               {profile_data.admin ? (
                                 <Button
                                   disabled={confirmDisabled}
@@ -4051,8 +3992,8 @@ export default function UserProfile({ match, className }) {
                                   type="submit"
                                 >
                                   {lesson_data.is_finished
-                                    ? 'Alterar relatório'
-                                    : 'Confirmar relatório'}
+                                    ? 'Alterar finalização do evento'
+                                    : 'Finalizar evento'}
                                 </Button>
                               ) : (
                                 <Button
@@ -4063,8 +4004,8 @@ export default function UserProfile({ match, className }) {
                                   type="submit"
                                 >
                                   {lesson_data.is_finished
-                                    ? 'Alterar relatório'
-                                    : 'Confirmar relatório'}
+                                    ? 'Alterar finalização do evento'
+                                    : 'Finalizar evento'}
                                 </Button>
                               )}
                             </Col>
@@ -4077,7 +4018,7 @@ export default function UserProfile({ match, className }) {
               </Row>
             </>
           </TabPane>
-          <TabPane tabId="6">teste</TabPane>
+          <TabPane tabId="6">Em desenvolvimento...</TabPane>
         </TabContent>
 
         <Modal isOpen={modalOrganizator} toggle={toggleModalOrganizator}>
@@ -4548,7 +4489,7 @@ export default function UserProfile({ match, className }) {
                 </Button>
               )}
 
-              <Button
+              {/* <Button
                 outline
                 type="submit"
                 color="default"
@@ -4561,13 +4502,13 @@ export default function UserProfile({ match, className }) {
                 <div className="d-flex justify-content-around align-items-center">
                   <Mail size={24} color="#000" className="mr-2" />
                   <div>
-                    <h5 className="mb-0">Convidar participante por email</h5>
+                    <h5 className="mb-0">Convite para inscrição</h5>
                   </div>
                   <ArrowRightCircle size={24} color="#000" className="mr-2" />
                 </div>
-              </Button>
+              </Button> */}
 
-              <Button
+              {/* <Button
                 outline
                 type="submit"
                 color="default"
@@ -4578,15 +4519,13 @@ export default function UserProfile({ match, className }) {
                 }}
               >
                 <div className="d-flex justify-content-around align-items-center">
-                  <Mail size={24} color="#000" className="mr-2" />
+                  <ShoppingCart size={24} color="#000" className="mr-2" />
                   <div>
-                    <h5 className="mb-0">
-                      Convidar participante para se inscrever e comprar
-                    </h5>
+                    <h5 className="mb-0">Convite para inscrição e compra</h5>
                   </div>
                   <ArrowRightCircle size={24} color="#000" className="mr-2" />
                 </div>
-              </Button>
+              </Button> */}
             </CardBody>
           </ModalBody>
         </Modal>

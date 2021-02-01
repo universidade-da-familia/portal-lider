@@ -3360,7 +3360,7 @@ function* editParticipantHierarchy(action) {
       });
     }
     if (eventType === 'treinamento') {
-      toastr.confirm('Relatório confirmado.', {
+      toastr.confirm('Evento finalizado.', {
         onOk: window.location.reload(),
         disableCancel: true,
       });

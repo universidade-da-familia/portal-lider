@@ -320,7 +320,10 @@ export default function Body() {
         new Date()
       );
 
-      if (differenceBetweenTodayAndStartDate <= 15) {
+      if (
+        data.is_inscription_finished ||
+        differenceBetweenTodayAndStartDate <= 15
+      ) {
         setIsInscriptionsFinished(true);
       }
 
