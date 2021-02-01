@@ -331,6 +331,22 @@ export default function OrderRead({ match }) {
               </p>
 
               <p className="font-medium-2">
+                <span className="black">
+                  Número da nota fiscal (Netsuite):{' '}
+                </span>
+                <span className="black font-weight-bold">
+                  <a
+                    href={order_data.nfe_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="blue font-weight-bold"
+                  >
+                    000{order_data.nfe_id} (Clique para baixar a NF-e)
+                  </a>
+                </span>
+              </p>
+
+              <p className="font-medium-2">
                 <span className="black">Status do pedido: </span>
                 <span className="black font-weight-bold">
                   {order_data.status.name}
@@ -343,6 +359,20 @@ export default function OrderRead({ match }) {
                   {format(new Date(order_data.created_at), 'dd/MM/yyyy', {
                     locale: ptBR,
                   })}
+                </span>
+              </p>
+
+              <p className="font-medium-2">
+                <span className="black">Link para rastreio: </span>
+                <span className="black font-weight-bold">
+                  <a
+                    href={order_data.shipping_code}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="blue font-weight-bold"
+                  >
+                    Rastrear meu pedido
+                  </a>
                 </span>
               </p>
 

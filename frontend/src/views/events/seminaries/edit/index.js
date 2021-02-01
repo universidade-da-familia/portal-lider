@@ -93,12 +93,12 @@ import { Creators as OrganizatorActions } from '~/store/ducks/organizator';
 import { Creators as ParticipantActions } from '~/store/ducks/participant';
 import Certificate from '~/views/certificate/index';
 
-import CustomTabs from '../../../../components/tabs/default';
-import ChurchsTable from './churchsTable';
-import { formatName } from './formatName';
-import InvitedTable from './invitedTable';
-import ParticipantTable from './participantTable';
-import QuitterTable from './quitterTable';
+// import CustomTabs from '../../../../components/tabs/default';
+// import ChurchsTable from './churchsTable';
+// import { formatName } from './formatName';
+// import InvitedTable from './invitedTable';
+// import ParticipantTable from './participantTable';
+// import QuitterTable from './quitterTable';
 
 const options = [
   {
@@ -601,7 +601,7 @@ export default function UserProfile({ match, className }) {
       certificateParticipants.map(participant => {
         return {
           id: participant.id,
-          name: formatName(participant.name),
+          // name: formatName(participant.name),
           checked: participant.checked,
           participant_id: participant.participant_id,
           organizator_id: participant.organizator_id,
@@ -3129,7 +3129,7 @@ export default function UserProfile({ match, className }) {
                           </div>
                         </Row>
                       </div>
-                      <CustomTabs
+                      {/* <CustomTabs
                         TabContent={
                           <ParticipantTable
                             data={event_data.participants.filter(
@@ -3145,7 +3145,7 @@ export default function UserProfile({ match, className }) {
                             isAdmin={profile_data.admin}
                           />
                         }
-                      />
+                      /> */}
                     </CardBody>
                   </Card>
                   <Card>
@@ -3155,7 +3155,7 @@ export default function UserProfile({ match, className }) {
                           Desistentes: {totalQuitters}
                         </Badge>
                       </div>
-                      <CustomTabs
+                      {/* <CustomTabs
                         TabContent={
                           <QuitterTable
                             data={event_data.participants.filter(
@@ -3167,7 +3167,7 @@ export default function UserProfile({ match, className }) {
                             eventData={event_data}
                           />
                         }
-                      />
+                      /> */}
                     </CardBody>
                   </Card>
                   <Card>
@@ -3177,9 +3177,9 @@ export default function UserProfile({ match, className }) {
                           Convites pendentes: {invites.length}
                         </Badge>
                       </div>
-                      <CustomTabs
+                      {/* <CustomTabs
                         TabContent={<InvitedTable data={invites} />}
-                      />
+                      /> */}
                     </CardBody>
                   </Card>
                 </Col>
@@ -4643,6 +4643,10 @@ export default function UserProfile({ match, className }) {
             Impressão de certificados
           </ModalHeader>
           <ModalBody>
+            <Label>
+              Para a impressão do certificado, procure usar o papel off set 120
+              gramas, tamanho 15 x 20,5 cm
+            </Label>
             {pdfButton !== null && (
               <BlobProvider document={<Certificate certificates={pdfButton} />}>
                 {({ url }) => {
@@ -5181,13 +5185,13 @@ export default function UserProfile({ match, className }) {
                   {churchs && churchs.length > 0 && (
                     <Row className="mt-3">
                       <Col>
-                        <ChurchsTable
+                        {/* <ChurchsTable
                           churchs={churchs}
                           value={value => setSelectedChurch(value)}
                           modalChurch={modalChurch =>
                             setModalChurch(modalChurch)
                           }
-                        />
+                        /> */}
                       </Col>
                     </Row>
                   )}

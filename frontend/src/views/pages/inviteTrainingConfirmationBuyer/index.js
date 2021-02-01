@@ -2185,7 +2185,7 @@ export default function TrainingInviteConfirmation({ match }) {
                                 </Step> */}
                                 <Step id="products">
                                   <Label className="mt-3 pl-2 font-medium-3 text-dark text-bold-400 text-center">
-                                    Selecione os produtos
+                                    Material didático
                                   </Label>
                                   {kitProducts.map((product, index) => {
                                     if (product.id === 345) {
@@ -2255,7 +2255,7 @@ export default function TrainingInviteConfirmation({ match }) {
                                 <Step id="address">
                                   <FormGroup>
                                     <Label className="mt-3 pl-2 font-medium-3 text-dark text-bold-400 text-center">
-                                      Selecione o endereço
+                                      Endereço para entrega
                                     </Label>
                                     <Row>
                                       <Col sm="6">
@@ -2776,7 +2776,7 @@ export default function TrainingInviteConfirmation({ match }) {
                                                     shippingOption.delivery_method_id
                                                 }
                                               >
-                                                <div className="d-flex flex-column flex-sm-column flex-md-column flex-lg-row flex-xl-row">
+                                                <div className="d-flex align-items-center flex-column flex-sm-column flex-md-column flex-lg-row flex-xl-row">
                                                   <Col className="text-lg-left text-xl-left pl-lg-5 pl-xl-5">
                                                     <Label className="mb-0 black font-medium-2">
                                                       {shippingSelected !==
@@ -2789,7 +2789,7 @@ export default function TrainingInviteConfirmation({ match }) {
                                                           />
                                                         )}
                                                       {
-                                                        shippingOption.description
+                                                        shippingOption.delivery_method_name
                                                       }
                                                       {shippingOption.free_shipping && (
                                                         <>

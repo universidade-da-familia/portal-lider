@@ -75,6 +75,7 @@
     "react-feather": "^2.0.3",
     "react-formik-ui": "^3.0.20",
     "react-ga": "^2.7.0",
+    "react-html-parser": "^2.0.2",
     "react-https-redirect": "^1.1.0",
     "react-icons": "^3.9.0",
     "react-input-mask": "^2.0.4",

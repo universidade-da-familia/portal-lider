@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import ReactHtmlParser from 'react-html-parser';
 import { useSelector } from 'react-redux';
 import { Row, Col, CardImg } from 'reactstrap';
 
-import moment from 'moment';
+import { format, differenceInDays } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 import styled from 'styled-components';
 
 import contato from '~/assets/img/contato.svg';
@@ -106,6 +108,15 @@ const TitleSection2 = styled.p`
   color: #4d4d4d;
 `;
 
+const TextSectionList = styled.ul``;
+
+const TextSectionLi = styled.li`
+  font-family: robotoRegular;
+  font-size: 18px;
+  color: #999999;
+  line-height: 1.6;
+`;
+
 const TextSection2 = styled.p`
   font-family: robotoRegular;
   font-size: 18px;
@@ -161,15 +172,87 @@ const ButtonInscription = styled.button`
   } */
 `;
 
+const ButtonInscriptionDisabled = styled.button`
+  font-family: montserratBold;
+  font-size: 18px;
+  border-radius: 50px;
+  color: #ffffff;
+  background-image: linear-gradient(90deg, #ffa402, #fbdf63);
+  border-style: none;
+
+  /* &::hover {
+    Shadow: #000000, Opacity: 25%,
+    Y: 4px, X:0px Blur: 12px
+  } */
+`;
+
 export default function Body() {
+  const [validParticipants, setValidParticipants] = useState([]);
+  const [isInscriptionsFinished, setIsInscriptionsFinished] = useState(false);
   const [singlePrice, setSinglePrice] = useState(0);
   const [couplePrice, setCouplePrice] = useState(0);
-  const [mounthNames, setMounthNames] = useState([]);
+  const [readableDate, setReadableDate] = useState('');
 
   const data = useSelector(state => state.event.data);
 
+  const mountReadableDate = useCallback(schedules => {
+    if (schedules.length === 1) {
+      const firstDate = format(
+        new Date(schedules[0].date),
+        "d 'de' MMMM 'de' yyyy",
+        {
+          locale: ptBR,
+        }
+      );
+
+      setReadableDate(firstDate);
+    } else {
+      const scheduleMonths = schedules.map(schedule =>
+        format(new Date(schedule.date), 'M', { locale: ptBR })
+      );
+
+      const isSameMonths = scheduleMonths.every(
+        month => month === scheduleMonths[0]
+      );
+
+      if (isSameMonths) {
+        const firstDate = format(new Date(schedules[0].date), "d 'a' ", {
+          locale: ptBR,
+        });
+        const lastDate = format(
+          new Date(schedules[schedules.length - 1].date),
+          "d 'de' MMMM 'de' yyyy",
+          {
+            locale: ptBR,
+          }
+        );
+
+        setReadableDate(`${firstDate} ${lastDate}`);
+      } else {
+        const firstDate = format(
+          new Date(schedules[0].date),
+          "d 'de' MMMM 'a'",
+          {
+            locale: ptBR,
+          }
+        );
+        const lastDate = format(
+          new Date(schedules[schedules.length - 1].date),
+          "d 'de' MMMM 'de' yyyy",
+          {
+            locale: ptBR,
+          }
+        );
+
+        setReadableDate(`${firstDate} ${lastDate}`);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (data !== null) {
+      mountReadableDate(data.schedules);
+
       let auxSumSingle = 0;
       let auxSumCouple = 0;
       data.defaultEvent.kit.products.forEach(product => {
@@ -233,48 +316,38 @@ export default function Body() {
       setSinglePrice(auxSumSingle);
       setCouplePrice(auxSumCouple);
 
-      const mounths = [];
-      const mounthNamesAux = [];
+      const differenceBetweenTodayAndStartDate = differenceInDays(
+        new Date(data.start_date),
+        new Date()
+      );
 
-      moment(data.schedules[0].date).date();
+      if (
+        data.is_inscription_finished ||
+        differenceBetweenTodayAndStartDate <= 15
+      ) {
+        setIsInscriptionsFinished(true);
+      }
 
-      data.schedules.forEach(schedule => {
-        mounths.push(moment(schedule.date).month());
-      });
+      const filteredParticipants = data.participants.filter(participant => {
+        const isAssistant = participant.pivot.assistant;
+        const isQuitter = participant.pivot.is_quitter;
+        const paymentStatus = participant.participant_order?.order.status_id;
 
-      const mounthsFilter = mounths.filter((este, i) => {
-        return mounths.indexOf(este) === i;
-      });
-
-      mounthsFilter.forEach(mounth => {
-        if (mounth === 1) {
-          mounthNamesAux.push('Janeiro');
-        } else if (mounth === 2) {
-          mounthNamesAux.push('Fevereiro');
-        } else if (mounth === 3) {
-          mounthNamesAux.push('Março');
-        } else if (mounth === 4) {
-          mounthNamesAux.push('Abril');
-        } else if (mounth === 5) {
-          mounthNamesAux.push('Maio');
-        } else if (mounth === 6) {
-          mounthNamesAux.push('Junho');
-        } else if (mounth === 7) {
-          mounthNamesAux.push('Julho');
-        } else if (mounth === 8) {
-          mounthNamesAux.push('Agosto');
-        } else if (mounth === 9) {
-          mounthNamesAux.push('Setembro');
-        } else if (mounth === 10) {
-          mounthNamesAux.push('Outubro');
-        } else if (mounth === 11) {
-          mounthNamesAux.push('Novembro');
-        } else if (mounth === 12) {
-          mounthNamesAux.push('Dezembro');
+        if (
+          !isAssistant &&
+          !isQuitter &&
+          (paymentStatus === 1 ||
+            paymentStatus === 2 ||
+            paymentStatus === 3 ||
+            participant.participant_order === null)
+        ) {
+          return participant;
         }
+
+        return null;
       });
 
-      setMounthNames(mounthNamesAux);
+      setValidParticipants(filteredParticipants);
     }
   }, [data]);
 
@@ -292,7 +365,7 @@ export default function Body() {
               </Col>
               <Col>
                 <EventDescription>
-                  {data.defaultEvent.description}
+                  {ReactHtmlParser(data.defaultEvent.description)}
                 </EventDescription>
               </Col>
             </Row>
@@ -328,13 +401,7 @@ export default function Body() {
                     />
                   </Col>
                   <Col sm="11" md="11" lg="11">
-                    {/* {console.tron.log(data)}
-                    <LocalEvent>12 a 13 de Dezembro de 2020</LocalEvent>
-                    {mounthNames.length > 0 ? (
-                      
-                    ) : (
-                      data.schedules
-                    )} */}
+                    <LocalEvent>{readableDate}</LocalEvent>
                   </Col>
                 </Row>
               </Col>
@@ -469,6 +536,22 @@ export default function Body() {
                   <Row>
                     <Col sm="1" md="1" lg="1">
                       <CardImg
+                        alt="name"
+                        className="mb-2 width-25 img-fluid"
+                        src={perfil}
+                      />
+                    </Col>
+                    <Col sm="11" md="11" lg="11">
+                      <TextBoxTrainer>
+                        {data.contact_name || data.organizators[0].name}
+                      </TextBoxTrainer>
+                    </Col>
+                  </Row>
+                </Col>
+                <Col>
+                  <Row>
+                    <Col sm="1" md="1" lg="1">
+                      <CardImg
                         alt="email"
                         className="mb-2 width-25 img-fluid"
                         src={email}
@@ -476,7 +559,7 @@ export default function Body() {
                     </Col>
                     <Col sm="11" md="11" lg="11">
                       <TextBoxTrainer>
-                        {data.organizators[0].email}
+                        {data.contact_email || data.organizators[0].email}
                       </TextBoxTrainer>
                     </Col>
                   </Row>
@@ -492,7 +575,7 @@ export default function Body() {
                     </Col>
                     <Col sm="11" md="11" lg="11">
                       <TextBoxTrainer>
-                        {data.organizators[0].phone}
+                        {data.contact_phone || data.organizators[0].phone}
                       </TextBoxTrainer>
                     </Col>
                   </Row>
@@ -516,10 +599,12 @@ export default function Body() {
                 <TitleSection2>Pré-requisitos</TitleSection2>
               </Col>
               <Col className="px-4">
-                <TextSection2>
-                  Ser membro de uma igreja evangélica <br />
-                  Ter mais de 18 anos.
-                </TextSection2>
+                <TextSectionList>
+                  <TextSectionLi>
+                    Ser membro de uma igreja evangélica;
+                  </TextSectionLi>
+                  <TextSectionLi>Ter mais de 18 anos.</TextSectionLi>
+                </TextSectionList>
               </Col>
             </Row>
           </Col>
@@ -634,22 +719,35 @@ export default function Body() {
               )}
               <Col>
                 <TextSection3>
-                  Incluir somente material didádico e participação no evento
+                  O valor inclui material didático e participação do evento. Não
+                  incluso frete.
                 </TextSection3>
               </Col>
-              <Col
-                className="mt-3"
-                style={{ textAlign: 'center', marginBottom: '100px' }}
-              >
-                <ButtonInscription
-                  className="p-2"
-                  onClick={() => {
-                    window.location = `/evento/${data.id}/confirmacao-treinamento`;
-                  }}
+              {!isInscriptionsFinished &&
+              validParticipants.length < data.inscriptions_limit ? (
+                <Col
+                  className="mt-3"
+                  style={{ textAlign: 'center', marginBottom: '100px' }}
                 >
-                  Inscrever-me
-                </ButtonInscription>
-              </Col>
+                  <ButtonInscription
+                    className="p-2"
+                    onClick={() => {
+                      window.location = `/evento/${data.id}/confirmacao-treinamento`;
+                    }}
+                  >
+                    Inscrever-me
+                  </ButtonInscription>
+                </Col>
+              ) : (
+                <Col
+                  className="mt-3"
+                  style={{ textAlign: 'center', marginBottom: '100px' }}
+                >
+                  <ButtonInscriptionDisabled className="p-2">
+                    Inscrições encerradas
+                  </ButtonInscriptionDisabled>
+                </Col>
+              )}
             </Row>
           </Col>
         </Row>

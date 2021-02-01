@@ -2057,7 +2057,7 @@ function* createParticipantSeminary(action) {
 
           yield put(
             push(
-              `/evento/${data.event_id}/convite/${user.id}/confirmacao/sucesso`
+              `/evento/${data.event_id}/convite/${user.id}/confirmacao/treinamento/sucesso`
             )
           );
         }
@@ -3360,7 +3360,7 @@ function* editParticipantHierarchy(action) {
       });
     }
     if (eventType === 'treinamento') {
-      toastr.confirm('Relatório confirmado.', {
+      toastr.confirm('Evento finalizado.', {
         onOk: window.location.reload(),
         disableCancel: true,
       });

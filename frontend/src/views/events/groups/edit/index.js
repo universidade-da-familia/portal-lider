@@ -4643,6 +4643,10 @@ export default function UserProfile({ match, className }) {
             Impressão de certificados
           </ModalHeader>
           <ModalBody>
+            <Label>
+              Para a impressão do certificado, procure usar o papel off set 120
+              gramas, tamanho 15 x 20,5 cm
+            </Label>
             {pdfButton !== null && (
               <BlobProvider document={<Certificate certificates={pdfButton} />}>
                 {({ url }) => {
