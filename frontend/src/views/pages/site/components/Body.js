@@ -330,7 +330,7 @@ export default function Body() {
       const filteredParticipants = data.participants.filter(participant => {
         const isAssistant = participant.pivot.assistant;
         const isQuitter = participant.pivot.is_quitter;
-        const paymentStatus = participant.participant_order.order.status_id;
+        const paymentStatus = participant.participant_order?.order.status_id;
 
         if (
           !isAssistant &&
