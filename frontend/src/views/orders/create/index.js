@@ -56,7 +56,7 @@ import QuantityFormat from '~/components/fields/QuantityFormat';
 import { validateCPF } from '~/services/validateCPF';
 import { Creators as CepActions } from '~/store/ducks/cep';
 import { Creators as DefaultEventActions } from '~/store/ducks/defaultEvent';
-import { Creators as ExpiredTitlesActions } from '~/store/ducks/expired_titles';
+// import { Creators as ExpiredTitlesActions } from '~/store/ducks/expired_titles';
 import { Creators as OrderActions } from '~/store/ducks/order';
 import { Creators as ProfileActions } from '~/store/ducks/profile';
 import { Creators as ShippingActions } from '~/store/ducks/shipping';
@@ -159,7 +159,7 @@ export default function OrderCreate() {
 
   const data = useSelector(state => state.profile.data);
   const defaultData = useSelector(state => state.defaultEvent.data);
-  const expired_titles = useSelector(state => state.expired_titles.data);
+  // const expired_titles = useSelector(state => state.expired_titles.data);
   const loading = useSelector(state => state.order.loading);
   const cepData = useSelector(state => state.cep.data);
   const cepLoading = useSelector(state => state.cep.loading);
@@ -539,7 +539,7 @@ export default function OrderCreate() {
     }
 
     if (data.cpf) {
-      dispatch(ExpiredTitlesActions.expiredTitlesRequest(data.cpf));
+      // dispatch(ExpiredTitlesActions.expiredTitlesRequest(data.cpf));
 
       let aux = validateCPF(data.cpf);
       if (aux !== undefined) {
@@ -1658,9 +1658,9 @@ export default function OrderCreate() {
                       </Row>
                     )}
 
-                    {paymentSelected === 2 &&
+                    {/* {paymentSelected === 2 &&
                       expired_titles &&
-                      setModalExpiredTitles(true)}
+                      setModalExpiredTitles(true)} */}
 
                     <ModalFooter>
                       <Button
