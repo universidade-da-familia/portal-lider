@@ -34,7 +34,7 @@
     "@adonisjs/validator": "^5.0.6",
     "adonis-kue": "^5.0.1",
     "adonis-swagger": "^1.2.9",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "date-fns": "^2.12.0",
     "pg": "^8.0.2",
     "url-parse": "^1.4.7"
