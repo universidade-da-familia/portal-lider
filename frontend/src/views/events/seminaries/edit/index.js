@@ -1,3 +1,7 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable react/no-unused-state */
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable array-callback-return */
 /* eslint-disable consistent-return */
@@ -6,9 +10,10 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Component } from 'react';
 import DatePicker from 'react-datepicker';
 import {
+  ChevronUp,
   ChevronDown,
   CheckSquare,
   Calendar,
@@ -18,19 +23,19 @@ import {
   CreditCard,
   RefreshCw,
   Mail,
+  ShoppingCart,
   Phone,
   ArrowRightCircle,
   Map,
   Navigation,
   Edit,
   Plus,
+  Link as FeatherLink,
 } from 'react-feather';
-import { Datepicker } from 'react-formik-ui';
-import { FaChurch } from 'react-icons/fa';
 import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { toastr } from 'react-redux-toastr';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import 'react-datepicker/dist/react-datepicker.css';
 import { BounceLoader } from 'react-spinners';
 import {
@@ -69,15 +74,14 @@ import { css } from '@emotion/core';
 import { BlobProvider } from '@react-pdf/renderer';
 import classnames from 'classnames';
 import CountryStateCity from 'country-state-city';
-import { format, subMonths } from 'date-fns';
+import { format, subMonths, addDays } from 'date-fns';
 import pt from 'date-fns/locale/pt';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Field, Form, getIn, FieldArray } from 'formik';
 import moment from 'moment';
 import randomstring from 'randomstring';
 import * as Yup from 'yup';
 
 import history from '~/app/history';
-import UFsAndCities from '~/assets/data/statesCities';
 import CepFormat from '~/components/fields/CepFormat';
 import CPFFormat from '~/components/fields/CPFFormat';
 import PhoneFormat from '~/components/fields/PhoneFormat';
@@ -85,20 +89,19 @@ import QuantityFormat from '~/components/fields/QuantityFormat';
 import { validateCPF } from '~/services/validateCPF';
 import { Creators as AddressActions } from '~/store/ducks/address';
 import { Creators as CepActions } from '~/store/ducks/cep';
-import { Creators as ChurchActions } from '~/store/ducks/church';
 import { Creators as EventActions } from '~/store/ducks/event';
 import { Creators as InviteActions } from '~/store/ducks/invite';
+import { Creators as LessonReportActions } from '~/store/ducks/lessonReport';
 import { Creators as LogActions } from '~/store/ducks/log';
 import { Creators as OrganizatorActions } from '~/store/ducks/organizator';
 import { Creators as ParticipantActions } from '~/store/ducks/participant';
 import Certificate from '~/views/certificate/index';
 
-// import CustomTabs from '../../../../components/tabs/default';
-// import ChurchsTable from './churchsTable';
-// import { formatName } from './formatName';
+import CustomTabs from '../../../../components/tabs/default';
+import { formatName } from './formatName';
 // import InvitedTable from './invitedTable';
-// import ParticipantTable from './participantTable';
-// import QuitterTable from './quitterTable';
+import ParticipantTable from './participantTable';
+import QuitterTable from './quitterTable';
 
 const options = [
   {
@@ -111,23 +114,42 @@ const options = [
   },
 ];
 
+const formLessonReport = Yup.object().shape({
+  prayRequest: Yup.string().max(700, 'Limite máximo de caracteres'),
+});
+
 const formDetails = Yup.object().shape({
-  church: Yup.string().required('O sobrenome é obrigatório'),
+  default_event_max_participants: Yup.number(),
+  inscriptions_limit: Yup.number().when(
+    'default_event_max_participants',
+    default_event_max_participants => {
+      return default_event_max_participants
+        ? Yup.number()
+            .max(
+              default_event_max_participants,
+              `O limite de inscrições deve ser menor ou igual a ${default_event_max_participants}.`
+            )
+            .required('O limite de inscrições é obrigatório.')
+        : Yup.number()
+            .max(0)
+            .required('O limite de inscrições é obrigatório.');
+    }
+  ),
   country: Yup.string(),
-  cep: Yup.string().when('country', {
-    is: '30',
+  cep: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country !== '30' && modality === 'Presencial',
     then: Yup.string().required('O CEP é obrigatório'),
   }),
-  uf: Yup.string().when('country', {
-    is: '30',
+  uf: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country !== '30' && modality === 'Presencial',
     then: Yup.string().required('O estado é obrigatório'),
   }),
-  city: Yup.string().when('country', {
-    is: '30',
+  city: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country !== '30' && modality === 'Presencial',
     then: Yup.string().required('A cidade é obrigatória'),
   }),
-  apiUf: Yup.string().when('country', {
-    is: country => country !== '30',
+  apiUf: Yup.string().when(['country', 'modality'], {
+    is: (country, modality) => country !== '30' && modality === 'Presencial',
     then: Yup.string().required('O estado é obrigatório'),
   }),
   initialDate: Yup.string().required('A data inicial é obrigatória'),
@@ -225,10 +247,47 @@ const formRegisterNewAddress = Yup.object().shape({
   receiver: Yup.string().required('O recebedor é obrigatório'),
 });
 
-const formChurchSchema = Yup.object().shape({
-  uf: Yup.string().required('O estado é obrigatório.'),
-  city: Yup.string().required('A cidade é obrigatória.'),
+const schedulesSchema = Yup.object().shape({
+  schedules: Yup.array().of(
+    Yup.object().shape({
+      date: Yup.string().required('A data é obrigatória.'),
+      start_time: Yup.string().required('Horario início é obrigatório.'),
+      end_time: Yup.string().required('Horario fim é obrigatório.'),
+    })
+  ),
 });
+
+class CurrencyFormat extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      value: '',
+    };
+  }
+
+  render() {
+    const { currencyValue } = this.state;
+
+    return (
+      <NumberFormat
+        inputMode="decimal"
+        prefix="R$ "
+        thousandSeparator="."
+        decimalSeparator=","
+        fixedDecimalScale
+        decimalScale={2}
+        allowNegative={false}
+        defaultValue={0}
+        value={currencyValue}
+        onValueChange={vals => {
+          this.setState({ value: vals.formattedValue });
+        }}
+        {...this.props}
+      />
+    );
+  }
+}
 
 export default function UserProfile({ match, className }) {
   const [activeTab, setActiveTab] = useState('1');
@@ -244,6 +303,9 @@ export default function UserProfile({ match, className }) {
   const [modalViewLeader, setModalViewLeader] = useState(false);
   const [modalRegisterNewAddress, setModalRegisterNewAddress] = useState(false);
   const [modalLogs, setModalLogs] = useState(false);
+  const [presenceList, setPresenceList] = useState(null);
+  const [openPrayRequest, setOpenPrayRequest] = useState(false);
+  const [confirmDisabled, setConfirmDisabled] = useState(true);
 
   const userId = localStorage.getItem('@dashboard/user');
   const [profileAddresses, setProfileAddresses] = useState([
@@ -281,19 +343,37 @@ export default function UserProfile({ match, className }) {
   });
   const [eventDetails, setEventDetails] = useState({
     id: '',
-    church: 'Sem igreja',
+    default_event_max_participants: 0,
+    inscriptions_limit: 0,
     extra_participants: 0,
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
     cep: '',
     country: '',
     apiUf: '',
     apiCity: '',
     uf: '',
     city: '',
+    street: '',
+    street_number: '',
+    neighborhood: '',
+    complement: '',
     initialDate: '',
     endDate: '',
     modality: '',
+    is_public: '',
     isAdminPrinted: false,
   });
+  const [eventSchedules, setEventSchedules] = useState([
+    {
+      id: null,
+      event_id: null,
+      date: '',
+      start_time: '',
+      end_time: '',
+    },
+  ]);
   const [loadCep, setLoadCep] = useState(false);
 
   const [checkBackground, setCheckBackground] = useState(false);
@@ -319,16 +399,6 @@ export default function UserProfile({ match, className }) {
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [participantsIds, setParticipantsIds] = useState([]);
   const [organizatorsIds, setOrganizatorsIds] = useState([]);
-  const [modalChurch, setModalChurch] = useState(false);
-  const [modalChurchData, setModalChurchData] = useState({
-    uf: '',
-    city: '',
-    name: '',
-  });
-  const [selectedChurch, setSelectedChurch] = useState({
-    id: null,
-    corporate_name: '',
-  });
   const [isBuyer, setIsBuyer] = useState(false);
 
   // eslint-disable-next-line no-unused-vars
@@ -338,6 +408,7 @@ export default function UserProfile({ match, className }) {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
 
+  const lesson_data = useSelector(state => state.lessonReport.data);
   const profile_data = useSelector(state => state.profile.data);
   const loading = useSelector(state => state.organizator.loadingSearch);
   const participant_loading_search = useSelector(
@@ -355,8 +426,6 @@ export default function UserProfile({ match, className }) {
   const cep_loading = useSelector(state => state.cep.loading);
   const cep_data = useSelector(state => state.cep.data);
   const logs_data = useSelector(state => state.log.data);
-  const churchs = useSelector(state => state.church.data);
-  const loadingChurchs = useSelector(state => state.church.loading);
 
   const DatepickerButton = ({ value, onClick }) => (
     <Button
@@ -461,9 +530,9 @@ export default function UserProfile({ match, className }) {
     }
   }, [event_data]);
 
-  function handleGoToAddOrder() {
-    history.push('/pedidos/criar');
-  }
+  // function handleGoToAddOrder() {
+  //   history.push('/pedidos/criar');
+  // }
 
   // useEffect(() => {
   //   if (cep_data.cep) {
@@ -496,7 +565,56 @@ export default function UserProfile({ match, className }) {
   }, [participant_error]);
 
   useEffect(() => {
+    if (!!lesson_data.event && lesson_data.event.participants.length > 0) {
+      const participants = [];
+
+      if (lesson_data.is_finished === false) {
+        lesson_data.event.participants.map(participant => {
+          if (participant.pivot.is_quitter === false) {
+            participants.push({
+              id: participant.pivot.id,
+              name: participant.name,
+              birthday: participant.birthday,
+              is_present: false,
+            });
+          } else {
+            //
+          }
+        });
+
+        setPresenceList(participants);
+      } else {
+        lesson_data.event.participants.map(participant => {
+          const attendance = lesson_data.attendances.find(
+            attendanceFind => attendanceFind.id === participant.pivot.id
+          );
+          if (attendance !== undefined) {
+            participants.push({
+              id: participant.pivot.id,
+              name: participant.name,
+              birthday: participant.birthday,
+              is_present: attendance.pivot.is_present,
+            });
+
+            if (attendance.pivot.is_present) {
+              setConfirmDisabled(false);
+            }
+          }
+        });
+        setPresenceList(participants);
+
+        setOpenPrayRequest(true);
+      }
+    }
+  }, [lesson_data, event_data]);
+
+  useEffect(() => {
     if (event_data) {
+      // eslint-disable-next-line no-use-before-define
+      dispatch(
+        LessonReportActions.lessonReportRequest(event_data.lessonReports[0].id)
+      );
+
       let countryData = '30';
       if (event_data.country === 'BRASIL' || event_data.country === null) {
         countryData = '30';
@@ -510,34 +628,35 @@ export default function UserProfile({ match, className }) {
         setCities(CountryStateCity.getCitiesOfState(event_data.uf));
       }
 
-      if (event_data.responsible_organization_id) {
-        setSelectedChurch({
-          id: event_data.organization.id,
-          corporate_name: event_data.organization.corporate_name,
-        });
-      } else {
-        setSelectedChurch({
-          id: null,
-          corporate_name: 'Sem igreja',
-        });
-      }
+      setEventSchedules(event_data.schedules);
 
       setEventDetails({
         ...eventDetails,
         id: event_data.id,
-        church: event_data.organization
-          ? event_data.organization.corporate_name
-          : 'Sem igreja',
+        default_event_max_participants:
+          event_data.defaultEvent.max_participants,
+        inscriptions_limit: event_data.inscriptions_limit,
         extra_participants: event_data.extra_participants,
+        contact_name:
+          event_data.contact_name || event_data.organizators[0].name,
+        contact_email:
+          event_data.contact_email || event_data.organizators[0].email,
+        contact_phone:
+          event_data.contact_phone || event_data.organizators[0].phone,
         cep: event_data.cep || '',
         country: countryData,
         uf: event_data.uf || '',
         city: event_data.city || '',
         apiUf: event_data.uf || '',
         apiCity: event_data.city || '',
+        street: event_data.street,
+        street_number: event_data.street_number,
+        neighborhood: event_data.neighborhood,
+        complement: event_data.complement,
         initialDate: event_data.start_date,
         endDate: event_data.end_date,
         modality: event_data.modality,
+        is_public: event_data.is_public,
         isAdminPrinted: event_data.is_admin_printed,
       });
     }
@@ -546,13 +665,14 @@ export default function UserProfile({ match, className }) {
   const dispatch = useDispatch();
   const store = useStore();
 
-  function toggleModalChurch() {
-    setModalChurch(!modalChurch);
-    setModalChurchData({
-      uf: '',
-      city: '',
-      name: '',
-    });
+  function copyLink() {
+    const elem = document.createElement('textarea');
+    elem.value = `https://lider.udf.org.br/evento/${match.params.event_id}`;
+    document.body.appendChild(elem);
+    elem.select();
+    document.execCommand('copy');
+    document.body.removeChild(elem);
+    toastr.success('', 'O link foi copiado com sucesso.');
   }
 
   function toggleModalOrganizator() {
@@ -601,7 +721,7 @@ export default function UserProfile({ match, className }) {
       certificateParticipants.map(participant => {
         return {
           id: participant.id,
-          // name: formatName(participant.name),
+          name: formatName(participant.name),
           checked: participant.checked,
           participant_id: participant.participant_id,
           organizator_id: participant.organizator_id,
@@ -759,6 +879,16 @@ export default function UserProfile({ match, className }) {
     );
   }
 
+  function handleChangeStartTime(event, index, setFieldValue) {
+    setFieldValue(`schedules[${index}].start_time`, event.target.value);
+  }
+
+  function handleChangeEndTime(event, index, setFieldValue) {
+    setFieldValue(`schedules[${index}].end_time`, event.target.value);
+  }
+
+  function handleUpdateSchedules() {}
+
   function confirmModalAddTrainingLeader(values) {
     const { name, cpf, email, sex } = values;
     const password = randomstring.generate(6);
@@ -783,8 +913,37 @@ export default function UserProfile({ match, className }) {
     );
   }
 
-  function handleSearchChurchs(values) {
-    dispatch(ChurchActions.churchRequest(values));
+  function handleCheck(setFieldValue) {
+    const participants = document.getElementsByClassName('childCheck').length;
+
+    if (document.getElementById('checkAll').checked === true) {
+      for (let index = 0; index < participants; index += 1) {
+        document.getElementsByClassName('childCheck')[index].checked = true;
+        setFieldValue(`selecteds.${index}.is_present`, true);
+      }
+
+      setConfirmDisabled(false);
+    } else {
+      for (let index = 0; index < participants; index += 1) {
+        document.getElementsByClassName('childCheck')[index].checked = false;
+        setFieldValue(`selecteds.${index}.is_present`, false);
+      }
+
+      setConfirmDisabled(true);
+    }
+  }
+
+  function handleCheckChild(e, setFieldValue, id) {
+    setFieldValue(`selecteds.${id}.is_present`, e.target.checked);
+
+    if (e.target.checked) {
+      setConfirmDisabled(false);
+    }
+  }
+
+  function prayRequest(event) {
+    event.preventDefault();
+    setOpenPrayRequest(!openPrayRequest);
   }
 
   // USEEFFECT PARA FECHAR O MODAL DA FUNCAO confirmModalAddParticipant
@@ -827,6 +986,16 @@ export default function UserProfile({ match, className }) {
     }
   }
 
+  function minScheduleDate(schedules, scheduleLength, index) {
+    if (scheduleLength === 1) {
+      return subMonths(new Date(), 12);
+    }
+    if (scheduleLength > 1 && index !== 0) {
+      return addDays(schedules[index - 1].date, 1);
+    }
+    return subMonths(new Date(), 12);
+  }
+
   function handleOrganizatorType(event, setFieldValue) {
     setFieldValue('organizator_type', event.target.value);
     setFieldValue('cpf', '');
@@ -861,7 +1030,7 @@ export default function UserProfile({ match, className }) {
   }
 
   function handleDeleteOrganizator(entity_id) {
-    toastr.confirm('Deseja deletar o líder', {
+    toastr.confirm('Deseja deletar o treinador', {
       onOk: () =>
         dispatch(
           OrganizatorActions.deleteOrganizatorRequest(
@@ -1039,37 +1208,13 @@ export default function UserProfile({ match, className }) {
     }
   }
 
-  function finishInscriptions(digital_certificate = false) {
+  function finishInscriptions(digital_certificate = true) {
     const eventData = {
       is_inscription_finished: true,
       digital_certificate,
     };
 
     dispatch(EventActions.eventEditRequest(match.params.event_id, eventData));
-  }
-
-  function sendDigitalCertificates() {
-    const all_organizators = event_data.organizators.map(
-      organizator => organizator.pivot.entity_id
-    );
-    const all_participants = event_data.participants.map(
-      participant => participant.pivot.id
-    );
-
-    const reload = false;
-
-    dispatch(
-      ParticipantActions.editPrintDateRequest(
-        all_organizators,
-        all_participants,
-        event_data.id,
-        reload
-      )
-    );
-
-    const digital_certificate = true;
-
-    finishInscriptions(digital_certificate);
   }
 
   function reopenInscriptions() {
@@ -1218,14 +1363,72 @@ export default function UserProfile({ match, className }) {
     }
   }
 
-  function verifyInscriptionsFinished(e) {
-    if (event_data.is_inscription_finished === false) {
-      e.preventDefault();
-      toastr.confirm('Finalize as inscrições primeiro!', {
-        onOk: () => {},
-        disableCancel: true,
+  // function verifyInscriptionsFinished(e) {
+  //   if (event_data.is_inscription_finished === false) {
+  //     e.preventDefault();
+  //     toastr.confirm('Finalize as inscrições primeiro!', {
+  //       onOk: () => {},
+  //       disableCancel: true,
+  //     });
+  //   }
+  // }
+
+  function handleSubmitReport(values) {
+    const participants = [];
+    const participantsId = [];
+    const assistantsId = [];
+
+    event_data.participants.map(participant => {
+      if (participant.pivot.assistant === false) {
+        participantsId.push(participant.id);
+      } else {
+        assistantsId.push(participant.id);
+      }
+    });
+
+    values.selecteds.map(selected => {
+      participants.push({
+        id: selected.id,
+        is_present: selected.is_present,
       });
-    }
+    });
+
+    const payload = {
+      lesson_report_id: lesson_data.id,
+      date: new Date(),
+      participants,
+      offer: values.offer || 0,
+      pray_request: values.prayRequest,
+      // testimony: values.testimony,
+      // doubts: values.doubts,
+    };
+
+    const participantWillBecome =
+      event_data.defaultEvent.participant_will_become_id;
+    const assistantWillBecome =
+      event_data.defaultEvent.assistant_will_become_id;
+
+    const hierarchyName = event_data.defaultEvent.ministery.tag;
+
+    const payloadEvent = {
+      is_finished: true,
+    };
+
+    dispatch(
+      EventActions.eventEditRequest(match.params.event_id, payloadEvent)
+    );
+    dispatch(
+      ParticipantActions.editParticipantHierarchyRequest(
+        payload,
+        event_data.id,
+        participantsId,
+        assistantsId,
+        hierarchyName,
+        participantWillBecome,
+        assistantWillBecome,
+        'treinamento'
+      )
+    );
   }
 
   function handleSubmitDetails(values) {
@@ -1240,19 +1443,24 @@ export default function UserProfile({ match, className }) {
     }
 
     const data = {
+      inscriptions_limit: values.inscriptions_limit || 0,
       extra_participants: values.extra_participants || 0,
       cep: values.cep,
       country: values.country,
       uf: values.uf,
       city: values.city,
+      street: values.street,
+      street_number: values.street_number,
+      neighborhood: values.neighborhood,
+      complement: values.complement,
       start_date: values.initialDate,
       end_date: values.endDate,
       modality: values.modality,
+      is_public: values.is_public,
       is_admin_printed: values.isAdminPrinted,
       admin_print_date:
         values.isAdminPrinted && profile_data.admin ? new Date() : null,
       admin_print_id: profile_data.id,
-      responsible_organization_id: selectedChurch.id,
     };
 
     if (!profile_data.admin || event_data.is_admin_printed) {
@@ -1280,7 +1488,8 @@ export default function UserProfile({ match, className }) {
   // eslint-disable-next-line consistent-return
   function handleEnableAddParticipantButton() {
     if (event_data !== null) {
-      if (event_data.is_finished) return false;
+      if (event_data.is_inscription_finished || event_data.is_finished)
+        return false;
 
       if (
         event_data.defaultEvent.max_participants +
@@ -1370,6 +1579,11 @@ export default function UserProfile({ match, className }) {
       setEventDetails({
         ...eventDetails,
         country: '30',
+        modality: values.modality ? values.modality : eventDetails.modality,
+        default_event_max_participants: values.default_event_max_participants,
+        inscriptions_limit: values.inscriptions_limit
+          ? values.inscriptions_limit
+          : eventDetails.inscriptions_limit,
         extra_participants: values.extra_participants
           ? values.extra_participants
           : eventDetails.extra_participants,
@@ -1384,9 +1598,29 @@ export default function UserProfile({ match, className }) {
   }
 
   function handleModalityChange(event, setFieldValue) {
-    const modality = event.target.value;
+    const newModality = event.target.value;
 
-    setFieldValue('modality', modality);
+    setFieldValue('modality', newModality);
+
+    if (newModality === 'Online') {
+      setFieldValue('cep', '');
+      setFieldValue('country', '');
+      setFieldValue('apiUf', '');
+      setFieldValue('apiCity', '');
+      setFieldValue('address_name', '');
+      setFieldValue('street', '');
+      setFieldValue('street_number', '');
+      setFieldValue('neighborhood', '');
+      setFieldValue('complement', '');
+    } else {
+      setFieldValue('country', '30');
+    }
+  }
+
+  function handleIsPublicChange(event, setFieldValue) {
+    const is_public = event.target.value;
+
+    setFieldValue('is_public', is_public);
   }
 
   function handleCountryChange(event, setFieldValue) {
@@ -1477,7 +1711,7 @@ export default function UserProfile({ match, className }) {
 
       if (!verify_user) {
         verify_user = true;
-        history.push('/eventos/grupos');
+        history.push('/eventos/treinamentos');
         toastr.confirm('Sem permissão para editar o evento.', {
           onOk: () => {
             window.location.reload();
@@ -1587,6 +1821,10 @@ export default function UserProfile({ match, className }) {
           cep: cep_data.cep.replace('-', ''),
           uf: cep_data.uf,
           city: cep_data.localidade,
+          street: cep_data.logradouro || eventDetails.street,
+          street_number: eventDetails.street_number,
+          neighborhood: cep_data.bairro || eventDetails.neighborhood,
+          complement: cep_data.complemento || eventDetails.complement,
         });
       }
     }
@@ -1610,9 +1848,9 @@ export default function UserProfile({ match, className }) {
                       <ChevronDown size={24} />
                     </DropdownToggle>
                     <DropdownMenu right>
-                      <DropdownItem onClick={() => handleGoToAddOrder()}>
+                      {/* <DropdownItem onClick={() => handleGoToAddOrder()}>
                         <i className="fa fa-plus mr-2" /> Solicitar material
-                      </DropdownItem>
+                      </DropdownItem> */}
 
                       {/* BOTAO QUE MOSTRA QUANDO QUANTIDADE MINIMA DE PARTICIPANTES NAO FOR ATINGIDA */}
                       {handleEnableNotFinishInscriptions() && (
@@ -1641,38 +1879,13 @@ export default function UserProfile({ match, className }) {
                                 </h5>
                                 <br />
                                 <div>
-                                  De qual forma você prefere receber os
-                                  certificados?
-                                </div>
-                                <br />
-                                <div>
-                                  <b>Impresso:</b> enviaremos os certificados
-                                  para o endereço que você informar no próximo
-                                  passo.
-                                </div>
-                                <br />
-
-                                <div>
-                                  <b>Digital:</b> Você poderá "Emitir
-                                  certificados" no próximo passo, clicando no
-                                  botão "Emitir certificados" abaixo do botão
-                                  "finalizar inscrições"
+                                  Ao finalizar as inscrições não será possível
+                                  incluir novos participantes.
                                 </div>
                               </>,
                               {
-                                onOk: () => sendDigitalCertificates(),
-                                okText: 'Digital',
+                                onOk: () => finishInscriptions(),
                                 onCancel: () => {},
-                                buttons: [
-                                  {
-                                    text: 'Impresso',
-                                    handler: () =>
-                                      toggleModalRegisterNewAddress(),
-                                  },
-                                  {
-                                    cancel: true,
-                                  },
-                                ],
                               }
                             );
 
@@ -1754,10 +1967,6 @@ export default function UserProfile({ match, className }) {
                     {event_data.defaultEvent.event_type}:{' '}
                     {event_data.defaultEvent.name}
                   </h1>
-                  <h4 className="text-center font-medium-4 text-white text-uppercase text-wrap">
-                    Inicio do grupo:{' '}
-                    {moment(event_data.start_date).format('DD/MM/YYYY')}
-                  </h4>
                 </div>
                 <div className="align-self-start mr-2">
                   <Row className="master">
@@ -1765,13 +1974,13 @@ export default function UserProfile({ match, className }) {
                       <div className="media-body halfway-fab align-self-end">
                         <div className="d-none d-sm-none d-md-none d-lg-block mt-3 ml-4">
                           <div className="d-flex flex-column">
-                            <Button
+                            {/* <Button
                               onClick={() => handleGoToAddOrder()}
                               color="success"
                               className="btn-raised mr-3"
                             >
                               <i className="fa fa-plus" /> Solicitar material
-                            </Button>
+                            </Button> */}
 
                             {/* BOTAO QUE MOSTRA QUANDO QUANTIDADE MINIMA DE PARTICIPANTES NAO FOR ATINGIDA */}
                             {handleEnableNotFinishInscriptions() && (
@@ -1800,38 +2009,13 @@ export default function UserProfile({ match, className }) {
                                       </h5>
                                       <br />
                                       <div>
-                                        De qual forma você prefere receber os
-                                        certificados?
-                                      </div>
-                                      <br />
-                                      <div>
-                                        <b>Impresso:</b> enviaremos os
-                                        certificados para o endereço que você
-                                        informar no próximo passo.
-                                      </div>
-                                      <br />
-
-                                      <div>
-                                        <b>Digital:</b> Você poderá "Emitir
-                                        certificados" no próximo passo, clicando
-                                        no botão "Emitir certificados" abaixo do
-                                        botão "finalizar inscrições"
+                                        Ao finalizar as inscrições não será
+                                        possível incluir novos participantes.
                                       </div>
                                     </>,
                                     {
-                                      onOk: () => sendDigitalCertificates(),
-                                      okText: 'Digital',
+                                      onOk: () => finishInscriptions(),
                                       onCancel: () => {},
-                                      buttons: [
-                                        {
-                                          text: 'Impresso',
-                                          handler: () =>
-                                            toggleModalRegisterNewAddress(),
-                                        },
-                                        {
-                                          cancel: true,
-                                        },
-                                      ],
                                     }
                                   );
 
@@ -1947,13 +2131,9 @@ export default function UserProfile({ match, className }) {
                           )}
                           onClick={() => toggle('2')}
                         >
-                          Líderes
+                          Treinadores
                         </NavLink>
                       </li>
-                    </ul>
-                  </Col>
-                  <Col lg="6" md="6" sm="6">
-                    <ul className="profile-menu no-list-style top-0 mb-0 pr-2">
                       <li className="text-center">
                         <NavLink
                           className={classnames(
@@ -1967,6 +2147,10 @@ export default function UserProfile({ match, className }) {
                           Participantes
                         </NavLink>
                       </li>
+                    </ul>
+                  </Col>
+                  <Col lg="6" md="6" sm="6">
+                    <ul className="profile-menu no-list-style top-0 mb-0 pr-2">
                       <li className="text-center">
                         <NavLink
                           className={classnames(
@@ -1977,7 +2161,33 @@ export default function UserProfile({ match, className }) {
                           )}
                           onClick={() => toggle('4')}
                         >
-                          Aulas
+                          Cronograma
+                        </NavLink>
+                      </li>
+                      <li className="text-center">
+                        <NavLink
+                          className={classnames(
+                            'font-medium-2 font-weight-600',
+                            {
+                              active: activeTab === '5',
+                            }
+                          )}
+                          onClick={() => toggle('5')}
+                        >
+                          Finalização
+                        </NavLink>
+                      </li>
+                      <li className="text-center">
+                        <NavLink
+                          className={classnames(
+                            'font-medium-2 font-weight-600',
+                            {
+                              active: activeTab === '6',
+                            }
+                          )}
+                          onClick={() => toggle('6')}
+                        >
+                          Financeiro
                         </NavLink>
                       </li>
                     </ul>
@@ -2026,7 +2236,7 @@ export default function UserProfile({ match, className }) {
         {event_data.defaultEvent.max_organizators <=
           event_data.organizators.length && (
           <Badge color="warning" className="text-wrap mr-2 mb-2">
-            Quantidade máxima de líderes atingida
+            Quantidade máxima de treinadores atingida
           </Badge>
         )}
 
@@ -2067,6 +2277,14 @@ export default function UserProfile({ match, className }) {
                       <Form>
                         {/* <input type="hidden" value="something" /> */}
                         <div className="form-body">
+                          <h4 className="form-section">
+                            <i
+                              className="fa fa-calendar"
+                              size={20}
+                              color="#212529"
+                            />{' '}
+                            Dados do evento
+                          </h4>
                           <Row>
                             <Col sm="12" md="4" lg="4" xl="2">
                               <FormGroup>
@@ -2083,43 +2301,55 @@ export default function UserProfile({ match, className }) {
                               </FormGroup>
                             </Col>
 
-                            <Col
-                              sm="12"
-                              md="8"
-                              lg="7"
-                              xl="7"
-                              className="has-icon-left"
-                            >
-                              <Label for="church">Igreja</Label>
-                              <div className="position-relative has-icon-left">
-                                <InputGroup>
+                            <Field
+                              type="hidden"
+                              name="default_event_max_participants"
+                              id="default_event_max_participants"
+                            />
+                            <Col sm="12" md="12" lg="2" xl="2">
+                              <FormGroup>
+                                <Label for="inscriptions_limit">
+                                  Limite de inscrições
+                                </Label>
+                                <div className="position-relative">
                                   <Field
-                                    name="church"
-                                    id="church"
-                                    className="form-control"
-                                    disabled
-                                    value={
-                                      selectedChurch.corporate_name ||
-                                      values.church
-                                    }
+                                    // type="number"
+                                    name="inscriptions_limit"
+                                    id="inscriptions_limit"
+                                    className={`
+                                      form-control
+                                      ${errors.inscriptions_limit &&
+                                        touched.inscriptions_limit &&
+                                        'is-invalid'}
+                                    `}
+                                    render={({ field }) => (
+                                      <QuantityFormat
+                                        // eslint-disable-next-line react/jsx-props-no-spreading
+                                        {...field}
+                                        id="inscriptions_limit"
+                                        name="inscriptions_limit"
+                                        className={`
+                                          form-control
+                                          ${errors.inscriptions_limit &&
+                                            touched.inscriptions_limit &&
+                                            'is-invalid'}
+                                        `}
+                                        value={values.inscriptions_limit || ''}
+                                      />
+                                    )}
                                   />
-                                  <div className="form-control-position">
-                                    <FaChurch size={18} color="#212529" />
-                                  </div>
-                                  <InputGroupAddon addonType="append">
-                                    <NavLink
-                                      className="btn bg-info"
-                                      onClick={toggleModalChurch}
-                                    >
-                                      <Search size={18} color="#fff" />
-                                    </NavLink>
-                                  </InputGroupAddon>
-                                </InputGroup>
-                              </div>
+                                  {errors.inscriptions_limit &&
+                                  touched.inscriptions_limit ? (
+                                    <div className="invalid-feedback">
+                                      {errors.inscriptions_limit}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </FormGroup>
                             </Col>
 
                             {profile_data.admin && (
-                              <Col sm="12" md="12" lg="3" xl="3">
+                              <Col sm="12" md="12" lg="2" xl="2">
                                 <FormGroup>
                                   <Label for="extra_participants">
                                     Participantes extras
@@ -2146,49 +2376,180 @@ export default function UserProfile({ match, className }) {
                               </Col>
                             )}
                           </Row>
-
                           <Row>
-                            <Col sm="4">
+                            <Col sm="3">
                               <FormGroup>
-                                <Label>País</Label>
+                                <Label>É público</Label>
                                 <Input
                                   type="select"
-                                  id="country"
-                                  name="country"
+                                  id="is_public"
+                                  name="is_public"
                                   onChange={e => {
-                                    handleCountryChange(e, setFieldValue);
+                                    handleIsPublicChange(e, setFieldValue);
                                   }}
                                 >
-                                  {countries.map(country => {
-                                    return (
-                                      <option
-                                        key={country.id}
-                                        value={country.id}
-                                        selected={
-                                          eventDetails.country === country.id
-                                        }
-                                      >
-                                        {country.name}
-                                      </option>
-                                    );
-                                  })}
+                                  <option
+                                    value="true"
+                                    selected={eventDetails.is_public === true}
+                                  >
+                                    Sim
+                                  </option>
+                                  <option
+                                    value="false"
+                                    selected={eventDetails.is_public === false}
+                                  >
+                                    Não
+                                  </option>
                                 </Input>
                               </FormGroup>
                             </Col>
-                            {/* estado */}
-                            {values.country !== '30' && (
-                              <>
+                            <Col sm="3">
+                              <FormGroup>
+                                <Label>Modalidade</Label>
+                                <Input
+                                  type="select"
+                                  id="modality"
+                                  name="modality"
+                                  onChange={e => {
+                                    handleModalityChange(e, setFieldValue);
+                                  }}
+                                >
+                                  <option
+                                    key="presencial"
+                                    value="Presencial"
+                                    selected={
+                                      eventDetails.modality === 'Presencial'
+                                    }
+                                  >
+                                    Presencial
+                                  </option>
+                                  <option
+                                    key="online"
+                                    value="Online"
+                                    selected={
+                                      eventDetails.modality === 'Online'
+                                    }
+                                  >
+                                    Online
+                                  </option>
+                                  {/* <option
+                                    key="misto"
+                                    value="Misto"
+                                    selected={eventDetails.modality === 'Misto'}
+                                  >
+                                    Misto
+                                  </option> */}
+                                </Input>
+                              </FormGroup>
+                            </Col>
+                          </Row>
+
+                          <h4 className="form-section">
+                            <i
+                              className="fa fa-address-card"
+                              size={20}
+                              color="#212529"
+                            />{' '}
+                            Contato
+                          </h4>
+                          <Row>
+                            <Col sm="12" md="6" lg="4" xl="4">
+                              <FormGroup>
+                                <Label for="id">Nome</Label>
+                                <div className="position-relative">
+                                  <Field
+                                    type="text"
+                                    id="contact_name"
+                                    name="contact_name"
+                                    className="form-control"
+                                    readOnly
+                                  />
+                                </div>
+                              </FormGroup>
+                            </Col>
+                            <Col sm="12" md="6" lg="4" xl="4">
+                              <FormGroup>
+                                <Label for="id">Email</Label>
+                                <div className="position-relative">
+                                  <Field
+                                    type="text"
+                                    id="contact_email"
+                                    name="contact_email"
+                                    className="form-control"
+                                    readOnly
+                                  />
+                                </div>
+                              </FormGroup>
+                            </Col>
+                            <Col sm="12" md="6" lg="4" xl="4">
+                              <FormGroup>
+                                <Label for="id">Telefone</Label>
+                                <div className="position-relative">
+                                  <Field
+                                    type="text"
+                                    id="contact_phone"
+                                    name="contact_phone"
+                                    className="form-control"
+                                    readOnly
+                                  />
+                                </div>
+                              </FormGroup>
+                            </Col>
+                          </Row>
+
+                          {values.modality !== 'Online' && (
+                            <>
+                              <h4 className="form-section">
+                                <i
+                                  className="fa fa-map"
+                                  size={20}
+                                  color="#212529"
+                                />{' '}
+                                Endereço
+                              </h4>
+                              <Row>
                                 <Col sm="4">
                                   <FormGroup>
-                                    <Label>Estado</Label>
+                                    <Label>País</Label>
                                     <Input
                                       type="select"
-                                      id="apiUf"
-                                      name="apiUf"
+                                      id="country"
+                                      name="country"
                                       onChange={e => {
-                                        handleStateChange(e, setFieldValue);
+                                        handleCountryChange(e, setFieldValue);
                                       }}
-                                      className={`
+                                    >
+                                      {countries.map(country => {
+                                        return (
+                                          <option
+                                            key={country.id}
+                                            value={country.id}
+                                            selected={
+                                              eventDetails.country ===
+                                              country.id
+                                            }
+                                          >
+                                            {country.name}
+                                          </option>
+                                        );
+                                      })}
+                                    </Input>
+                                  </FormGroup>
+                                </Col>
+                                {/* estado */}
+                                {values.country !== '30' && (
+                                  <>
+                                    <Col sm="4">
+                                      <FormGroup>
+                                        <Label>Estado</Label>
+                                        <Input
+                                          type="select"
+                                          id="apiUf"
+                                          name="apiUf"
+                                          onChange={e => {
+                                            handleStateChange(e, setFieldValue);
+                                          }}
+                                          className={`
                                               form-control
                                               ${errors &&
                                                 errors.apiUf &&
@@ -2196,43 +2557,44 @@ export default function UserProfile({ match, className }) {
                                                 touched.apiUf &&
                                                 'is-invalid'}
                                             `}
-                                    >
-                                      <option value="">
-                                        Selecione uma opção
-                                      </option>
-
-                                      {states.map(state => {
-                                        return (
-                                          <option
-                                            key={state.id}
-                                            value={state.id}
-                                            selected={
-                                              eventDetails.apiUf === state.id
-                                            }
-                                          >
-                                            {state.name}
+                                        >
+                                          <option value="">
+                                            Selecione uma opção
                                           </option>
-                                        );
-                                      })}
-                                    </Input>
-                                    {errors.apiUf && touched.apiUf ? (
-                                      <div className="invalid-feedback">
-                                        {errors.apiUf}
-                                      </div>
-                                    ) : null}
-                                  </FormGroup>
-                                </Col>
-                                <Col sm="4">
-                                  <FormGroup>
-                                    <Label>Cidade</Label>
-                                    <Input
-                                      type="select"
-                                      id="apiCity"
-                                      name="apiCity"
-                                      onChange={e => {
-                                        handleCityChange(e, setFieldValue);
-                                      }}
-                                      className={`
+
+                                          {states.map(state => {
+                                            return (
+                                              <option
+                                                key={state.id}
+                                                value={state.id}
+                                                selected={
+                                                  eventDetails.apiUf ===
+                                                  state.id
+                                                }
+                                              >
+                                                {state.name}
+                                              </option>
+                                            );
+                                          })}
+                                        </Input>
+                                        {errors.apiUf && touched.apiUf ? (
+                                          <div className="invalid-feedback">
+                                            {errors.apiUf}
+                                          </div>
+                                        ) : null}
+                                      </FormGroup>
+                                    </Col>
+                                    <Col sm="4">
+                                      <FormGroup>
+                                        <Label>Cidade</Label>
+                                        <Input
+                                          type="select"
+                                          id="apiCity"
+                                          name="apiCity"
+                                          onChange={e => {
+                                            handleCityChange(e, setFieldValue);
+                                          }}
+                                          className={`
                                               form-control
                                               ${errors &&
                                                 errors.apiCity &&
@@ -2240,43 +2602,44 @@ export default function UserProfile({ match, className }) {
                                                 touched.apiCity &&
                                                 'is-invalid'}
                                             `}
-                                    >
-                                      <option value="">
-                                        Selecione uma opção
-                                      </option>
-                                      {cities.map(city => {
-                                        return (
-                                          <option
-                                            key={city.id}
-                                            value={city.id}
-                                            selected={
-                                              eventDetails.apiCity === city.id
-                                            }
-                                          >
-                                            {city.name}
+                                        >
+                                          <option value="">
+                                            Selecione uma opção
                                           </option>
-                                        );
-                                      })}
-                                    </Input>
-                                  </FormGroup>
-                                </Col>
-                              </>
-                            )}
-                          </Row>
+                                          {cities.map(city => {
+                                            return (
+                                              <option
+                                                key={city.id}
+                                                value={city.id}
+                                                selected={
+                                                  eventDetails.apiCity ===
+                                                  city.id
+                                                }
+                                              >
+                                                {city.name}
+                                              </option>
+                                            );
+                                          })}
+                                        </Input>
+                                      </FormGroup>
+                                    </Col>
+                                  </>
+                                )}
+                              </Row>
 
-                          {values.country === '30' && (
-                            <Row>
-                              <Col sm="4">
-                                <FormGroup>
-                                  <Label for="cep">CEP</Label>
-                                  <div className="position-relative has-icon-right">
-                                    <CepFormat
-                                      autoComplete="cep"
-                                      id="cep"
-                                      name="cep"
-                                      placeholder="Ex: 17580-000"
-                                      value={values.cep}
-                                      className={`
+                              {values.country === '30' && (
+                                <Row>
+                                  <Col sm="4">
+                                    <FormGroup>
+                                      <Label for="cep">CEP</Label>
+                                      <div className="position-relative has-icon-right">
+                                        <CepFormat
+                                          autoComplete="cep"
+                                          id="cep"
+                                          name="cep"
+                                          placeholder="Ex: 17580-000"
+                                          value={values.cep}
+                                          className={`
                                         form-control
                                         ${errors &&
                                           errors.cep &&
@@ -2284,188 +2647,192 @@ export default function UserProfile({ match, className }) {
                                           touched.cep &&
                                           'is-invalid'}
                                       `}
-                                      onValueChange={val => {
-                                        setLoadCep(true);
-                                        handleCep(
-                                          val.value,
-                                          setFieldValue,
-                                          values
-                                        );
-                                      }}
-                                    />
-                                    {errors.cep && touched.cep ? (
-                                      <div className="invalid-feedback">
-                                        {errors.cep}
-                                      </div>
-                                    ) : null}
-                                    {cep_loading && (
-                                      <div className="form-control-position">
-                                        <RefreshCw
-                                          size={14}
-                                          color="#212529"
-                                          className="spinner"
+                                          onValueChange={val => {
+                                            setLoadCep(true);
+                                            handleCep(
+                                              val.value,
+                                              setFieldValue,
+                                              values
+                                            );
+                                          }}
                                         />
+                                        {errors.cep && touched.cep ? (
+                                          <div className="invalid-feedback">
+                                            {errors.cep}
+                                          </div>
+                                        ) : null}
+                                        {cep_loading && (
+                                          <div className="form-control-position">
+                                            <RefreshCw
+                                              size={14}
+                                              color="#212529"
+                                              className="spinner"
+                                            />
+                                          </div>
+                                        )}
                                       </div>
-                                    )}
-                                  </div>
-                                </FormGroup>
-                              </Col>
-                              <Col sm="3">
-                                <FormGroup>
-                                  <Label for="uf">Estado</Label>
-                                  <Field
-                                    type="text"
-                                    readOnly
-                                    id="uf"
-                                    name="uf"
-                                    onChange={handleChange}
-                                    className={`
+                                    </FormGroup>
+                                  </Col>
+                                  <Col sm="3">
+                                    <FormGroup>
+                                      <Label for="uf">Estado</Label>
+                                      <Field
+                                        type="text"
+                                        readOnly
+                                        id="uf"
+                                        name="uf"
+                                        onChange={handleChange}
+                                        className={`
                                   form-control
                                   ${errors.uf && touched.uf && 'is-invalid'}
                                 `}
-                                  />
-                                  {errors.uf && touched.uf ? (
-                                    <div className="invalid-feedback">
-                                      {errors.uf}
-                                    </div>
-                                  ) : null}
-                                </FormGroup>
-                              </Col>
-                              <Col sm="5">
-                                <FormGroup>
-                                  <Label for="city">Cidade</Label>
-                                  <Field
-                                    type="text"
-                                    readOnly
-                                    autoComplete="city"
-                                    id="city"
-                                    name="city"
-                                    className={`
+                                      />
+                                      {errors.uf && touched.uf ? (
+                                        <div className="invalid-feedback">
+                                          {errors.uf}
+                                        </div>
+                                      ) : null}
+                                    </FormGroup>
+                                  </Col>
+                                  <Col sm="5">
+                                    <FormGroup>
+                                      <Label for="city">Cidade</Label>
+                                      <Field
+                                        type="text"
+                                        readOnly
+                                        autoComplete="city"
+                                        id="city"
+                                        name="city"
+                                        className={`
                                   form-control
                                   ${errors.city && touched.city && 'is-invalid'}
                                 `}
-                                  />
-                                  {errors.city && touched.city ? (
-                                    <div className="invalid-feedback">
-                                      {errors.city}
-                                    </div>
-                                  ) : null}
-                                </FormGroup>
-                              </Col>
-                            </Row>
-                          )}
+                                      />
+                                      {errors.city && touched.city ? (
+                                        <div className="invalid-feedback">
+                                          {errors.city}
+                                        </div>
+                                      ) : null}
+                                    </FormGroup>
+                                  </Col>
+                                </Row>
+                              )}
 
-                          {/*
-                          <Row>
-                            <Col sm="12" md="8" lg="8">
-                              <FormGroup>
-                                <Label for="street">Rua</Label>
-                                <div className="position-relative has-icon-left">
-                                  <Field
-                                    type="text"
-                                    placeholder="Rua"
-                                    autoComplete="street"
-                                    name="street"
-                                    id="street"
-                                    className={`
+                              <Row>
+                                <Col sm="12" md="8" lg="8">
+                                  <FormGroup>
+                                    <Label for="street">Rua</Label>
+                                    <div className="position-relative has-icon-left">
+                                      <Field
+                                        type="text"
+                                        placeholder="Rua"
+                                        autoComplete="street"
+                                        disabled={cep_loading}
+                                        name="street"
+                                        id="street"
+                                        className={`
                                   form-control
                                   ${errors.street &&
                                     touched.street &&
                                     'is-invalid'}
                                 `}
-                                  />
-                                  {errors.street && touched.street ? (
-                                    <div className="invalid-feedback">
-                                      {errors.street}
+                                      />
+                                      {errors.street && touched.street ? (
+                                        <div className="invalid-feedback">
+                                          {errors.street}
+                                        </div>
+                                      ) : null}
+                                      <div className="form-control-position">
+                                        <i className="fa fa-road" />
+                                      </div>
                                     </div>
-                                  ) : null}
-                                  <div className="form-control-position">
-                                    <i className="fa fa-road" />
-                                  </div>
-                                </div>
-                              </FormGroup>
-                            </Col>
-                            <Col sm="12" md="4" lg="4">
-                              <FormGroup>
-                                <Label for="streetNumber">Número</Label>
-                                <div className="position-relative has-icon-left">
-                                  <Field
-                                    type="text"
-                                    placeholder="Número"
-                                    autoComplete="number"
-                                    name="number"
-                                    id="number"
-                                    className={`
+                                  </FormGroup>
+                                </Col>
+                                <Col sm="12" md="4" lg="4">
+                                  <FormGroup>
+                                    <Label for="street_number">Número</Label>
+                                    <div className="position-relative has-icon-left">
+                                      <Field
+                                        type="text"
+                                        placeholder="Número"
+                                        autoComplete="number"
+                                        name="street_number"
+                                        id="street_number"
+                                        className={`
                                   form-control
-                                  ${errors.number &&
-                                    touched.number &&
+                                  ${errors.street_number &&
+                                    touched.street_number &&
                                     'is-invalid'}
                                 `}
-                                  />
-                                  {errors.number && touched.number ? (
-                                    <div className="invalid-feedback">
-                                      {errors.number}
+                                      />
+                                      {errors.street_number &&
+                                      touched.street_number ? (
+                                        <div className="invalid-feedback">
+                                          {errors.street_number}
+                                        </div>
+                                      ) : null}
+                                      <div className="form-control-position">
+                                        <Navigation size={14} color="#212529" />
+                                      </div>
                                     </div>
-                                  ) : null}
-                                  <div className="form-control-position">
-                                    <Navigation size={14} color="#212529" />
-                                  </div>
-                                </div>
-                              </FormGroup>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col sm="12" md="6" lg="4">
-                              <FormGroup>
-                                <Label for="neighborhood">Bairro</Label>
-                                <div className="position-relative has-icon-left">
-                                  <Field
-                                    type="text"
-                                    placeholder="Bairro"
-                                    autoComplete="neighborhood"
-                                    name="neighborhood"
-                                    id="neighborhood"
-                                    className={`
+                                  </FormGroup>
+                                </Col>
+                              </Row>
+                              <Row>
+                                <Col sm="12" md="6" lg="4">
+                                  <FormGroup>
+                                    <Label for="neighborhood">Bairro</Label>
+                                    <div className="position-relative has-icon-left">
+                                      <Field
+                                        type="text"
+                                        placeholder="Bairro"
+                                        autoComplete="neighborhood"
+                                        disabled={cep_loading}
+                                        name="neighborhood"
+                                        id="neighborhood"
+                                        className={`
                                       form-control
                                       ${errors.neighborhood &&
                                         touched.neighborhood &&
                                         'is-invalid'}
                                     `}
-                                  />
-                                  {errors.neighborhood &&
-                                  touched.neighborhood ? (
-                                    <div className="invalid-feedback">
-                                      {errors.neighborhood}
+                                      />
+                                      {errors.neighborhood &&
+                                      touched.neighborhood ? (
+                                        <div className="invalid-feedback">
+                                          {errors.neighborhood}
+                                        </div>
+                                      ) : null}
+                                      <div className="form-control-position">
+                                        <i className="fa fa-map-signs" />
+                                      </div>
                                     </div>
-                                  ) : null}
-                                  <div className="form-control-position">
-                                    <i className="fa fa-map-signs" />
-                                  </div>
-                                </div>
-                              </FormGroup>
-                            </Col>
-                            <Col sm="12" md="6" lg="8">
-                              <FormGroup>
-                                <Label for="complement">Complemento</Label>
-                                <div className="position-relative has-icon-left">
-                                  <Field
-                                    type="text"
-                                    autoComplete="complement"
-                                    id="complement"
-                                    name="complement"
-                                    placeholder="Ex: Apartamento 1"
-                                    className="form-control"
-                                  />
-                                  <div className="form-control-position">
-                                    <Edit size={14} color="#212529" />
-                                  </div>
-                                </div>
-                              </FormGroup>
-                            </Col>
-                          </Row>
-                           */}
+                                  </FormGroup>
+                                </Col>
+                                <Col sm="12" md="6" lg="8">
+                                  <FormGroup>
+                                    <Label for="complement">Complemento</Label>
+                                    <div className="position-relative has-icon-left">
+                                      <Field
+                                        type="text"
+                                        autoComplete="complement"
+                                        disabled={cep_loading}
+                                        id="complement"
+                                        name="complement"
+                                        placeholder="Ex: Apartamento 1"
+                                        className="form-control"
+                                      />
+                                      <div className="form-control-position">
+                                        <Edit size={14} color="#212529" />
+                                      </div>
+                                    </div>
+                                  </FormGroup>
+                                </Col>
+                              </Row>
+                            </>
+                          )}
 
-                          <Row>
+                          {/* <Row>
                             <Col xl="3" lg="4" md="5" sm="12">
                               <FormGroup>
                                 <Label for="initialDate">Inicio</Label>
@@ -2540,49 +2907,7 @@ export default function UserProfile({ match, className }) {
                                 </div>
                               </FormGroup>
                             </Col>
-                          </Row>
-
-                          <Row>
-                            <Col sm="4">
-                              <FormGroup>
-                                <Label>Modalidade</Label>
-                                <Input
-                                  type="select"
-                                  id="modality"
-                                  name="modality"
-                                  onChange={e => {
-                                    handleModalityChange(e, setFieldValue);
-                                  }}
-                                >
-                                  <option
-                                    key="presencial"
-                                    value="Presencial"
-                                    selected={
-                                      eventDetails.modality === 'Presencial'
-                                    }
-                                  >
-                                    Presencial
-                                  </option>
-                                  <option
-                                    key="online"
-                                    value="Online"
-                                    selected={
-                                      eventDetails.modality === 'Online'
-                                    }
-                                  >
-                                    Online
-                                  </option>
-                                  <option
-                                    key="misto"
-                                    value="Misto"
-                                    selected={eventDetails.modality === 'Misto'}
-                                  >
-                                    Misto
-                                  </option>
-                                </Input>
-                              </FormGroup>
-                            </Col>
-                          </Row>
+                          </Row> */}
 
                           {/* {profile_data.admin && (
                             <Row>
@@ -2680,7 +3005,7 @@ export default function UserProfile({ match, className }) {
                       ) {
                         return (
                           <h6 className="p-2 text-danger text-center">
-                            A quantidade máxima de líderes e líderes em
+                            A quantidade máxima de treinadores e líderes em
                             treinamento foi atingida
                           </h6>
                         );
@@ -2694,7 +3019,7 @@ export default function UserProfile({ match, className }) {
                       }
                       return (
                         <h6 className="p-2 text-danger text-center">
-                          A quantidade máxima de participantes, líderes em
+                          A quantidade máxima de participantes, treinadores em
                           treinamento ou líderes foi atingida
                         </h6>
                       );
@@ -2764,7 +3089,7 @@ export default function UserProfile({ match, className }) {
                                     placement="right"
                                     target={`remove-leader-${organizator.id}`}
                                   >
-                                    Remover líder
+                                    Remover treinador
                                   </UncontrolledTooltip>
                                 </NavLink>
                               );
@@ -2849,7 +3174,7 @@ export default function UserProfile({ match, className }) {
                           </Row>
                         </CardText>
                         <Badge className="float-right mr-1" color="success">
-                          Líder
+                          Treinador
                         </Badge>
                       </CardBody>
                     </Card>
@@ -2994,7 +3319,7 @@ export default function UserProfile({ match, className }) {
           </TabPane>
 
           <Modal isOpen={modalViewLeader} toggle={toggleCloseModalViewLeader}>
-            <ModalHeader>Visualizar dados do líder</ModalHeader>
+            <ModalHeader>Visualizar dados do treinador</ModalHeader>
             <Formik enableReinitialize initialValues={leaderViewData}>
               {() => (
                 <Form>
@@ -3094,49 +3419,63 @@ export default function UserProfile({ match, className }) {
                     <CardBody>
                       <div className="d-flex justify-content-between">
                         <Badge color="success" className="align-self-center">
-                          Participantes inscritos: {totalParticipants}
+                          Pagamento confirmado
                         </Badge>
                         <Row className="master">
                           <div className="profile-cover-buttons">
                             <div className="media-body halfway-fab">
-                              {handleEnableAddParticipantButton() ? (
-                                <>
-                                  <div className="d-none d-sm-none d-md-none d-lg-block ml-auto">
-                                    <Button
-                                      color="success"
-                                      className="btn-raised mr-2 mb-0 font-small-3"
-                                      onClick={toggleModalParticipant}
-                                    >
-                                      <i className="fa fa-user fa-xs" /> Inserir
-                                      participante
-                                    </Button>
-                                  </div>
+                              <div className="d-flex flex-row">
+                                <div className="d-none d-sm-none d-md-none d-lg-block ml-auto">
+                                  <Button
+                                    color="primary"
+                                    className="btn-raised mr-2 mb-0 font-small-3"
+                                    onClick={copyLink}
+                                  >
+                                    <FeatherLink size={16} /> Copiar link do
+                                    evento
+                                  </Button>
+                                </div>
 
-                                  <div className="ml-2">
-                                    <Button
-                                      color="success"
-                                      className="btn-raised mr-3 d-lg-none"
-                                      onClick={toggleModalParticipant}
-                                    >
-                                      <i className="fa fa-plus" />
-                                    </Button>
-                                  </div>
-                                </>
-                              ) : (
-                                <div />
-                              )}
+                                {handleEnableAddParticipantButton() && (
+                                  <>
+                                    <div className="d-none d-sm-none d-md-none d-lg-block ml-auto">
+                                      <Button
+                                        color="success"
+                                        className="btn-raised mr-2 mb-0 font-small-3"
+                                        onClick={toggleModalParticipant}
+                                      >
+                                        <i className="fa fa-user fa-xs" />{' '}
+                                        Inserir participante
+                                      </Button>
+                                    </div>
+
+                                    <div className="ml-2">
+                                      <Button
+                                        color="success"
+                                        className="btn-raised mr-3 d-lg-none"
+                                        onClick={toggleModalParticipant}
+                                      >
+                                        <i className="fa fa-plus" />
+                                      </Button>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </Row>
                       </div>
-                      {/* <CustomTabs
+                      <CustomTabs
                         TabContent={
                           <ParticipantTable
                             data={event_data.participants.filter(
                               participant => {
                                 return (
                                   participant.pivot.assistant === false &&
-                                  participant.pivot.is_quitter === false
+                                  participant.pivot.is_quitter === false &&
+                                  (participant.participant_order?.order
+                                    .status_id === 2 ||
+                                    participant.participant_order === null)
                                 );
                               }
                             )}
@@ -3145,9 +3484,68 @@ export default function UserProfile({ match, className }) {
                             isAdmin={profile_data.admin}
                           />
                         }
-                      /> */}
+                      />
                     </CardBody>
                   </Card>
+
+                  <Card>
+                    <CardBody>
+                      <div className="d-flex justify-content-between">
+                        <Badge color="warning" className="align-self-center">
+                          Aguardando pagamento
+                        </Badge>
+                      </div>
+                      <CustomTabs
+                        TabContent={
+                          <ParticipantTable
+                            data={event_data.participants.filter(
+                              participant => {
+                                return (
+                                  participant.pivot.assistant === false &&
+                                  participant.pivot.is_quitter === false &&
+                                  participant.participant_order?.order
+                                    .status_id === 1
+                                );
+                              }
+                            )}
+                            eventData={event_data}
+                            finishedLessons={finishedLessons}
+                            isAdmin={profile_data.admin}
+                          />
+                        }
+                      />
+                    </CardBody>
+                  </Card>
+
+                  <Card>
+                    <CardBody>
+                      <div className="d-flex justify-content-between">
+                        <Badge color="danger" className="align-self-center">
+                          Pagamento cancelado
+                        </Badge>
+                      </div>
+                      <CustomTabs
+                        TabContent={
+                          <ParticipantTable
+                            data={event_data.participants.filter(
+                              participant => {
+                                return (
+                                  participant.pivot.assistant === false &&
+                                  participant.pivot.is_quitter === false &&
+                                  participant.participant_order?.order
+                                    .status_id === 3
+                                );
+                              }
+                            )}
+                            eventData={event_data}
+                            finishedLessons={finishedLessons}
+                            isAdmin={profile_data.admin}
+                          />
+                        }
+                      />
+                    </CardBody>
+                  </Card>
+
                   <Card>
                     <CardBody>
                       <div className="d-flex justify-content-between">
@@ -3155,7 +3553,7 @@ export default function UserProfile({ match, className }) {
                           Desistentes: {totalQuitters}
                         </Badge>
                       </div>
-                      {/* <CustomTabs
+                      <CustomTabs
                         TabContent={
                           <QuitterTable
                             data={event_data.participants.filter(
@@ -3167,85 +3565,464 @@ export default function UserProfile({ match, className }) {
                             eventData={event_data}
                           />
                         }
-                      /> */}
+                      />
                     </CardBody>
                   </Card>
-                  <Card>
+                  {/* <Card>
                     <CardBody>
                       <div className="d-flex justify-content-between">
                         <Badge color="warning" className="align-self-center">
                           Convites pendentes: {invites.length}
                         </Badge>
                       </div>
-                      {/* <CustomTabs
+                      <CustomTabs
                         TabContent={<InvitedTable data={invites} />}
-                      /> */}
+                      />
+                    </CardBody>
+                  </Card> */}
+                </Col>
+              </Row>
+            </>
+          </TabPane>
+
+          {/* CRONOGRAMA */}
+          <TabPane tabId="4">
+            <>
+              <Row>
+                <Col xs="12">
+                  <Card>
+                    <CardBody>
+                      <div className="grid-hover p-0 py-4">
+                        <Row className="justify-content-around align-items-center">
+                          <Col>
+                            {event_data.schedules.map(schedule => {
+                              return (
+                                <>
+                                  <Row className="flex-column">
+                                    <Col className="my-2">
+                                      <h4>
+                                        {moment(schedule.date).format(
+                                          'DD/MM/YYYY'
+                                        )}
+                                      </h4>
+                                    </Col>
+                                    <Col className="my-2">
+                                      <div>{`Início: ${schedule.start_time}`}</div>
+                                    </Col>
+                                    <Col className="border-bottom-grey border-bottom-lighten-4 mt-2 mb-4">
+                                      <div className="mb-3">{`Fim: ${schedule.end_time}`}</div>
+                                    </Col>
+                                  </Row>
+                                </>
+                              );
+                            })}
+                          </Col>
+                        </Row>
+                      </div>
+                    </CardBody>
+                  </Card>
+                </Col>
+              </Row>
+
+              {/* <Formik
+                enableReinitialize
+                initialValues={{
+                  eventSchedules,
+                }}
+                validationSchema={schedulesSchema}
+                onSubmit={values => handleUpdateSchedules(values)}
+              >
+                {({ errors, touched, setFieldValue, values, handleChange }) => (
+                  <Form>
+                    <FieldArray
+                      name="schedules"
+                      render={({ remove, push }) => (
+                        <>
+
+                          {values.eventSchedules.length > 0 &&
+                            values.eventSchedules.map((schedule, index) => {
+                              const scheduleDate = `eventSchedules[${index}].date`;
+                              const errorScheduleDate = getIn(
+                                errors,
+                                scheduleDate
+                              );
+                              const touchedScheduleDate = getIn(
+                                touched,
+                                scheduleDate
+                              );
+
+                              const startTime = `eventSchedules[${index}].start_time`;
+                              const errorStartTime = getIn(errors, startTime);
+                              const touchedStartTime = getIn(
+                                touched,
+                                startTime
+                              );
+
+                              const endTime = `eventSchedules[${index}].end_time`;
+                              const errorEndTime = getIn(errors, endTime);
+                              const touchedEndTime = getIn(touched, endTime);
+
+                              return (
+                                <div>
+                                  <Row className="justify-content-between ml-0 mr-0">
+                                    <h3>Dia {index + 1}</h3>
+                                    {values.eventSchedules.length > 1 && (
+                                      <Button
+                                        color="danger"
+                                        onClick={() => remove(index)}
+                                      >
+                                        <X size={18} color="#fff" />
+                                      </Button>
+                                    )}
+                                  </Row>
+                                  <Row>
+                                    <Col sm="12" md="12" lg="3">
+                                      <FormGroup>
+                                        <Label
+                                          for={`eventSchedules[${index}].date`}
+                                        >
+                                          Data
+                                        </Label>
+                                        <Datepicker
+                                          id={`eventSchedules[${index}].date`}
+                                          name={`eventSchedules[${index}].date`}
+                                          locale={pt}
+                                          selected={
+                                            values.eventSchedules[index].date
+                                          }
+                                          onChange={date =>
+                                            setFieldValue(
+                                              `eventSchedules[${index}].date`,
+                                              date
+                                            )
+                                          }
+                                          customInput={<DatepickerButton />}
+                                          minDate={minScheduleDate(
+                                            values.eventSchedules,
+                                            values.eventSchedules.length,
+                                            index
+                                          )}
+                                          withPortal
+                                          isClearable
+                                          dateFormat="dd/MM/yyyy"
+                                          showMonthDropdown
+                                          showYearDropdown
+                                          dropdownMode="select"
+                                          className={`
+                                            form-control
+                                            ${errorScheduleDate &&
+                                              touchedScheduleDate &&
+                                              'is-invalid'}
+                                          `}
+                                        />
+                                        {errorScheduleDate &&
+                                        touchedScheduleDate ? (
+                                          <div className="invalid-feedback">
+                                            {errorScheduleDate}
+                                          </div>
+                                        ) : null}
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+                                  <Row>
+                                    <Col sm="12" md="12" lg="2">
+                                      <FormGroup>
+                                        <Label
+                                          for={`eventSchedules[${index}].start_time`}
+                                        >
+                                          Horário início
+                                        </Label>
+                                        <Input
+                                          id={`eventSchedules[${index}].start_time`}
+                                          name={`eventSchedules[${index}].start_time`}
+                                          type="time"
+                                          onChange={e => {
+                                            handleChangeStartTime(
+                                              e,
+                                              index,
+                                              setFieldValue
+                                            );
+                                          }}
+                                          className={`
+                                            form-control
+                                            ${errorStartTime &&
+                                              touchedStartTime &&
+                                              'is-invalid'}
+                                          `}
+                                        />
+                                        {errorStartTime && touchedStartTime ? (
+                                          <div className="invalid-feedback">
+                                            {errorStartTime}
+                                          </div>
+                                        ) : null}
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+                                  <Row>
+                                    <Col sm="12" md="12" lg="2">
+                                      <FormGroup>
+                                        <Label
+                                          for={`eventSchedules[${index}].end_time`}
+                                        >
+                                          Horário fim
+                                        </Label>
+                                        <Input
+                                          id={`eventSchedules[${index}].end_time`}
+                                          name={`eventSchedules[${index}].end_time`}
+                                          type="time"
+                                          onChange={e => {
+                                            handleChangeEndTime(
+                                              e,
+                                              index,
+                                              setFieldValue
+                                            );
+                                          }}
+                                          className={`
+                                            form-control
+                                            ${errorEndTime &&
+                                              touchedEndTime &&
+                                              'is-invalid'}
+                                          `}
+                                        />
+                                        {errorEndTime && touchedEndTime ? (
+                                          <div className="invalid-feedback">
+                                            {errorEndTime}
+                                          </div>
+                                        ) : null}
+                                      </FormGroup>
+                                    </Col>
+                                  </Row>
+                                  <div className="form-actions right" />
+                                </div>
+                              );
+                            })}
+
+                          <FormGroup>
+                            <Row className="pl-1">
+                              <Button
+                                outline
+                                color="success"
+                                onClick={() =>
+                                  push({
+                                    date: '',
+                                    start_time: '',
+                                    end_time: '',
+                                  })
+                                }
+                              >
+                                <Plus size={16} color="#0cc27e" /> Adicionar dia
+                              </Button>
+                            </Row>
+                          </FormGroup>
+                        </>
+                      )}
+                    />
+                  </Form>
+                )}
+              </Formik> */}
+            </>
+          </TabPane>
+
+          <TabPane tabId="5">
+            <>
+              <Row className="row-eq-height">
+                <Col sm="12">
+                  <Card className="white text-center p-4">
+                    <CardBody className="d-flex flex-column justify-content-center align-items-center p-0">
+                      <Formik
+                        enableReinitialize
+                        initialValues={{
+                          checkAll: false,
+                          selecteds: presenceList !== null ? presenceList : [],
+                          offer: lesson_data.offer ? lesson_data.offer : '',
+                          prayRequest: lesson_data.pray_request
+                            ? lesson_data.pray_request
+                            : '',
+                        }}
+                        validationSchema={formLessonReport}
+                        onSubmit={values => handleSubmitReport(values)}
+                      >
+                        {({ values, setFieldValue, errors, touched }) => (
+                          <Form className="w-100 d-flex flex-column justify-content-center align-items-center">
+                            <Col lg="8" md="12" xs="12">
+                              <h2 className="black mt-4">Chamada</h2>
+                              <h6 className="black">
+                                <em>Marque os participantes presentes</em>
+                              </h6>
+                              <h6 className="red">
+                                <em>
+                                  *Ao menos um participante deve estar presente
+                                </em>
+                              </h6>
+
+                              <Table bordered responsive>
+                                <thead>
+                                  <tr>
+                                    <th width="20%">
+                                      <Field
+                                        disabled={
+                                          lesson_data.is_finished &&
+                                          !profile_data.admin
+                                        }
+                                        type="checkbox"
+                                        className="ml-0"
+                                        id="checkAll"
+                                        name="checkAll"
+                                        onClick={() =>
+                                          handleCheck(setFieldValue)
+                                        }
+                                      />
+                                      <Label for="checkAll" className="pl-3">
+                                        Todos
+                                      </Label>
+                                    </th>
+                                    <th width="80%">Participantes</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <FieldArray
+                                    name="selecteds"
+                                    render={arrayHelpers => (
+                                      <>
+                                        {values.selecteds.map(
+                                          (selecteds, index) => (
+                                            <tr
+                                              key={index}
+                                              className={`${!selecteds.is_present &&
+                                                'table-danger'}`}
+                                            >
+                                              <td>
+                                                <Field
+                                                  disabled={
+                                                    lesson_data.is_finished &&
+                                                    !profile_data.admin
+                                                  }
+                                                  type="checkbox"
+                                                  checked={selecteds.is_present}
+                                                  className="ml-0 childCheck"
+                                                  id={`selecteds.${index}.checked`}
+                                                  name={`selecteds.${index}.checked`}
+                                                  onClick={e =>
+                                                    handleCheckChild(
+                                                      e,
+                                                      setFieldValue,
+                                                      index
+                                                    )
+                                                  }
+                                                />
+                                              </td>
+                                              <td>
+                                                <Label>{selecteds.name}</Label>
+                                              </td>
+                                            </tr>
+                                          )
+                                        )}
+                                      </>
+                                    )}
+                                  />
+                                </tbody>
+                              </Table>
+                            </Col>
+
+                            <Col lg="8" md="12" xs="12">
+                              <h2
+                                className="black mt-4"
+                                style={{ cursor: 'pointer' }}
+                                onClick={event => prayRequest(event)}
+                              >
+                                Comentários
+                                {openPrayRequest === true ? (
+                                  <ChevronUp size={30} color="#212529" />
+                                ) : (
+                                  <ChevronDown size={30} color="#212529" />
+                                )}
+                              </h2>
+                              {openPrayRequest === true && (
+                                <Field
+                                  component="textarea"
+                                  disabled={
+                                    lesson_data.is_finished &&
+                                    !profile_data.admin
+                                  }
+                                  type="textarea"
+                                  id="prayRequest"
+                                  rows="5"
+                                  name="prayRequest"
+                                  className={`
+                          form-control
+                          ${errors &&
+                            errors.prayRequest &&
+                            touched &&
+                            touched.prayRequest &&
+                            'is-invalid'}
+                        `}
+                                  value={values.prayRequest}
+                                  style={{
+                                    minHeight: '70px',
+                                    maxHeight: '350px',
+                                  }}
+                                />
+                              )}
+                              {errors.prayRequest && touched.prayRequest ? (
+                                <div className="invalid-feedback">
+                                  {errors.prayRequest}
+                                </div>
+                              ) : null}
+                            </Col>
+                            <Col lg="8" md="12" xs="12">
+                              <h2 className="black mt-4">Oferta</h2>
+                              <CurrencyFormat
+                                disabled={
+                                  lesson_data.is_finished && !profile_data.admin
+                                }
+                                id="offer"
+                                name="offer"
+                                className="form-control"
+                                value={values.offer}
+                                onValueChange={val =>
+                                  setFieldValue('offer', val.floatValue)
+                                }
+                              />
+                            </Col>
+                            <Col lg="3" md="3" xs="4">
+                              {profile_data.admin ? (
+                                <Button
+                                  disabled={confirmDisabled}
+                                  className="mt-4 btn-success"
+                                  type="submit"
+                                >
+                                  {lesson_data.is_finished
+                                    ? 'Alterar finalização do evento'
+                                    : 'Finalizar evento'}
+                                </Button>
+                              ) : (
+                                <Button
+                                  disabled={
+                                    lesson_data.is_finished || confirmDisabled
+                                  }
+                                  className="mt-4 btn-success"
+                                  type="submit"
+                                >
+                                  {lesson_data.is_finished
+                                    ? 'Alterar finalização do evento'
+                                    : 'Finalizar evento'}
+                                </Button>
+                              )}
+                            </Col>
+                          </Form>
+                        )}
+                      </Formik>
                     </CardBody>
                   </Card>
                 </Col>
               </Row>
             </>
           </TabPane>
-
-          {/* AULAS */}
-          <TabPane tabId="4">
-            <Row>
-              <Col xs="12">
-                <Card>
-                  <CardBody>
-                    <div className="grid-hover p-0 py-4">
-                      <Row className="justify-content-around align-items-center">
-                        {event_data.lessonReports.map(lessonReport => {
-                          return (
-                            <div
-                              className="lesson-container"
-                              key={lessonReport.id}
-                            >
-                              <figure
-                                className={`${
-                                  lessonReport.is_finished
-                                    ? 'effect-finished'
-                                    : 'effect-chico'
-                                }`}
-                              >
-                                <img
-                                  src={lessonReport.lesson.img_url}
-                                  alt="img1"
-                                />
-                                <figcaption>
-                                  <div>
-                                    <h2>
-                                      <span>{lessonReport.lesson.title}</span>
-                                    </h2>
-                                    {lessonReport.is_finished && (
-                                      <h6 className="font-weight-bold">
-                                        <em>(Aula concluida)</em>
-                                      </h6>
-                                    )}
-                                    <p className="white">
-                                      {lessonReport.lesson.description}
-                                    </p>
-                                  </div>
-                                  <Link
-                                    onClick={e => verifyInscriptionsFinished(e)}
-                                    to={`/eventos/grupo/${event_data.id}/editar/aula/${lessonReport.id}`}
-                                  />
-                                </figcaption>
-                              </figure>
-                            </div>
-                          );
-                        })}
-                      </Row>
-                    </div>
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
-          </TabPane>
+          <TabPane tabId="6">Em desenvolvimento...</TabPane>
         </TabContent>
 
         <Modal isOpen={modalOrganizator} toggle={toggleModalOrganizator}>
-          <ModalHeader>Pequisar líder/líder em treinamento</ModalHeader>
+          <ModalHeader>Pequisar treinador/líder em treinamento</ModalHeader>
           <Formik
             initialValues={{
               organizator_type: '',
@@ -3525,7 +4302,7 @@ export default function UserProfile({ match, className }) {
           isOpen={modalChangeOrganizator}
           toggle={toggleModalChangeOrganizator}
         >
-          <ModalHeader>Pesquisar líder para substitui-lo</ModalHeader>
+          <ModalHeader>Pesquisar treinador para substitui-lo</ModalHeader>
           <Formik
             initialValues={{
               organizator_type: 'leader',
@@ -3659,7 +4436,7 @@ export default function UserProfile({ match, className }) {
                         `}
                       />
                     ) : (
-                      'Trocar líder principal'
+                      'Trocar treinador principal'
                     )}
                   </Button>
                 </ModalFooter>
@@ -3712,7 +4489,7 @@ export default function UserProfile({ match, className }) {
                 </Button>
               )}
 
-              <Button
+              {/* <Button
                 outline
                 type="submit"
                 color="default"
@@ -3725,13 +4502,13 @@ export default function UserProfile({ match, className }) {
                 <div className="d-flex justify-content-around align-items-center">
                   <Mail size={24} color="#000" className="mr-2" />
                   <div>
-                    <h5 className="mb-0">Convidar participante por email</h5>
+                    <h5 className="mb-0">Convite para inscrição</h5>
                   </div>
                   <ArrowRightCircle size={24} color="#000" className="mr-2" />
                 </div>
-              </Button>
+              </Button> */}
 
-              <Button
+              {/* <Button
                 outline
                 type="submit"
                 color="default"
@@ -3742,15 +4519,13 @@ export default function UserProfile({ match, className }) {
                 }}
               >
                 <div className="d-flex justify-content-around align-items-center">
-                  <Mail size={24} color="#000" className="mr-2" />
+                  <ShoppingCart size={24} color="#000" className="mr-2" />
                   <div>
-                    <h5 className="mb-0">
-                      Convidar participante para se inscrever e comprar
-                    </h5>
+                    <h5 className="mb-0">Convite para inscrição e compra</h5>
                   </div>
                   <ArrowRightCircle size={24} color="#000" className="mr-2" />
                 </div>
-              </Button>
+              </Button> */}
             </CardBody>
           </ModalBody>
         </Modal>
@@ -3987,7 +4762,7 @@ export default function UserProfile({ match, className }) {
           isOpen={modalAddTrainingLeader}
           toggle={toggleModalAddTrainingLeader}
         >
-          <ModalHeader>Cadastrar líder em treinamento2</ModalHeader>
+          <ModalHeader>Cadastrar líder em treinamento</ModalHeader>
           <Formik
             initialValues={{
               admin: profile_data.admin || false,
@@ -4594,7 +5369,7 @@ export default function UserProfile({ match, className }) {
                           name={`selected.${index}.name`}
                           value={(() => {
                             if (selected.participant_id === undefined) {
-                              return 'Líder';
+                              return 'Treinador';
                             }
                             if (selected.print_date) {
                               return moment(selected.print_date).format(
@@ -5074,131 +5849,6 @@ export default function UserProfile({ match, className }) {
                     {profileAddresses[0].id !== null
                       ? 'Confirmar endereço'
                       : 'Cadastrar endereço'}
-                  </Button>
-                </ModalFooter>
-              </Form>
-            )}
-          </Formik>
-        </Modal>
-
-        {/* --------------- MODAL PESQUISAR IGREJA --------------- */}
-        <Modal isOpen={modalChurch} toggle={toggleModalChurch} size="lg">
-          <ModalHeader toggle={toggleModalChurch}>
-            Pesquise por sua igreja
-          </ModalHeader>
-          <Formik
-            enableReinitialize
-            initialValues={modalChurchData}
-            validationSchema={formChurchSchema}
-            onSubmit={values => handleSearchChurchs(values)}
-          >
-            {({ values, errors, touched }) => (
-              <Form>
-                <ModalBody>
-                  <Row>
-                    <Col lg="2" md="5" sm="12">
-                      <Label>Estado</Label>
-                      <Field
-                        type="select"
-                        component="select"
-                        name="uf"
-                        id="uf"
-                        className={`
-                        form-control
-                        ${errors.uf && touched.uf && 'is-invalid'}
-                      `}
-                      >
-                        <option value="">Sem f...</option>
-                        {UFsAndCities.map(uf => (
-                          <option key={uf.sigla} value={uf.sigla}>
-                            {uf.sigla}
-                          </option>
-                        ))}
-                      </Field>
-                      {errors.uf && touched.uf ? (
-                        <div className="invalid-feedback">{errors.uf}</div>
-                      ) : null}
-                    </Col>
-                    <Col lg="4" md="7" sm="12">
-                      <Label>Cidade</Label>
-                      <Field
-                        type="select"
-                        component="select"
-                        name="city"
-                        id="city"
-                        className={`
-                        form-control
-                        ${errors.city && touched.city && 'is-invalid'}
-                      `}
-                      >
-                        <option value="">Sem filtro</option>
-
-                        {values.uf &&
-                          UFsAndCities.map(uf => {
-                            if (values.uf === uf.sigla) {
-                              const cities = uf.cidades.map(city => {
-                                return (
-                                  <option key={city} value={city}>
-                                    {city}
-                                  </option>
-                                );
-                              });
-
-                              return cities;
-                            }
-                          })}
-                      </Field>
-                      {errors.city && touched.city ? (
-                        <div className="invalid-feedback">{errors.city}</div>
-                      ) : null}
-                    </Col>
-                    <Col lg="6" md="12" sm="12">
-                      <Label>Nome ou parte do nome</Label>
-                      <Field
-                        type="text"
-                        name="name"
-                        id="name"
-                        className="form-control"
-                      />
-                    </Col>
-                  </Row>
-                  <Row className="mt-3">
-                    <Col>
-                      {loadingChurchs ? (
-                        <Button color="success" type="submit" block disabled>
-                          <BounceLoader
-                            size={23}
-                            color="#fff"
-                            css={css`
-                              display: block;
-                              margin: 0 auto;
-                            `}
-                          />
-                        </Button>
-                      ) : (
-                        <Button color="success" type="submit" block>
-                          <Search size={18} color="#fff" /> Pesquisar
-                        </Button>
-                      )}
-                    </Col>
-                  </Row>
-                  {churchs && churchs.length > 0 && (
-                    <Row className="mt-3">
-                      <Col>
-                        {/* <ChurchsTable
-                          churchs={churchs}
-                          value={value => setSelectedChurch(value)}
-                          modalChurch={modalChurch =>
-                            setModalChurch(modalChurch)
-                          }
-                        /> */}
-                      </Col>
-                    </Row>
-                  )}
-                </ModalBody>
-                <ModalFooter>
-                  <Button color="danger" onClick={toggleModalChurch}>
-                    Cancelar busca
                   </Button>
                 </ModalFooter>
               </Form>
