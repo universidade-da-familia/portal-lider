@@ -38,6 +38,8 @@ const LazyTrainingCreate = lazy(() =>
   import('~/views/events/trainings/create/index')
 );
 const LazySeminaries = lazy(() => import('~/views/events/seminaries/index'));
+const LazySeminaryCreate = lazy(() => import('~/views/events/seminaries/create/index'));
+const LazySeminaryEdit = lazy(() => import('~/views/events/seminaries/edit/index'));
 const LazySeminariesSmallGroups = lazy(() =>
   import('~/views/events/seminaries/smallGroups/index')
 );
@@ -314,6 +316,26 @@ export default function Router() {
           render={matchprops => (
             <Suspense fallback={<Spinner />}>
               <LazySeminaries {...matchprops} />
+            </Suspense>
+          )}
+        />
+
+        <ProtectedMainLayoutRoutes // seminario
+          exact
+          path="/eventos/seminario/criar"
+          render={matchprops => (
+            <Suspense fallback={<Spinner />}>
+              <LazySeminaryCreate {...matchprops} />
+            </Suspense>
+          )}
+        />
+
+        <ProtectedMainLayoutRoutes // seminario EDITAR
+          exact
+          path="/eventos/seminario/:event_id/editar"
+          render={matchprops => (
+            <Suspense fallback={<Spinner />}>
+              <LazySeminaryEdit {...matchprops} />
             </Suspense>
           )}
         />

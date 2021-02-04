@@ -30,7 +30,7 @@ class Coordinateable extends Component {
 
     const id = e.original.id;
 
-    history.push(`/seminarios/editar/${id}`);
+    history.push(`/eventos/seminario/${id}/editar`);
 
     //eventRequest(id);
   };
@@ -248,8 +248,5 @@ const mapDispatchToProps = dispatch =>
   bindActionCreators(EventActions, dispatch);
 
 export default withRouter(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(Coordinateable)
+  connect(mapStateToProps, mapDispatchToProps)(Coordinateable)
 );
