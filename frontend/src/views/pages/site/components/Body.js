@@ -669,7 +669,7 @@ export default function Body() {
                     }}
                   >
                     <Col>
-                      <Section3BoxTitle>Individual</Section3BoxTitle>
+                      <Section3BoxTitle>Casal</Section3BoxTitle>
                     </Col>
                     <Col>
                       <Section3BoxPrice>{`R$ ${couplePrice}`}</Section3BoxPrice>
