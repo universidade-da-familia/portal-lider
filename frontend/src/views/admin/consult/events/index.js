@@ -69,7 +69,7 @@ export default function AdminEvents() {
       end_date: filterStorage ? filterStorage.end_date : '',
       ministery: filterStorage ? filterStorage.ministery : '',
       status: filterStorage ? filterStorage.status : '',
-      is_printed: filterStorage ? filterStorage.is_printed : '',
+      is_printed: '',
       modality: filterStorage ? filterStorage.modality : '',
       event_type: filterStorage ? filterStorage.event_type : '',
       country: filterStorage ? filterStorage.country : '',
@@ -436,7 +436,7 @@ export default function AdminEvents() {
                             </div>
                           </div>
                         </Col>
-                        <Col lg="3" md="3" sm="12">
+                        {/* <Col lg="3" md="3" sm="12">
                           <Label>Certificado Impresso</Label>
                           <Field
                             type="select"
@@ -449,8 +449,8 @@ export default function AdminEvents() {
                             <option value>Sim</option>
                             <option value={false}>Não</option>
                           </Field>
-                        </Col>
-                        <Col lg="3" md="3" sm="12">
+                        </Col> */}
+                        <Col lg="4" md="4" sm="12">
                           <Label>Modalidade</Label>
                           <Field
                             type="select"
@@ -465,7 +465,7 @@ export default function AdminEvents() {
                             <option value="Misto">Misto</option>
                           </Field>
                         </Col>
-                        <Col lg="2" md="2" sm="12">
+                        <Col lg="4" md="4" sm="12">
                           <Label>Tipo evento</Label>
                           <Field
                             type="select"

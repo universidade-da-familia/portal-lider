@@ -9,8 +9,8 @@ import ContentSubHeader from '../../../components/contentHead/contentSubHeader';
 import CustomTabs from '../../../components/tabs/default';
 // import GroupTabs from "./tabs";
 import CoordinateTable from './coordinateTable';
-import FacilitateLeadersTable from './facilitateTable';
-import ParticipantTable from './participantTable';
+// import FacilitateLeadersTable from './facilitateTable';
+// import ParticipantTable from './participantTable';
 // import TrainedFacilitatorTable from './trainedFacilitatorTable';
 
 class Seminaries extends Component {
@@ -35,7 +35,7 @@ class Seminaries extends Component {
                   </Badge>
                   <div>
                     <div className="d-none d-sm-none d-md-none d-lg-block">
-                      <Link to="/eventos/grupo/criar">
+                      <Link to="/eventos/seminario/criar">
                         <Button
                           color="success"
                           className="btn-raised mb-0 font-small-3"
@@ -59,7 +59,7 @@ class Seminaries extends Component {
                 <CustomTabs TabContent={<CoordinateTable />} />
               </CardBody>
             </Card>
-            <Card>
+            {/* <Card>
               <CardBody>
                 <div className="d-flex justify-content-between">
                   <Badge color="info" className="align-self-center">
@@ -78,7 +78,7 @@ class Seminaries extends Component {
                 </div>
                 <CustomTabs TabContent={<ParticipantTable />} />
               </CardBody>
-            </Card>
+            </Card> */}
           </Col>
         </Row>
       </>
