@@ -567,7 +567,7 @@ export default function TrainingInviteConfirmation({ match }) {
         shipping_address: values,
         shipping_option: shippingSelected,
         order_details: {
-          order_type: 'Curso',
+          order_type: event.defaultEvent.event_type,
           subtotal:
             inscriptionType === 'single' ? subTotalPrice : subTotalPriceCouple,
           shipping_amount: shippingSelected.free_shipping
@@ -624,7 +624,7 @@ export default function TrainingInviteConfirmation({ match }) {
         shipping_address: values,
         shipping_option: shippingSelected,
         order_details: {
-          order_type: 'Curso',
+          order_type: event.defaultEvent.event_type,
           subtotal:
             inscriptionType === 'single' ? subTotalPrice : subTotalPriceCouple,
           shipping_amount: shippingSelected.free_shipping
@@ -651,7 +651,7 @@ export default function TrainingInviteConfirmation({ match }) {
         shipping_address: values,
         shipping_option: shippingSelected,
         order_details: {
-          order_type: 'Curso',
+          order_type: event.defaultEvent.event_type,
           subtotal:
             inscriptionType === 'single' ? subTotalPrice : subTotalPriceCouple,
           shipping_amount: shippingSelected.free_shipping
@@ -1211,7 +1211,6 @@ export default function TrainingInviteConfirmation({ match }) {
                               <Steps>
                                 <Step id="type">
                                   <FormGroup className="mb-0">
-                                    {console.tron.log(event)}
                                     <ButtonGroup className="d-flex flex-column">
                                       {inscriptionSingle === true && (
                                         <Button
