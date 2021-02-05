@@ -135,6 +135,10 @@ const formDetails = Yup.object().shape({
             .required('O limite de inscrições é obrigatório.');
     }
   ),
+  contact_email: Yup.string().matches(
+    /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+    'Digite um email válido'
+  ),
   country: Yup.string(),
   cep: Yup.string().when(['country', 'modality'], {
     is: (country, modality) => country !== '30' && modality === 'Presencial',
@@ -349,6 +353,7 @@ export default function UserProfile({ match, className }) {
     contact_name: '',
     contact_email: '',
     contact_phone: '',
+    additional_information: '',
     cep: '',
     country: '',
     apiUf: '',
@@ -643,6 +648,7 @@ export default function UserProfile({ match, className }) {
           event_data.contact_email || event_data.organizators[0].email,
         contact_phone:
           event_data.contact_phone || event_data.organizators[0].phone,
+        additional_information: event_data.additional_information || '',
         cep: event_data.cep || '',
         country: countryData,
         uf: event_data.uf || '',
@@ -1445,6 +1451,10 @@ export default function UserProfile({ match, className }) {
     const data = {
       inscriptions_limit: values.inscriptions_limit || 0,
       extra_participants: values.extra_participants || 0,
+      additional_information: values.additional_information,
+      contact_name: values.contact_name,
+      contact_email: values.contact_email,
+      contact_phone: values.contact_phone,
       cep: values.cep,
       country: values.country,
       uf: values.uf,
@@ -2444,6 +2454,24 @@ export default function UserProfile({ match, className }) {
                             </Col>
                           </Row>
 
+                          <Row>
+                            <Col lg="12" md="12" sm="12">
+                              <FormGroup>
+                                <Label for="additional_information">
+                                  Informações adicionais
+                                </Label>
+                                <Field
+                                  component="textarea"
+                                  type="textarea"
+                                  id="additional_information"
+                                  name="additional_information"
+                                  rows="5"
+                                  className="form-control"
+                                />
+                              </FormGroup>
+                            </Col>
+                          </Row>
+
                           <h4 className="form-section">
                             <i
                               className="fa fa-address-card"
@@ -2462,7 +2490,6 @@ export default function UserProfile({ match, className }) {
                                     id="contact_name"
                                     name="contact_name"
                                     className="form-control"
-                                    readOnly
                                   />
                                 </div>
                               </FormGroup>
@@ -2475,9 +2502,19 @@ export default function UserProfile({ match, className }) {
                                     type="text"
                                     id="contact_email"
                                     name="contact_email"
-                                    className="form-control"
-                                    readOnly
+                                    className={`
+                                      form-control
+                                      ${errors.contact_email &&
+                                        touched.contact_email &&
+                                        'is-invalid'}
+                                    `}
                                   />
+                                  {errors.contact_email &&
+                                  touched.contact_email ? (
+                                    <div className="invalid-feedback">
+                                      {errors.contact_email}
+                                    </div>
+                                  ) : null}
                                 </div>
                               </FormGroup>
                             </Col>
@@ -2486,11 +2523,19 @@ export default function UserProfile({ match, className }) {
                                 <Label for="id">Telefone</Label>
                                 <div className="position-relative">
                                   <Field
-                                    type="text"
-                                    id="contact_phone"
                                     name="contact_phone"
+                                    id="contact_phone"
                                     className="form-control"
-                                    readOnly
+                                    render={({ field }) => (
+                                      <PhoneFormat
+                                        // eslint-disable-next-line react/jsx-props-no-spreading
+                                        {...field}
+                                        id="contact_phone"
+                                        name="contact_phone"
+                                        className="form-control"
+                                        value={values.contact_phone}
+                                      />
+                                    )}
                                   />
                                 </div>
                               </FormGroup>
