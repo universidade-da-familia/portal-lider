@@ -286,7 +286,6 @@ export default function Body() {
           // coragem
           if (data.default_event_id === 69) {
             auxSumSingle += product.training_price;
-            auxSumCouple += product.training_price;
           }
 
           // hombridade

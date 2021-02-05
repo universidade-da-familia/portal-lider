@@ -65,7 +65,14 @@ function AdminTableEvents({ data, reload }) {
     const { id } = e.original;
 
     // window.open(`/eventos/grupo/${id}/editar`, '_blank');
-    history.push(`/eventos/grupo/${id}/editar`);
+
+    if (e.original.defaultEvent.event_type === 'Curso') {
+      history.push(`/eventos/grupo/${id}/editar`);
+    } else if (e.original.defaultEvent.event_type === 'Seminário') {
+      history.push(`/eventos/seminario/${id}/editar`);
+    } else {
+      history.push(`/eventos/treinamento/${id}/editar`);
+    }
   }
 
   function handlePageChange(pageIndex) {
